@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>CliMT</title>
+<META name="description" content="Libraries">
+<META name="keywords" content="Python python library package">
+<link type="text/css" rel="stylesheet" href="style/librootcsc.css">
+</head>
+
+
+<body>
+<!-- ============= Begin Overall Container ============= -->
+<div id="container">
+
+
+<!-- === Main Title Block === -->
+<div class="maintitle">
+<H1><span>CliMT: Climate Modeling Toolkit</span></H1>
+</div>
+
+
+<!-- === Begin Not-Main Title Container === -->
+<div class="notmaintitle">
+
+
+
+<!-- === Begin Main Text Block === -->
+<div class="maintext">
+<h2><span>Introduction</span></h2>
+<p><span> CliMT is a <a href=http://www.python.org>Python</a>-based
+software component toolkit that allows users to build and run climate
+models in a fairly painless manner. Think of CliMT as a Lego set,
+where each brick is a climate model component such as a radiation or
+convection scheme. Each component is coded in Fortran or C, but the
+user need never deal with the compiled code directly: CliMT makes
+these components accessible at the Python level, where they can be
+easily combined into customized climate models.  If you're unfamiliar
+with these issues, <a href=component_philosophy.html>here</a> is some
+further discussion.
+</span></p>
+
+<p><span> CliMT is in its infancy: a radiative-convective
+column model is about the most complex construct you can build at
+present. One day, CliMT will grow up and allow you to build a full 3-D
+parallel climate model.</span></p>
+
+<p><span>CliMT is aimed at a broad audience. Because the accent is on
+simplicity and intuitiveness, it should be accessible to undergraduate
+or even high-school students. On the other hand, it uses
+state-of-the-art components, and so is suitable for full-blown
+research projects.</span></p>
+
+<h2><span>Requirements</span></h2>
+<p><span>
+To install and run CliMT, you need 
+<ul>
+<li>A working <a
+href=http://www.python.org>Python</a> installation (2.2 or higher). 
+</li>
+<li>The <a href=http://www.pfdubois.com/numpy>Numeric</a> Python module.</li>
+<li>A C compiler (GNU gcc is fine).</li>
+<li>A Fortran90 compiler. Currently, supported systems are:
+<ul>
+<li>Linux w/ PGI pgf90 or Intel ifc</li>
+<li>Mac OSX w/ IBM xlf </li>
+</ul>
+It shouldn't be too hard to compile CliMT on other Unix
+platform/compiler combinations - just edit CliMT/src/compiler_flags.mk
+to add the new flags. If you manage to do this, please let me know!
+(rca@geosci.uchicago.edu).
+</li>
+<li>A <a href=http://www.python.org/topics/learn>minimum of familiarity</a> with Python.
+</ul>
+</span></p>
+
+<h2><span>Download and installation</span></h2>
+
+<p><span>The most recent version is available <a
+href=./climt.tar.gz>here.</a></span>
+</p>
+<p><span>To install:
+<ul>
+<li><code>tar xvzf climt.tar.gz</code></li>
+<li><code>cd CliMT/src</code></li>
+<li>edit the section marked "User adjustable parameters" near the top
+of <code>Makefile</code>, set the correct values for your system 
+<li><code>make</code></li>
+</ul>
+</span></p>
+<p><span> If compilation was successful, make sure the CliMT install
+location (CLIMT_DIR in the Makefile) is on your Python executable path
+(you can also set environment variable PYTHONPATH to point to wherever
+you chose for CLIMT_DIR). Then try <code>make test</code>; this should
+produce a bunch of reasonable-looking numbers and no error messages. If
+you encounter problems you can't solve, please email me &lt;rca@geosci.uchicago.edu&gt; and we'll
+work on it.  </span></p>
+
+<h2><span>Using CliMT</span></h2>
+
+<p><span>Using CliMT consists of writing a Python script which invokes
+the components necessary for a given application. Here is a simple <a
+href=example-1.html>example</a>. You'll find more in
+<code>lib/examples</code>. 
+</span></p> 
+<p><span>Python is also a good language for CGI scripting, so you can
+easily build web interfaces to CliMT applications. Here is an <a
+href=http://geoflop.uchicago.edu/~rca/toa_balance.html>example of
+CliMT used in a CGI script</a>.
+</span></p>
+
+
+<h2><span>Documentation</span></h2>
+
+<p><span>This is bare-bones for now; more on the way soon.</span></p>
+
+<blockquote>
+<div class="modlist">
+<table cellspacing="5%" cellpadding="8%">
+<tr><th>Module Name</th>
+        <th>Pydoc</th>
+        <th>Key</th>
+        <th>Depend</th>
+        <th>Function</th></tr>
+
+<tr><td>const</td>
+        <td><a href=./const.html>HTML</a></td>
+        <td>Y</td>
+        <td>None</td>
+        <td>Holds relevant physical constants</td></tr>
+
+<tr><td>thermodyn</td>
+        <td><a href=./thermodyn.html>HTML</a></td>
+        <td>Y</td>
+        <td>None</td>
+        <td>Provides accurate thermodynamic functions</td></tr>
+
+<tr><td>mathutil</td>
+        <td><a href=./mathutil.html>HTML</a></td>
+        <td>Y</td>
+        <td>None</td>
+        <td>Mathematical utility functions</td></tr>
+
+<tr><td>radiation</td>
+        <td><a href=./radiation.html>HTML</a></td>
+        <td>Y</td>
+        <td>None</td>
+        <td>Provides access to radiative schemes</td></tr>
+
+<tr><td>convection</td>
+        <td><a href=./convection.html>HTML</a></td>
+        <td>Y</td>
+        <td>None</td>
+        <td>Provides access to convection schemes</td></tr>
+
+</table>
+</div>
+</blockquote>
+
+<h2><span>Credits</span></h2>
+
+<p><span>CliMT is a project of the <a
+href=http://geosci.uchicago.edu/csc>Climate Systems Center</a> at the
+<a href=http://geosci.uchicago.edu>Department of the Geophysical Sciences</a>, University of Chicago. It is
+funded by NSF Information Technology Research grant
+ATM-0121028. Key developers are <a
+href=http://geosci.uchicago.edu/~rca>Rodrigo Caballero</a> and <a href=http://www.penzilla.net>Mike
+Steder</a>.</span></p>
+
+
+
+<!-- === End Main Text Block === -->
+</div>
+
+
+<!-- === Begin Footer Text Block === -->
+<div class="footertext">
+
+<address>
+<a href=http://validator.w3.org/check/referer><img
+          src="http://www.w3.org/Icons/valid-html401"
+          alt="Valid HTML 4.01!" height="31" width="88"></a>
+<a href="http://jigsaw.w3.org/css-validator/validator?uri=[@@@url for document for the css verification button]">
+  <img style="border:0;width:88px;height:31px"
+       src="http://jigsaw.w3.org/css-validator/images/vcss"
+       alt="Valid CSS!"></a>
+Updated:  March 28, 2004
+by Rodrigo Caballero
+&lt;rca@geosci.uchicago.edu&gt;.
+
+<!--<a href="index.html#gfdl">License</a>.--!>
+
+</address>
+
+<!-- === End Footer Text Block === -->
+</div>
+
+
+
+<!-- === End Not-Main Title Container === -->
+</div>
+<!-- ============= End Overall Container ============= -->
+</div>
+</body>
+</html>

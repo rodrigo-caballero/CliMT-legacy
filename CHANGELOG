@@ -1,0 +1,158 @@
+15-10-2013 Added 2 column dynamics module
+
+10-10-2013 Changed the federation.compute method, which was causing instabilities in
+	   some cases.
+
+	   Added a clean.py utility for cleaning up compiled files
+
+18-09-2013 Changed calculation of interface level pressures in CAM3 and CCM3 so as to
+	   enforce that top-of-model is at p=0, which ensures that LwToa is truly the OLR.
+
+14-09-2013 Removed all makefiles (no longer needed), added clean.py to clean up in src 
+	   directory
+
+08-02-2013 +++ Version 0.6.14
+	   Added Cam3Feedbacks.py to CliMT/lib/examples
+
+11-10-2012 Added 1-level sea ice module written by Ray Pierrehumbert
+
+3-2-2012 +++ Version 0.6.9
+	 Unified CliMT and CliMT_lite by adding --lite option to setup.py,
+	 which installs only ccm3 radiation interface (including ozone and insolation)
+	 and thermodyn module.
+
+20-12-2010 +++ Version 0.6.8
+
+17-12-2010 Corrected bug in reading of restart file in io.py
+           Added tutorial comments to radiative_convective_equilibrium.py example.
+
+21-11-2010 Added icealbedo.py module by Jason Goodman
+
+25-06-2010 Updated io.py to be compatible with the python netCDF4 module
+
+14-02-2010 Updated federation.py and io.py to use the built-in set type
+           instead of the deprecated sets.Set class
+
+3-05-2009
+	   Fixed bugs in CAM3 radiation:
+            - do not allow fice to be 0 
+            - output TOA SW is fsnt, not fsntoa
+	    CliMT now replicates model output fsnt and flnt to within
+	   ~0.03 W/m2 (remanining error to do with spatially-varying
+	   stratospheric distribution of trace gases)
+
+29-04-2009
+	   - Added new input to CAM3 radiation: surface LW upwelling
+	      radiation (FLUS)
+	   - Corrected bugs in CAM3 radiation: 
+	       - fice now correctly computed when ciwp input externally
+	       - pstd set to 1000 mb instead of ps
+
+16-04-2009 
+	   - CCM3 and Chou schemes now accept explicit external
+	      definition of cloud ice water path ciwp 
+	   - CAM3, CCM3 and Chou schemes now expect drop radii r_liq
+	      and r_ice as 3D fields, not 0D parameters as before
+	   
+15-04-2009 
+	   - Added SwToa, LwToa, SwSrf and LwSrf outputs to CCM3 and Chou schemes
+	   - swflx and lwflx outputs are now at level MIDPOINTS instead of
+	      interfaces as before 
+	   - Added check in cam3/src/radae.F90:initialize_radbuffer to see if buffers already
+	      allocated (otherwise CliMT will crash if CAM3 radiation instantiated
+	      more than once)
+	   - Cloud ice fraction ciwp can now be passed explicitly to CAM3 
+              (before, it was calculated internally as in CCM3; this
+	      is still done if ciwp not passed explicitly)
+
+09-04-2009 ++ Version 0.6.5
+            - Added TOA and surface flux output  from CAM3 radiation
+ 	    - Corrected bug in CAM3 LW cloud forcing (sign was wrong!)
+	    - Added check for negative or zero humidity and ozone
+               input to CAM3, which give NaNs
+	    - Disabled inf/nan flags in CAM3 code for portability
+	    - Updated examples; all now use CAM3
+
+07-04-2009 
+	   Removed useless 'from numpy import *' in __init__.py which was
+           causing namespace collision problems (__version__ is now correctly reported)
+
+12-02-2009 ++ Version 0.6.4
+	   Added CAM3 radiation scheme
+
+05-02-2009 
+	   setup.py reads version number from file 'Version'
+
+13-03-2008 
+	   io.py now compatible with both Scientific.IO and PyNGL.Nio
+	   As of version 1.2, PyNGL doesn't work very well for NetCDF output
+
+11-03-2008 
+	   Small numpy compatibility fix in grid.py -- check that axis
+	   is array, not scalar   
+
+2-02-2008 ++ Version 0.6.0
+       	  - Updated build system to use python distutils
+          - CliMT now works *only* with numpy
+
+10-01-2007 
+	   Added functions thermodyn.CAPE and thermodyn.CINE 
+	   to compute convective available potential energy and 
+	   convective inhibition energy
+
+27-11-2006 
+	   Added function get_nlev(), get_nlat(), get_nlon() to
+	   __init__py to retrieve compiled number of levels,
+	   latitudes, longitudes
+
+25-10-2006   
+	     Added keywords to thermodyn functions qs, ws etc.
+	     Corrected bug in qs: specific humidity is 
+	     q = eps*e/(p+(1-eps)*e)  
+	     and not
+	     q = eps*e/p 
+	     as before
+
+24-10-2006   
+	     Added function to make skew-T lnp plot.
+ 
+19-10-2006  
+	    Changed function to compute thetae to use definition in Bohren+Albrecht
+
+18-10-2006  
+	    Added function  pseudoadiab() to thermodyn module that
+	    computes both pseudoadiabats by integrating the
+	    pseudoadiabatic lapse rate equation
+
+18-10-2006  
+	    Added function z() to thermodyn module that computes height
+	    given temp and press profiles, assuming hydrostatic 
+            equilibrium and 
+
+23-09-2006  
+	    Bug fix: calday now written to ouput file each time
+	    write() is called
+
+15-09-2006  
+	    Added CliMT version, run date and restart file name to 
+            global attributes of output netcdf file
+
+12-09-2206  
+	    Bug fix: orbital parameters in insolation module are now
+            correctly reset to values specified in kwargs when insolation module
+            is federated 
+
+12-09-2006  
+	    Added check for Darwin version in CompilerFlags, needed to
+            get the right link flags in xlf configure file 
+
+08-08-2006  
+	    Added flags for compilation using Intel ifort on Mac OS X
+
+28-06-2006  
+	    Added simplified Betts-Miller convection scheme 
+	    (Dargan Frierson/Jonathan Mitchell)
+
+28-06-2006  
+	    Improvements to Monitor -- now printing max and min
+	    values of 2D arrays, and using interpolation='nearest' 

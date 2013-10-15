@@ -1,0 +1,96 @@
+ CRM 2.0 CCM 3.6 Column Radiation Model (CRM) Input File -*-text-*-
+ Mid-latitude summer profile, clear sky
+ CRM homepage URL is http://www.cgd.ucar.edu/cms/crm
+   83.333333    Julian day of year at Greenwich (1.5 = Noon, Jan 1 GMT)
+   0.0          Latitude (degrees North, from -90.0 to +90.0)
+  Level  p [mb]    T [K]    H2O mmr    O3 mmr     Cld frc.  Cld LWP
+  0   28.3  193.1  0.0001  9.657e-06       0.00       0.00    -235.02   0.22     372.82   1.11
+  1   85.0  193.1  0.0001  8.375e-07       0.00       0.00    -236.11   0.04     367.20   0.16
+  2  141.7  195.8  0.007  2.607e-07       0.00       0.00    -236.37  -0.58     366.10   0.11
+  3  198.3  215.4  0.056  1.754e-07       0.00       0.00    -232.46  -1.39     365.33   0.25
+  4  255.0  230.6  0.250  1.244e-07       0.00       0.00    -223.14  -2.09     363.67   0.58
+  5  311.7  242.6  0.678  9.765e-08       0.00       0.00    -209.08  -2.31     359.77   0.78
+  6  368.3  252.0  1.344  8.284e-08       0.00       0.00    -193.55  -2.34     354.53   0.82
+  7  425.0  259.4  2.182  7.489e-08       0.00       0.00    -177.80  -2.27     349.01   0.81
+  8  481.7  265.4  3.118  6.955e-08       0.00       0.00    -162.55  -2.12     343.54   0.79
+  9  538.3  270.5  4.098  6.472e-08       0.00       0.00    -148.31  -1.93     338.20   0.75
+ 10  595.0  274.8  5.088  6.036e-08       0.00       0.00    -135.32  -1.73     333.15   0.70
+ 11  651.7  278.5  6.070  5.738e-08       0.00       0.00    -123.66  -1.55     328.42   0.68
+ 12  708.3  281.9  7.032  5.606e-08       0.00       0.00    -113.20  -1.41     323.87   0.64
+ 13  765.0  284.9  7.969  5.421e-08       0.00       0.00    -103.72  -1.31     319.53   0.61
+ 14  821.7  287.6  8.879  5.188e-08       0.00       0.00     -94.90  -1.24     315.45   0.57
+ 15  878.3  290.1  9.759  4.958e-08       0.00       0.00     -86.57  -1.16     311.61   0.54
+ 16  935.0  292.3 10.611  4.707e-08       0.00       0.00     -78.79  -1.17     307.94   0.53
+ 17  991.7  294.5 11.435  4.433e-08       0.00       0.00     -70.95  -1.10     304.39   0.52
+ 1020.000     Surface pressure [mb]
+  300.      Surface air temperature [K]
+  300.      Ground (skin) temperature [K]
+    1.0       Surface type flag (0=ocn, 1=lnd, 2=sea ice)
+    0.010     Surface aerodynamic roughness [m] (obsolete)
+    0.000     Snow cover liquid water equivalent [m]
+    0.070     Albedo (Vis, direct)
+    0.070     Albedo (Vis, diffuse)
+    0.070     Albedo (NIR, direct)
+    0.070     Albedo (NIR, diffuse)
+    0.0       Fraction strong zenith angle dep. sfc. (obsolete)
+    330.   CO2 volume mixing ratio
+    0.1e-21  N2O volume mixing ratio
+    0.1e-21  CH4 volume mixing ratio
+    0.1e-21  CFC11 volume mixing ratio
+    0.1e-21  CFC12 volume mixing ratio
+    0.0      Aerosol visible extinction optical depth*
+ 400.0       Solar constant [W m-2]
+ 1950         Year AD (integer)
+    0.0       Longitude (degrees East, from 0.0 to 360.0)
+
+Notes on the input:
+
+The Julian day of year, also known as the calendar day (calday in the
+code), is always specified in Greenwich Mean Time (GMT).  For example,
+1.5 is Greenwich noon on January 1st, 2.0 is Greenwich midnight of
+January 2nd. 31.5 and 32.5 are GMT noontimes for January 31st and
+February 1st, respectively. Longitude is specified in degrees east of
+Greenwich.  The CRM uses the specified year, latitude, longitude and
+GMT to compute the correct Sun-Earth distance and solar zenith angle. 
+The CRM does not apply the equation of time, see the FAQ for details.
+
+Latitude runs from -90 to +90 degrees, Longitude from 0.0 to 360.0
+
+The total number of levels must be the same as the PLEV and PLEVR
+tokens in the file src/crm/params.h.
+ 
+Pressure data is on mid-levels, like temperature, moisture, and
+winds. The radiation code requires the interface pressures between
+layers. These are computed as simple averages of adjacent level
+pressures.
+
+Dimensional units of input data:
+Temperature is input in K
+Pressure is input in mb
+H2O and O3 are input as mass mixing ratios, 
+Cloud cover is input as a fraction from 0.0 to 1.0.
+Cloud cover of 1.0 is reset internally to 0.999, since cloud fractions
+of exactly 1.0 cause the longwave code to fail.
+Cloud liquid water path is input in g m-2 in each layer 
+Trace gases CO2, NO2, CH4, CFC11, and CFC12 are input as volume mixing
+ratios.
+
+Surface temperatures input are the air temperature in contact
+with the surface, and the actual skin temperature of the surface. 
+
+Surface type determines if the surface albedos specified are modified
+before use. Over ocean and sea-ice, the specified spectral/angular
+albedos are set internally. For land points, the spectral/angular
+albedos read in are used without modification. 
+
+Snow cover is used over sea-ice to help set surface albedos
+
+Fractional strong zenith angle dependent surface and surface
+aerodynamic roughness are obsolete. They are only input to maintain
+backwards compatability with previous CRM versions.
+
+*Important information regarding Aerosol Optical Depth (AOD) is
+contained in the file AEROSOL.
+
+Year AD must be input as an integer
+

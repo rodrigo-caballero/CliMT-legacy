@@ -1,0 +1,123 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/MANIFEST,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*-
+
+This file enumerates the files in the CRM distribution and, where
+appropriate, describes the purpose of the file.
+
+Top-level directories:
+crm/bin		Binary directory for CRM binary executable
+crm/bld		Build directory for Makefile and ancillary scripts
+crm/data	Sample I/O datasets
+crm/doc		Documentation
+crm/obj		Object files
+crm/src		Source files
+
+Binary directory:
+crm/bin/README		Description of binary directory
+
+Build directory:
+crm/bld/Makefile	Makefile used by GNU make to create CRM executable
+crm/bld/crm_dst.pl	Perl script used for creating CRM distributions
+crm/bld/pvmgetarch	Script used by Makefile to determine your native machine type
+
+Data Directory:
+crm/data/mls_clr.in	Sample input thermodynamic profile for Mid-Latitude Summer, clear sky
+crm/data/mls_clr.out	Sample output from running CRM with mls_clr.in as input
+crm/data/mls_cld.in	Sample input thermodynamic profile for Mid-Latitude Summer, with clouds
+crm/data/mls_cld.out	Sample output from running CRM with mls_cld.in as input
+
+Documentation directory:
+crm/doc/AEROSOL		Important information about aerosol optical depth
+crm/doc/ANNOUNCE	Announcement to accompany release notifications
+crm/doc/FAQ		Frequently Asked Questions about the CRM
+crm/doc/INSTALL		Installation instructions
+crm/doc/LICENSE		License and legal information
+crm/doc/MANIFEST	This file. Describes all files in distribution
+crm/doc/README		Description of the CRM
+crm/doc/TAG		CVS tag for this version 
+crm/doc/TODO		CVS tag for this version 
+crm/doc/VERSION		CRM version 
+crm/doc/ChangeLog	Chronological log of CRM changes
+
+Object directory:
+crm/obj/README		Description of object directory
+
+Source directories:
+crm/src/crm		CRM-specific source files
+crm/src/ccmlsm_share	Subset of corresponding CCM directory
+crm/src/csm_share	Subset of corresponding CCM directory
+crm/src/dom		Subset of corresponding CCM directory
+crm/src/eul		Subset of corresponding CCM directory
+crm/src/physics		Subset of corresponding CCM directory
+crm/srchutil		Subset of corresponding CCM directory
+
+CRM-specific source directory:
+crm/src/crm/crm.F	CRM top level routine (has more detailed documentation too)
+crm/src/crm/crmsrb.h	Surface Radiation Budget common block 
+crm/src/crm/misc.h	#defines's for machine type and netCDF output precision
+crm/src/crm/netcdf.F	netCDF routines
+crm/src/crm/params.h	#defines's for vertical resolution
+
+CCM source directories:
+crm/src/ccmlsm_share/endrun.F
+crm/src/ccmlsm_share/freemem.F
+crm/src/ccmlsm_share/getmem.F
+crm/src/ccmlsm_share/implicit.h
+crm/src/control/blkdat.F
+crm/src/control/comctl.h
+crm/src/control/comhst.h
+crm/src/control/comlun.h
+crm/src/control/comozp.h
+crm/src/control/comtim.h
+crm/src/control/perturb.h
+crm/src/control/ptrrgrid.h
+crm/src/control/resetr.F
+crm/src/csm_share/orb.F
+crm/src/csm_share/orb.h
+crm/src/csm_share/orb_cosz.h
+crm/src/dom/albedo.h
+crm/src/dom/albocean.F
+crm/src/dynamics/eul/pagrid.h
+crm/src/dynamics/eul/pmgrid.h
+crm/src/dynamics/eul/prgrid.h
+crm/src/physics/aermix.F
+crm/src/physics/cldefr.F
+crm/src/physics/cldems.F
+crm/src/physics/comindx.h
+crm/src/physics/compbl.h
+crm/src/physics/comsol.h
+crm/src/physics/comvmr.h
+crm/src/physics/coreiorad.h
+crm/src/physics/crdcae.h
+crm/src/physics/crdcon.h
+crm/src/physics/fmrgrid.F
+crm/src/physics/radabs.F
+crm/src/physics/radclr.F
+crm/src/physics/radclw.F
+crm/src/physics/radcsw.F
+crm/src/physics/radctl.F
+crm/src/physics/radded.F
+crm/src/physics/radems.F
+crm/src/physics/radini.F
+crm/src/physics/radinp.F
+crm/src/physics/radoz2.F
+crm/src/physics/radtpl.F
+crm/src/physics/torgrid.F
+crm/src/physics/trcab.F
+crm/src/physics/trcabn.F
+crm/src/physics/trcems.F
+crm/src/physics/trcmix.F
+crm/src/physics/trcplk.F
+crm/src/physics/trcpth.F
+crm/src/physics/zenith.F
+crm/src/srchutil/intmax.F
+crm/src/srchutil/isrchfgt.F
+crm/src/srchutil/isrchfle.F
+crm/src/srchutil/wheneq.F
+crm/src/srchutil/whenfgt.F
+crm/src/srchutil/whenflt.F
+crm/src/srchutil/whenne.F
+
+
+
+
+

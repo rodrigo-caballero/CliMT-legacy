@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>CliMT</title>
+<META name="description" content="Libraries">
+<META name="keywords" content="Python python library package">
+<link type="text/css" rel="stylesheet" href="style/librootcsc.css">
+</head>
+
+
+<body>
+<pre>
+#!/usr/bin/env python
+
+#
+# Set up realistic tropical temperature and moisture profiles
+# and compute radiative fluxes
+#
+
+import climt
+import Numeric
+
+#--- instantiate radiation module
+r = climt.radiation()
+
+#--- initialise T,q to moist adiabat with 70% RH
+ps   = 1020.                                # Surface pressure
+T0   = 273.15 + 30.                         # Surface temperature
+Tst  = 273.15 - 80.                         # Strospheric temp
+p    = ( Numeric.arrayrange(r.levs, typecode='d')+ 0.5 ) * ps/r.levs 
+T,q = climt.thermodyn.moistadiabat(p, T0, Tst, 0.7)
+
+#--- compute radiative fluxes and heating rates
+r(p, ps, T, T0, q)
+
+#--- print out
+print "lev    p     T       q        lwflx   lwhr     swflx    swhr"
+for i in range(r.levs):
+    print "%3i %6.1f %6.1f %6.2f %10.2f %6.2f %10.2f %6.2f" % \
+          (i, p[i], T[i]-273.15, q[i], r.lwflx[i], r.lwhr[i]*86400., r.swflx[i], r.swhr[i]*86400.) 
+</pre>
+</body>

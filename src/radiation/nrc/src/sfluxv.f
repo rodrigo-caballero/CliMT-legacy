@@ -1,0 +1,156 @@
+      SUBROUTINE SFLUXV(DTAUV,TAUV,TAUCUMV,RSFV,DWNV,WBARV,COSBV,
+     *                  UBAR0,SOL,GWEIGHT,NFLUXTOPV,FMNETV,
+     *                  FLUXUPV,FLUXDNV,DIFFVT,FZEROV,NGWV)
+
+C  GCM2.0  Feb 2003
+
+      implicit none
+
+      include "grid.h"
+      include "radinc.h"
+
+      real*8 FMNETV(L_NLAYRAD)
+      real*8 TAUCUMV(L_LEVELS,L_NSPECTV,L_NGAUSS)
+      real*8 TAUV(L_NLEVRAD,L_NSPECTV,L_NGAUSS)
+      real*8 DTAUV(L_NLAYRAD,L_NSPECTV,L_NGAUSS), DWNV(L_NSPECTV)
+      real*8 FMUPV(L_NLAYRAD), FMDV(L_NLAYRAD)
+      real*8 COSBV(L_NLAYRAD,L_NSPECTV,L_NGAUSS)
+      real*8 WBARV(L_NLAYRAD,L_NSPECTV,L_NGAUSS)
+      real*8 SOL(L_NSPECTV)
+      real*8 FLUXUPV(L_NLAYRAD), FLUXDNV(L_NLAYRAD)
+      real*8 NFLUXTOPV, FLUXUP, FLUXDN
+      real*8 GWEIGHT(L_NGAUSS)
+
+      integer L, NG, NW, NG1
+      real*8  rsfv, ubar0, f0pi, btop, bsurf, taumax, eterm
+      real*8 FZEROV(L_NSPECTV)
+
+      real*8 DIFFV, DIFFVT
+
+      integer ngwv(L_NSPECTV)
+
+      real*8 fzero, tlimit
+      common /tlim1 / tlimit
+
+C======================================================================C
+
+      TAUMAX = L_TAUMAX
+
+C     ZERO THE NET FLUXES
+
+      NFLUXTOPV = 0.0
+
+      DO L=1,L_NLAYRAD
+        FMNETV(L)  = 0.0
+        FLUXUPV(L) = 0.0
+        FLUXDNV(L) = 0.0
+      END DO
+
+      DIFFVT = 0.0
+
+C     WE NOW ENTER A MAJOR LOOP OVER SPECTRAL INTERVALS IN THE VISIBLE
+C     TO CALCULATE THE NET FLUX IN EACH SPECTRAL INTERVAL
+
+      DO 500 NW=1,L_NSPECTV
+      
+        F0PI = SOL(NW)
+
+        FZERO = FZEROV(NW)
+        IF(FZERO.ge.0.99) goto 40
+
+C  Skip over the gauss points with minimal (opacity < TLIMIT) total
+C  gas opacity
+
+        DO NG=1,NGWV(NW)-1
+          fzero = fzero + (1.0-FZEROV(NW))*GWEIGHT(NG)
+        END DO
+
+C  This loop includes only those Gauss points with sufficient gas opacity
+
+        DO NG=NGWV(NW),L_NGAUSS-1
+
+C         SET UP THE UPPER AND LOWER BOUNDARY CONDITIONS ON THE VISIBLE
+
+          BTOP = 0.0
+
+C         LOOP OVER THE NTERMS BEGINNING HERE
+ 
+          ETERM = MIN(TAUV(L_NLEVRAD,NW,NG),TAUMAX)
+          BSURF = RSFV*UBAR0*SOL(NW)*EXP(-ETERM/UBAR0)
+
+C         WE CAN NOW SOLVE FOR THE COEFFICIENTS OF THE TWO STREAM
+C         CALL A SUBROUTINE THAT SOLVES  FOR THE FLUX TERMS
+C         WITHIN EACH INTERVAL AT THE MIDPOINT WAVENUMBER
+C 
+C         FUW AND FDW ARE WORKING FLUX ARRAYS THAT WILL BE USED TO 
+C         RETURN FLUXES FOR A GIVEN NT
+
+          CALL GFLUXV(DTAUV(1,NW,NG),TAUV(1,NW,NG),TAUCUMV(1,NW,NG),
+     *                WBARV(1,NW,NG),COSBV(1,NW,NG),UBAR0,F0PI,RSFV,
+     *                BTOP,BSURF,FMUPV,FMDV,DIFFV,FLUXUP,FLUXDN)
+ 
+C         NOW CALCULATE THE CUMULATIVE VISIBLE NET FLUX 
+
+          NFLUXTOPV = NFLUXTOPV+(FLUXUP-FLUXDN)*GWEIGHT(NG)*
+     *                          (1.0-FZEROV(NW))
+          DO L=1,L_NLAYRAD
+            FMNETV(L)=FMNETV(L)+( FMUPV(L)-FMDV(L) )*
+     *                           GWEIGHT(NG)*(1.0-FZEROV(NW))
+            FLUXUPV(L) = FLUXUPV(L) + FMUPV(L)*GWEIGHT(NG)*
+     *                   (1.0-FZEROV(NW))
+            FLUXDNV(L) = FLUXDNV(L) + FMDV(L)*GWEIGHT(NG)*
+     *                   (1.0-FZEROV(NW))
+          END DO
+
+C         THE DIFFUSE COMPONENT OF THE DOWNWARD SOLAR FLUX
+
+          DIFFVT = DIFFVT + DIFFV*GWEIGHT(NG)*(1.0-FZEROV(NW))
+
+        END DO   ! the Gauss loop 
+
+   40   continue 
+
+C       Special 17th Gauss point
+
+        NG = L_NGAUSS
+
+C       SET UP THE UPPER AND LOWER BOUNDARY CONDITIONS ON THE VISIBLE
+ 
+        BTOP = 0.0
+
+C       LOOP OVER THE NTERMS BEGINNING HERE
+ 
+        ETERM = MIN(TAUV(L_NLEVRAD,NW,NG),TAUMAX)
+        BSURF = RSFV*UBAR0*SOL(NW)*EXP(-ETERM/UBAR0)
+
+C       WE CAN NOW SOLVE FOR THE COEFFICIENTS OF THE TWO STREAM
+C       CALL A SUBROUTINE THAT SOLVES  FOR THE FLUX TERMS
+C       WITHIN EACH INTERVAL AT THE MIDPOINT WAVENUMBER
+C 
+C       FUW AND FDW ARE WORKING FLUX ARRAYS THAT WILL BE USED TO 
+C       RETURN FLUXES FOR A GIVEN NT
+
+        CALL GFLUXV(DTAUV(1,NW,NG),TAUV(1,NW,NG),TAUCUMV(1,NW,NG),
+     *              WBARV(1,NW,NG),COSBV(1,NW,NG),UBAR0,F0PI,RSFV,
+     *              BTOP,BSURF,FMUPV,FMDV,DIFFV,FLUXUP,FLUXDN)
+ 
+C       NOW CALCULATE THE CUMULATIVE VISIBLE NET FLUX 
+
+        NFLUXTOPV = NFLUXTOPV+(FLUXUP-FLUXDN)*FZERO
+        DO L=1,L_NLAYRAD
+          FMNETV(L)=FMNETV(L)+( FMUPV(L)-FMDV(L) )*FZERO
+          FLUXUPV(L) = FLUXUPV(L) + FMUPV(L)*FZERO
+          FLUXDNV(L) = FLUXDNV(L) + FMDV(L)*FZERO
+        END DO
+
+C       THE DIFFUSE COMPONENT OF THE DOWNWARD SOLAR FLUX
+
+        DIFFVT = DIFFVT + DIFFV*FZERO
+
+  500 CONTINUE
+
+C     *** END OF MAJOR SPECTRAL INTERVAL LOOP IN THE VISIBLE*****
+ 
+      RETURN 
+      END
+

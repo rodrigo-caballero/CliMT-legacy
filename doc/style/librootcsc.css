@@ -1,0 +1,153 @@
+/* a basic css file for CSC html package documentation */
+
+
+/* =================================================================== */
+                        /* basic constructs */
+
+/* a link constructs */
+
+a:link { color: #2c529b;}
+
+a:visited { color: #2c529b;}
+
+a:active { color: #2c529b;}
+
+
+/* a link and img constructs used so the HTML W3C verification buttons
+in the address block look ok */
+
+a:link img, a:visited img { border-style: none }
+a img { color: white }   /* to hide border in NS 4.x */
+
+
+/* for address block */
+
+address { margin-top: 3ex; margin-bottom: 3ex; }
+address img { float: right; }
+
+
+body
+{
+    BACKGROUND-COLOR: white;
+    COLOR: black;
+    FONT-FAMILY: verdana, sans-serif;
+    FONT-SIZE: 80%;
+}  
+
+
+/* make pre and code tagged font courier, a little bigger */
+
+pre
+{
+    FONT-SIZE: 1.2em;
+    font-family: courier, monospace;
+}
+
+code
+{
+    FONT-SIZE: 1.2em;
+    font-family: courier, monospace;
+}
+
+
+/* heading settings */
+
+h1, h2, h3, h4, h5, h6
+{
+    COLOR: #2C529B;
+    FONT-FAMILY: verdana, sans-serif;
+}
+
+h1 code { FONT-SIZE: 1.2em; }
+h2 code { FONT-SIZE: 1.3em; }
+h3 code { FONT-SIZE: 1.3em; }
+
+
+/* =================================================================== */
+                        /* overall container */
+
+#container
+{
+    margin-top: 0ex;
+    margin-bottom: 5%;
+    margin-left: 8%;
+    margin-right: 8%;
+}
+
+
+/* =================================================================== */
+                           /* title block */
+
+div.maintitle
+{
+    clear: none;
+    border-bottom: black 0.5ex solid;
+    margin: 0%;
+    padding: 0%;
+    text-align: center;
+    width: 100%;
+}
+
+
+/* =================================================================== */
+                       /* not main title container */
+
+div.notmaintitle
+{
+    clear: none;
+    margin: 0%;
+    padding: 0%;
+    width: 100%;
+}
+
+
+/* =================================================================== */
+             /* main text block */
+
+div.maintext
+{
+}
+
+
+/* =================================================================== */
+             /* footer text block */
+
+div.footertext
+{
+    border-top: black 0.3ex solid;
+}
+
+
+/* =================================================================== */
+             /* additional constructs */
+
+/* table of modules */
+
+div.modlist th
+{
+    background-color: #99FF00;
+    font-weight: bold;
+    vertical-align: top;
+}
+
+div.modlist td
+{
+    background-color: #99CCFF;
+    vertical-align: top;
+}
+
+
+/* replacement for center tag for text and tables.  see 
+http://theodorakis.net/tablecentertest.html for details */
+
+div.center
+{
+    text-align: center;
+}
+
+div.center table
+{
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}

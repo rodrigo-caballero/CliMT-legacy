@@ -1,0 +1,126 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/INSTALL,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*- 
+
+CCM3 Column Radiation Model (CRM) Installation Guide:
+
+The CRM only supports machine architectures supported by the CCM.
+The currently supported architectures are the Sun, SGI and Cray
+flavors of UNIX. In the following instructions, the string `***'
+prefixes the sample commands. Before attempting to build the CRM, be
+sure you have netCDF version 3.x installed. The netCDF homepage is
+http://www.unidata.ucar.edu/packages/netcdf.  
+
+Copy the CRM compressed tarfile to the parent of the installation
+directory. Assume the file is called crm.tar.gz. 
+Substitute your choice for the installation directory for `/home/user'
+in the following. 
+*** mv crm.tar.gz /home/user
+
+Move to the same directory as the distribution file
+*** cd /home/user
+
+Uncompress and untar the source code. By default, the CRM distribution
+unpacks into a subdirectory with a long name, e.g., crm-2.0-ccm-3.6
+(the version number for public releases) or crm-19980815 (the date for
+a daily snapshot). This directory will be created if it does not
+exist.    
+*** gtar -xvzf crm.tar.gz 
+
+If you do not have GNU tar, use the following commands instead
+*** gunzip crm.tar.gz
+*** tar -xvf crm.tar
+
+This (rather long) directory name is not useful to most people, so
+you might want to move the entire directory to something easier to
+type, e.g., crm.
+*** mv crm-2.0-ccm-3.6 crm
+
+Move to the build directory 
+*** cd crm/bld
+
+Typing `make' at this point just might work. If it does work, the
+CRM executable file 'crm' will be placed in the crm/bin
+directory. If this does not work, you have two options. The preferred
+option is to edit the Makefile so that it supports your local
+environment, and then type `make' again. Use the `pvmgetarch' command
+to determine which block of symbols the Makefile is using (i.e.,
+SUNMP, CRAY, SGI64), then edit the default symbols for that
+architecture to suit your system. Usually, the only part of the
+Makefile that needs to be changed is the location of the netCDF
+installation. These is done by editing the variables NETCDF_INC and
+NETCDF_LIB at the start of the block of code for your machine's
+architecture (as defined by `pvmgetarch').
+
+If you get this procedure working on an architecture not currently in
+the Makefile, please send us the necessary modifications to include
+your architecture in future version of the CRM. The `Filepath' file
+specifies the location and order of the directories containing the CRM
+source files. If your machine type is CRAY, you may safely remove the
+../src/srchutil directory, as it only duplicates routines from the
+default Cray libraries anyway. NB: `Makefile' only works with the GNU
+make program.  
+*** make 
+
+The second way to compile the CRM is to execute a variant of the
+following one line shell command. First, determine the preprocessor
+token corresponding to your machine type. One of the following three
+valid tokens must be defined at CRM compile time: SUN, CRAY, or
+SGI. The token is normally defined by editing the file
+crm/src/crm/misc.h. Defining the token on the compile line
+(e.g., with -DSUN, as shown in the next step) is also permissable. Be
+sure only one of SUN, CRAY, and SGI is defined. The following command
+works with Sun f77:
+
+*** cd crm/src
+*** f77 -DSUN -DSINGLE_SOURCE_FILE -Icrm -Iccmlsm_share -Icontrol -Icsm_share -Idom -Ieul -Iphysics -Isrchutil -I/contrib/include -O -e -r8 -i4 -o ../bin/crm crm/crm.F -L/contrib/lib -lnetcdf 
+
+The purpose of each switch is:
+   f77 is the Fortran compiler. Other names might be f90, cf90.
+   -DSUN tells C preprocessor to code branches appropriate for Sun computers
+   -DSINGLE_SOURCE_FILE causes the entire CRM to be compiled within crm.F
+   -Icrm -Iccmlsm_share ... tells C preprocessor which order and where to search for CRM input files that are #include'd
+   -I/contrib/include tells C preprocessor where to find netcdf.inc file
+   -e allows 132 column Fortran source files
+   -r8 -i4 tells Fortran compiler to promote floats to double precision (real*8)
+   -o ../bin/crm tells compiler what to call the resulting executable
+   crm/crm.F is the main CRM source file (it #include's all other files)
+   -L/contrib/lib tells linker where to find libnetcdf.a library
+   -lnetcdf tells linker to link to libnetcdf.a library
+
+As of CRM 2.1 (1999/09/07), CRM uses some Fortran 90 code within
+the CRM_SRB blocks. Users of Sun f77 should make sure this code is 
+not invoked by #undef'ing the CRM_SRB token in src/crm/misc.h.
+Since the Sun f90 compiler does not allow promotion of variables from
+real to double precision, the netCDF output file crm.nc will 
+contain garbage. There is no satisfactory way to compile the full CRM
+2.1 with Sun compilers.
+
+If you are working with an unsupported operating system (e.g., AIX),
+you will most likely need to find an analogous switch for each of the
+above options. Hint: The CRM is most likely to compile on unsupported
+operating systems when the machine type is specified as SGI, i.e., use
+-DSGI combined with the particular compiler switches for your OS.
+
+At this point you should have a working CRM executable named `crm' in
+the crm/bin directory. Run the CRM on the supplied sample input
+file.
+*** cd ../data
+*** ../bin/crm < mls_clr.in
+
+Validate your CRM against the supplied radiation profile. The supplied
+profile was created on a Sun Solaris system (differences with your
+answers should be within machine precision).    
+*** ../bin/crm < mls_clr.in > tst_clr.out
+*** diff -w tst_clr.out mls_clr.out | more
+*** ../bin/crm < mls_cld.in > tst_cld.out
+*** diff -w tst_cld.out mls_cld.out | more
+
+There are some "targets" in the Makefile which help with
+housekeeping. If you are done compiling, you may want to remove all 
+the object files (`make clean') or you may want to remove all files
+created during the installation procedure, including the executable
+(`make distclean').
+*** make clean
+*** make distclean
+
+You are done.
+
