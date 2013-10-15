@@ -1,0 +1,281 @@
+<!-- $Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/index.shtml,v 1.1 2004/09/07 15:20:36 rca Exp $
+
+Purpose: CRM homepage
+
+Usage:
+http://www.cgd.ucar.edu/cms/crm/index.shtml
+file:/home/zender/crm/crm/doc/index.shtml
+/bin/cp -f ~/crm/crm/doc/index.shtml /web/web-data/cms/crm/index.shtml
+rcp -p ~/crm/crm/doc/index.shtml www.cgd.ucar.edu:/web/web-data/cms/crm/index.shtml
+scp -p ~/crm/crm/doc/index.shtml www.cgd.ucar.edu:/web/web-data/cms/crm/index.shtml
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>CRM Homepage</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.04Gold (X11; I; Linux 2.0.0 i686) [Netscape]">
+   <META NAME="Author" CONTENT="Charlie Zender">
+   <META NAME="Keywords" CONTENT="CRM, CCM, CCM3, Column Radiation Model,
+ Radiative Transfer, Cloud forcing">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFF8DC" LINK="#0000FF" VLINK="#008080" ALINK="#FF0000">
+
+<TABLE WIDTH="100%" >
+<TR>
+<TD align="left" valign="top">/ <A HREF="http://www.ucar.edu/metapage.html">NCAR</A>
+/ <A HREF="http://www.cgd.ucar.edu/">CGD</A> / <A HREF="http://www.cgd.ucar.edu/cms">CMS</A>
+/ <A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM3</A> / </TD>
+
+<TD align="right" valign="top">[ <A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM3
+</A>] [ <A HREF="http://www.cgd.ucar.edu/cms/ccm3/processor.html">Processor
+</A>] [ <A HREF="http://www.cgd.ucar.edu/cms/ccm3/lsm">LSM
+</A>] [ <A HREF="http://www.cgd.ucar.edu/csm">CSM </A>] </TD>
+</TR>
+</TABLE>
+
+<P>
+<HR></P>
+
+<H1 ALIGN=CENTER>Welcome to the CRM Homepage</H1>
+
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#Definition">What is the CRM?</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#News">CRM News</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#Download">Download CRM software</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#FAQ">FAQ</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#README">README</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#INSTALL">INSTALL</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#ChangeLog">ChangeLog</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#Version">Version Info</A> </DD>
+<dd><IMG SRC="../bullets/redball.gif" HEIGHT=14 WIDTH=14> <A HREF="#Problems">Known Problems</A> </DD>
+
+<HR>
+
+<DT><A NAME="Definition"></A></DT>
+<H2>What is the CRM?</H2>
+
+<P>The Column Radiation Model, or CRM, is a standalone version of the radiation
+model used in the NCAR Community Climate Model (<A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM</A>).
+The CRM is composed of the actual subroutines from the <A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM</A>
+which have been modified as little as possible in order to run in a standalone
+mode. The CRM is freely available (see below) and is a useful tool for
+scientific studies of the Earth's solar and infrared energy budgets,
+greenhouse gas and aerosol radiative forcing, and column closure experiments. 
+We would like to begin assembling a list of references to papers which
+employed the CRM. 
+Please send us your references!
+<HR></P>
+
+<DT><A NAME="News"></A></DT>
+<H2>CRM News</H2>
+
+<!-- 
+<hr></p>
+<dt><a name="literature"></a></dt>
+<h2>See the <tt><a href="http://www.cgd.ucar.edu/cms/crm/literature">literature</a></tt>
+file.</h2>
+<p><tt>`literature'</tt> is a list of papers in the scientific literature which employ the CRM. 
+\cite{IMC00}
+-->
+
+<P>
+2000/02/25: CRM 2.1.2 is released. 
+This fixes inconsistencies in <tt>mls_clr.out</tt> and <tt>mls_cld.out</tt> 
+accidentally introduced in CRM 2.1.1.
+
+2000/01/04: CRM 2.1.1 is released.
+CRM 2.1.1 is a bugfix release.
+This version fixes a bug introduced in 2.1.0 in which the diagnostic
+arrays containing the vertical profile of the LW fluxes (variables
+flx_LW_dwn, flx_LW_up and flx_LW_net) were not always initialized
+correctly. 
+On some machine/compiler combinations, this bug caused incorrect
+answers in these arrays (especially if the CRM was compiled with PLON > 1). 
+Single level fields (e.g., flnt, flntc, flns, flds, flus) were not
+affected by this bug.  
+Thanks to Mike Iacono for reporting the bug and supplying the patch. 
+Users of Solaris <tt>f90</tt> and Solaris <tt>f77</tt> should read the
+<A HREF="#Problems">Known Problems</A> before deciding whether to upgrade.
+
+<p>
+There is now a WWW front end to the CRM available on the Web.
+Professor Brian Fiedler of the School of Meteorology at the University
+of Oklahoma has created a simple point and click interface to the CRM
+called <a href="http://rossby.metr.ou.edu/~bfiedler/crm.cgi">CRM Online</a>.
+<a href="http://rossby.metr.ou.edu/~bfiedler/crm.cgi">CRM Online</a>
+allows interactive setting of tropospheric and stratospheric
+temperatures, CO2 mixing ratio, and specific humidity.
+
+<P>
+1999/09/07: CRM 2.1 is released.
+Version 2.1 includes archival of many more diagnostic quatities.
+New quantities which are now automatically archived include spectral 
+optical depths, spectral fluxes, vertical profiles of SW and LW
+fluxes, and spectral albedos.
+In addition, the build mechanism has been simplified and generalized.
+There are no new physics and answers do not change so upgrading is not
+necessary. 
+CRM 2.1 requires a decent Fortran 90 compiler to advantage of these
+new features.
+</P>
+<P>
+Who should upgrade? 
+User who would like access to vertical and spectral information 
+previously unavailable in the CRM diagnostics should upgrade.
+Download sample 
+<A HREF="ftp://ftp.cgd.ucar.edu/pub/zender/crm/mls_clr.out">text</A>  
+and <A HREF="ftp://ftp.cgd.ucar.edu/pub/zender/crm/crm.nc">netCDF</A>
+output files from the CRM version 2.1 to see if you would benefit from
+upgrading.
+Users of Solaris <tt>f90</tt> and Solaris <tt>f77</tt> should read the
+<A HREF="#Problems">Known Problems</A> before deciding whether to upgrade.
+</P>
+
+<P>
+1999/07/02: CRM 2.0.2 is released.
+Version 2.0.2 is a maintenance release.
+Changes include improved FAQ, build features, and more diagnostices in
+crm.nc.
+There are no new physics and answers do not change so upgrading is not
+necessary. 
+</P>
+
+<P>
+1998/08/28: CRM 2.0 is released.
+Version 2.0 is based on the newly released CCM 3.6, and implements all applicable CCM namelist parameters.
+Run-time specification of for these parameters (e.g., trace gas concentrations, orbital parameters, aerosol optical depth) is implemented via additional lines in the input files.
+The new input files are backwards compatible with older CRM input files.
+Many more diagnostics (e.g., optical depths, spectral albedos) are implemented.
+All users are urged to upgrade to CRM 2.0
+</P>
+
+<P>
+1998/07/22: CRM 1.16 is released.
+Version 1.16 uses a new directory structure more similar to the CCM directory structure. There are no physics changes in CRM 1.16. The new directory structure is now under CVS control and this should facilitate maintainance of the CRM.
+</P>
+
+<P>
+1998/07/10: CRM 1.15 is released.
+Version 1.15 fixes a bug introduced in the surface radiation budget (SRB) diagnostics of CRM 1.13 (released March, 1998).
+The direct/diffuse partitioning of fluxes in versions 1.13--1.14 of the CRM was incorrect.
+The total and spectral fluxes were not affected by this bug.
+See the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/ChangeLog">ChangeLog</A></TT> for details.
+All users are urged to upgrade to CRM 1.15.
+<HR></P>
+
+<DT><A NAME="Download"></A></DT>
+<H2>Download <A HREF="ftp://ftp.cgd.ucar.edu/pub/zender/crm/crm.tar.gz">CCM3
+CRM software</A> source distribution (115 Kb).</H2>
+
+<P>The distribution includes the complete CRM source code necessary to
+build and run the CRM on your own machine. 
+<HR></P>
+
+<DT><A NAME="FAQ"></A></DT>
+<H2>See the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/FAQ">FAQ</A></TT>
+file.</H2>
+
+<P><TT>`FAQ'</TT> is a list of Frequently Asked Questions about the CRM.
+Please read this file before sending questions to the CRM maintainers.
+
+<HR></P>
+
+<DT><A NAME="README"></A></DT>
+<H2>See the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/README">README</A></TT>
+file.</H2>
+
+<P><TT>`README'</TT> briefly describes the CCM3 CRM, links to further documentation,
+and contact information for further questions. 
+
+<HR></P>
+
+<DT><A NAME="INSTALL"></A></DT>
+<H2>See the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/INSTALL">INSTALL</A></TT>
+file.</H2>
+
+<P><TT>`INSTALL'</TT> contains the CCM3 CRM installation instructions.
+
+<HR></P>
+
+<DT><A NAME="ChangeLog"></A></DT>
+<H2>See the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/ChangeLog">ChangeLog</A></TT>
+file.</H2>
+
+<P><TT>`ChangeLog'</TT> contains the most up-to-date information on the
+latest CRM improvements. There is no need to install minor, unannounced
+upgrades to CRM unless a problem you are having with CRM is listed in <TT>`ChangeLog'</TT>
+as having been fixed in the latest revision. 
+<HR></P>
+
+<DT><A NAME="Version"></A></DT>
+<H2>Current release of CRM is <!--#include virtual="VERSION"--> </H2>
+<P>You can easily tell whether you have the most recent version, and whether you should upgrade by reading the <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/ChangeLog">ChangeLog</A></TT>.
+
+<HR></P>
+
+<DT><A NAME="Problems"></A></DT>
+<H2>Known Problems with CRM:</H2>
+
+<P>20000211: CRM compiled in single precision Solaris <TT>f90</TT> dumps core
+<P>Symptoms: After printing the Heating Rates, CRM dies in the netCDF
+output routine. Some versions of Solaris <TT>f90</TT> will produce
+garbage in the netCDF output file, but some will core dump.
+<P>Cause: Input data to netCDF output routines is single precision not
+double precision. Related to 19990907 problem below.
+<P>Solution: Either convert all CRM code to double precision,
+or convert <tt>netcdf.F</tt> file to expect single precision, 
+or live without netCDF output.
+
+<P>20000113: Solaris <TT>f90</TT> fails to compile code
+<P>Symptoms: <tt>radcsw.F</tt>, <tt>radclw.F</tt>, <tt>radded.F</tt>
+fail to compile because of <tt>CDIR IVDEP</tt> directives
+<P>Cause: Unknown, probably dependent on compiler version
+<P>Solution: Comment out <TT>CDIR IVDEP</TT> directives in these files</P>
+
+<P>19990907: GNU <TT>make</TT> version 3.77 has a bug in wildcard
+function on Solaris causing <TT>make</TT> to fail
+<P>Symptoms: <TT>make</TT> command fails because source file list is
+empty. This can be verified by typing <TT>make debug</TT></P> 
+<P>Cause: Bug in GNU <TT>make</TT>
+<P>Solution: Use GNU <TT>make</TT> version 3.76 or 3.78 on Solaris</P>
+
+<P>19990907: Solaris <TT>f90</TT> does not support <TT>-r8 -i4</TT></P>
+<P>Symptoms: CRM produces single precision results and netCDF output
+file crm.nc is full of garbage (or dumps core as in 20000211 problem)</P>
+<P>Cause: Compiler limitation, use of non-standard Fortran by CRM
+<P>Workaround: Use <TT>f77</TT> on Solaris and <TT>#undef CRM_SRB</TT>
+in <TT>misc.h</TT> to remove Fortran90 code.
+See <TT><A HREF="http://www.cgd.ucar.edu/cms/crm/INSTALL">INSTALL</A></TT> file 
+for example compile command. 
+Note that most diagnostic fields require the Fortran90 code, so a CRM 
+compiled with <TT>f77</TT> will produce much smaller output files.</P>
+<P>Alternate workaround: Do not use CRM version 2.1 or later on
+Solaris</P>
+
+<HR></P>
+
+<P>
+<HR></P>
+
+<TABLE WIDTH="100%" >
+<TR>
+<TD align="left" valign="bottom">/ <A HREF="http://www.ucar.edu/metapage.html">NCAR</A>
+/ <A HREF="http://www.cgd.ucar.edu/">CGD</A> / <A HREF="http://www.cgd.ucar.edu/cms">CMS</A>
+/ <A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM3</A> / </TD>
+
+<TD align="right" valign="top">[ <A HREF="http://www.cgd.ucar.edu/cms/ccm3">CCM3
+</A>] [ <A HREF="http://www.cgd.ucar.edu/cms/ccm3/processor.html">Processor
+</A>] [ <A HREF="http://www.cgd.ucar.edu/cms/ccm3/lsm">LSM
+</A>] [ <A HREF="http://www.cgd.ucar.edu/csm">CSM </A>] </TD>
+</TR>
+</TABLE>
+
+<P>
+<HR></P>
+Address questions and comments about the CRM to Charlie Zender, 
+<ADDRESS>
+<A HREF="mailto:zender@uci.edu">zender@uci.edu</A>
+</ADDRESS>
+
+</BODY>
+</HTML>

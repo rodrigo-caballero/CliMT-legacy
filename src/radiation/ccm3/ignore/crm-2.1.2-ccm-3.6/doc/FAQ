@@ -1,0 +1,179 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/FAQ,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*-
+
+This is the Frequently Asked Questions (FAQ) list for the NCAR CCM
+Column Radiation Model, hereafter CRM. Please read this file before
+sending questions to the CRM maintainers. So that others may benefit
+from your experience with the CRM, send corrections and additions to
+this material to zender@ncar.ucar.edu. 
+
+Questions:
+Section 1: Background
+1.1 Where can I get further information on the CRM?
+
+Section 2: Building the CRM
+2.1 Does the CRM work in single precision?
+
+Section 3: Running the CRM
+3.1 How does one run the CRM?
+3.2 Do older versions of CRM work with the current input files?
+3.3 How do I correctly specify longitude and calendar day?
+3.4 Does the CRM handle the equation of time correctly?
+3.5 Why is the CRM printing an IEEE floating-point warning message?
+
+Section 4: Interpreting the results
+4.1 Why is the cloud forcing non-zero for clear sky simulations?
+4.2 How do I easily compare the results of multiple CRM runs?
+4.3 Is the "tauvis" input parameter the Aerosol Optical Depth? 
+
+Section 5: Modifying the CRM
+5.1 How do I change the number of vertical levels?
+
+Answers:
+1.1 Where can I get further information on the CRM
+
+The CRM homepage at http://www.cgd.ucar.edu/cms/crm is the central
+repository for CRM information.
+
+The physical parameterizations used in the CRM, and the correct usage
+of the control parameters (e.g., tokens in params.h and misc.h) are
+fully described in the documentation accompanying the CCM3
+(http://www.cgd.ucar.edu/cms/ccm3). 
+
+2.1 Does the CRM work in single precision?
+As of CRM 3.6, the CRM is only supported in double precision (meaning
+floats are stored internally as real*8, which is actually single
+precision on Cray machines). This decision was made in order to
+maintain CRM compabability with the CCM build environment,
+specifically to take advantage of the CCM NCPREC token in
+misc.h. Everything in the CRM should still work in single precision,
+except the netCDF output routines netcdf.F. If these are not important
+to you, then go ahead and compile and run the CRM in single
+precision. In order to fix netCDF.F for single precision, you will
+need to change the nf_put_var_double() calls to nf_put_var_real()
+calls. 
+
+3.1 How does one run the CRM?
+Sample input and output data files are included in the data
+directory. A mid-latittude clear sky profile 'mls_clr.in', and
+a cloudy sky profile 'mls_cld.in'. These are text files containing
+pressures, temperatures, cloud information, etc. required for input
+(for more information, see comments at end of these files). These
+sample input files show the format the CRM requires. Running the CRM
+with a different resolution than the default (currently 18) requires 
+additional rows of data at the appropriate places in the input file.
+
+The CRM reads/writes text I/O standard input and output, Fortran unit 
+numbers 5 and 6, respectively. Thus, the correct command to run the
+CRM is of the form
+crm < input_file > output_file
+
+The sample output files are called 'mls_clr.out' and 'mls_cld.out';
+these result from running the CCM3 CRM compiled on a Sun workstation
+with the corresponding input data files, i.e., from the command 
+crm < mls_clr.in >! mls_clr.out 
+
+3.2 Do older versions of CRM work with the current input files?
+Yes and no: CRM versions 1.x will run with current input files because
+the current input files were designed to be backwards compatible with
+CRM 1.x. However, CRM 1.x does not read or use any information beyond
+the CO2 volume mixing ratio line. For example, CRM 1.x will not use
+any user supplied information about CH4 abundance or longitude or
+year. CRM 1.x can be made to simulate radiation profiles at a given
+longitude only if the Julian day of year (calendar day) is specified
+in Local Mean Time (LMT) in the input file. Note however, that doing
+this will confuse CRM 2.x if it reads the same input file with a
+non-zero longitude. CRM 1.x is no longer supported and it highly
+recommended that users upgrad to CRM 2.x to avoid this confusion.
+
+3.3 How do I correctly specify the longitude and time?
+The Julian day of year, also known as the calendar day (calday in the
+code), is always specified in Greenwich Mean Time (GMT).  For example,
+1.5 is Greenwich noon on January 1st, 2.0 is Greenwich midnight of
+January 2nd. 31.5 and 32.5 are GMT noontimes for January 31st and
+February 1st, respectively. Longitude is specified in degrees east of
+Greenwich.  The CRM uses the specified year, latitude, longitude and
+GMT to compute the correct Sun-Earth distance and solar zenith angle. 
+Note, however, that the CRM does not (yet) implement the equation of
+time (see below). 
+
+3.4 Does the CRM handle the equation of time correctly?
+
+The CRM does not adjust zenith angles to account for the equation of
+time (EOT). Thus, given a (lat,lon,GMT) triplet, the CRM returns the
+zenith angle assuming EOT=0.0. This can lead to instantaneous biases
+of up to 17 minutes of time, or 4 degrees in angle, or 50 W m-2 in TOA
+insolation. However, the diurnal average of this error is 0.0 W m-2.
+In other words, a given (lat,lon,GMT) may receive too much sunlight in
+the morning, but that afternoon it will receive too little
+sunlight. The diurnal bias is very very very small, and, I believe,
+averages to exactly 0.0 W m-2 globally (at TOA).
+
+In the future the CRM will offer the ability to specify the exact
+zenith angle, or, alternatively, enable table lookups of zenith angles
+given (lat,lon,GMT). This mode of operation will not reproduce CCM
+answers, but will make CRM more useful at analyzing field experiments
+and in intercomparison studies. Whether the CCM will change to include
+the equation of time is unknown.
+
+Here is an interim workaround to use exact zenith angles in the
+current CRM:
+If you know the EOT then you can set the CRM longitude to 0.0 
+and specify the local true solar time (TST=LMT-EOT) at the your
+(lat,lon) site instead of GMT for the calendar day input
+variable. This is somewhat confusing, but it does work.
+
+3.5 Why is the CRM printing an IEEE floating-point warning message?
+An IEEE floating-point warning looks something like this:
+
+ Note: IEEE floating-point exception flags raised: 
+    Inexact;  Underflow; 
+ See the Numerical Computation Guide, ieee_flags(3M) 
+
+This simply means the CRM has performed numerical operations which
+were ill-conditioned, given the precision of the code and the actual
+numbers involved. This can occur, for example, at very large zenith
+angles. The Sun Fortran compiler is known to erroneously print this
+message whether or not the indicated flags were set. 
+
+4.1 Why is the cloud forcing non-zero for clear sky simulations?
+Even when the cloud fraction is 0.0 the clear sky routines are still
+invoked to compute the "clear sky" flux profile, even though the full,
+all sky routines have actually just computed a "cloudy sky" flux
+profile (albeit with 0% cloud). The cloud forcing is the difference of
+these "clear" and "cloudy" profiles. Since the clear sky routines
+(e.g. radclr.F) contain different (cruder but more efficient) physics 
+parameterizations, they do not give the same answers as the full,
+all sky routines run with 0.0% cloud. Thus their difference, the
+diagnosed cloud forcing, is non-zero for 0% cloud. It is important to
+note that these approximations never affect the CCM physics because
+the "clear sky" fluxes are only used for diagnostic purposes (i.e.,
+computing cloud forcing).
+
+This was a design decision made for CCM2. For diagnostic purposes it
+is less desirable to have a step function jump in the cloud forcing as
+the sky approaches 0% cloud cover, than to have a slightly incorrect
+but smooth asymptotic limit (~2 W/m2 instead of 0 W/m2).
+
+4.2 How do I easily compare the results of multiple CRM runs?
+If all the text output files are named `*.out' then you can summarize
+specific fields in the printed output by using a one line Perl
+commmand. This example prints the TOA SW cloud forcing from all the
+files: 
+
+/contrib/bin/perl -n -e 'if(/SW cloud forcing TOA/){print $ARGV.": ".$_;}' *.out
+
+4.3 Is the "tauvis" input parameter the Aerosol Optical Depth? 
+
+The short answer is, currently, no. See the file AEROSOL for details. 
+
+5.1 How do I change the number of vertical levels?
+The number of levels for the CRM is easily changed by editing the
+preprocessor tokens PLEV and PLEVR in params.h to whatever number of
+vertical levels are desired.  PLEV and PLEVR must be identical---the
+CRM will behave unpredictably if they differ. The input data file must
+specify values for all levels of data. If the CRM is unable to read
+your input file, check to make sure that the input file specifies
+exactly the same number of levels of data as the CRM expects to find,
+based on params.h. 
+
+End of CRM FAQ

@@ -1,0 +1,111 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/AEROSOL,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*-
+
+Aerosol Optical Depth (AOD) Advisory for Users of CCM and CRM
+
+The following describes the interpretation and usage of the input
+parameter "tauvis", which sets the AOD in the CCM and CRM. 
+
+************************************************************************
+Description of problem:
+************************************************************************
+Standard CCM uses a globally uniform background aerosol (GUBA) with the
+optical properties of pure sulfate. As of CCM3.6 and CRM 2.0, the
+namelist parameter "tauvis" sets the GUBA burden (but tauvis is not
+the optical depth, keep reading). tauvis is obviously related to
+aerosol optical depth but tauvis is NOT the aerosol extinction optical
+depth.  
+
+The aerosol mass mixing ratio calculated from tauvis in routine
+physics/aermmr() includes a factor 1/(1-omega*f) =
+1/(1-omega*g*g). For the CCM sulfate aerosol in the visible, omega ~ 1.0
+and g ~ 0.7 and this factor equals 1.9337. That means that the mixing
+ratio in array aermmr is about twice as large as it would be
+if tauvis represented the aerosol extinction optical depth. 
+
+Let tau_ext be the true extinction optical depth (i.e., the optical
+depth seen by the unscaled direct beam in radcsw()). Then the
+relations between tau_ext and tauvis are tauvis=tau_ext*(1-omega*f)
+and tau_ext=tauvis/(1-omega*f). This means tau_ext is 0.27 in the CCM.
+
+************************************************************************
+Symptoms:
+************************************************************************
+It is important to remember this factor of two (1.93) now that we have
+reached the stage where prognostic sulfate and dust mixing ratios are
+being combined with tauvis to obtain a total optical depth. In effect,
+the GUBA one gets by naively setting tauvis has twice the extinction
+efficiency as the prognostic sulfate.   
+
+Another area to be careful is the sensitivity of the diffuse beam to
+aerosol optical depth. The (unscaled) direct and diffuse components of
+solar radiation are additional diagnostic variables provided by the
+CRM. The downwelling diffuse flux in the CRM is twice as sensitive to 
+aerosol when computed relative to tauvis rather than tau_ext. 
+Comparing the CRM diffuse beam to my shortwave narrow band model
+diffuse beam (and seeing a factor of two difference) is what
+enlightened me as to the true meaning of tauvis.
+
+************************************************************************
+Origin of problem:
+************************************************************************
+The factor (1-omega*f) was originally placed in the CCM to increase
+measured extinction optical depths to account for the fact that some
+of the scattered photons were present in the direct beam, and thus
+uncounted. It turns out that this method of correction makes two
+assumptions, both of which are questionable (for the case of
+aerosols):   
+
+1. This factor relies on the forward scattering peak being smaller
+than the instrument aperture (instrument apertures today are
+generally less than 5 degrees full width). Sulfate aerosol is
+typically smaller than one micron (area-weighted radius), and scatters
+more isotropically than the cloud particles (e.g.,
+sub-visible cirrus) for which the (1-omega*f) approximation is widely
+(and appropriately) applied. Since the forward scattering peak is
+wider for sulfate, fewer of the scattered photons are in the direct
+beam. Figure 3.5 on p. 118 of Liou's (1992) book "Radiation and Cloud
+Processes in the Atmosphere" (there's a copy in my office) illustrates
+this concept. The "forward scattered peak" (where a fraction f=g*g=50%
+of the scattered energy resides) for a sulfate aerosol may be many
+tens of degrees wide. For example, both the Mie and Henyey-Greenstein
+phase functions' "forward beam" for the CCM sulfate aerosol (g=0.7)
+are about 50 degrees full width. 
+
+2. This correction assumes that the data on which tauvis (0.14) is
+based have not already been corrected for scattering into the direct
+beam. Many, if not most, instrument mentors who release measurements
+of aerosol optical depth nowadays already account for photons
+scattered into the direct beam, when appropriate. Some have used 3D
+Monte Carlo models to characterize this effect. 
+
+Neither of these two assumptions should be made lightly for sulfate. 
+Certainly none of this invalidates the concept or usefulness of
+tauvis, either. The problem I have described is not what most would
+call a bug. As currently implemented, tauvis describes real physical
+phenomena, and is a useful tuning parameter for TOA and surface
+energy budgets, but we need to stop calling it plain old "aerosol
+optical depth".
+
+************************************************************************
+Courses of action:
+************************************************************************
+For the present, we have the question of nomenclature: What we call
+tauvis in CCM3 is not the aerosol extinction optical depth. It is, as
+near as I can tell, the aerosol extinction optical depth that does not
+reside in the "forward scattered peak" of the assumed Henyey-Greenstein
+phase function.
+
+Since it is a namelist parameter in CCM3.6, tauvis has been made to be
+explicitly adjustable from the input file in the new CCM3.6-based
+CRM. With all the interest in aerosols and diffuse/direct
+partitioning, many user's will probably take advantage of this new
+parameter. We should provide them with a clear explanation/rationale
+of what tauvis is so they understand what they are doing. This will
+lessen the chances that the CRM will be misused in upcoming 1D model 
+intercomparison studies. The new CRM prints the aerosol extinction
+optical depth as a standard output. 
+
+As far as CCM4 goes, the Climate Modeling Section advocates getting
+rid of the (1-omega*f) factor in aermix() so we can change the 
+namelist parameter from tauvis to something like tauext 
+(whose physical meaning is tau_ext, and whose value is about 0.27). 

@@ -1,0 +1,8 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/TODO,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*-
+
+1. Add eccen,obliq,mvelp input and output. The problem with this
+is that CRM does not use namelist input. With a CRM input file
+eccen,obliq,mvelp must always be input and some sort of key value
+used to determine when to use them and when to use iyear_AD.
+3. Remove empty directories?
+4. Change $Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/TODO,v 1.1 2004/09/07 15:20:36 rca Exp $ to $Id: TODO,v 1.1 2004/09/07 15:20:36 rca Exp $

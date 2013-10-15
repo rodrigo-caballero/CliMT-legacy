@@ -1,0 +1,3 @@
+Directory crm/obj is distributed as an empty directory.
+The default installation procedure (using crm/bld/Makefile) places CRM
+object files (e.g., crm.o) here.  

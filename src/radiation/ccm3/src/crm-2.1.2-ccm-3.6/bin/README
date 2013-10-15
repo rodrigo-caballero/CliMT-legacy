@@ -1,3 +1,0 @@
-Directory crm/bin is distributed as an empty directory.
-The default installation procedure (using crm/bld/Makefile) places the
-CRM executable file (crm) here.   

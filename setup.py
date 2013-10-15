@@ -113,8 +113,9 @@ def getSources(dir):
         Sources = []
         w = os.walk(dir)
         for ww in w:
-            for pattern in ['*.f','*.F','*.f90','*.F90']:
-                Sources += glob.glob(os.path.join(ww[0],pattern))
+            if 'ignore' not in ww[0]:
+                for pattern in ['*.f','*.F','*.f90','*.F90']:
+                    Sources += glob.glob(os.path.join(ww[0],pattern))
     return Sources
 
 def buildNeeded(target,src):
@@ -133,6 +134,8 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
     #Builds an extension
     src = getSources(dir)
     target = '_%s.so' % name
+    print dir
+    print glob.glob(os.path.join(dir,'Driver.f*'))
     driver = glob.glob(os.path.join(dir,'Driver.f*'))[0]
     f77flags = '"%s %s"' % (cppflags,f77flags)
     f90flags = '"%s %s"' % (cppflags,f90flags)

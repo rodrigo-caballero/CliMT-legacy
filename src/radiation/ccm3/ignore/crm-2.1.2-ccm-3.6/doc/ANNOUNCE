@@ -1,0 +1,93 @@
+$Header: /Users/rca/cvsroot/CliMT/src/radiation/ccm3/src/crm-2.1.2-ccm-3.6/doc/ANNOUNCE,v 1.1 2004/09/07 15:20:36 rca Exp $ -*-text-*-
+
+Dear Colleagues,
+
+We are pleased to announce the release of the latest version of the
+CCM Column Radiation Model (CRM). CRM version 2.1 is available via
+the CRM homepage at URL http://www.cgd.ucar.edu/cms/crm. This is 
+a maintenance release with improved diagnostics but with no new
+physics. Answers are do not change so upgrading is not necessary.   
+Users of Solaris f90 and f77 are advised not to upgrade (see below).
+
+The CRM is a standalone version of the column radiation code employed
+by the NCAR Community Climate Model (CCM3).  Thus the CRM is a
+physical process model which isolates the energetics of radiative
+transfer from the rest of the CCM3.  The CRM is built from the
+radiation routines from CCM3, along with a simple text interface for
+the user to input information needed by the radiation calculation.
+
+The CRM uses a two-tier naming scheme which includes both the CRM
+version and the version of the CCM code with which it is bundled.  The
+current distribution, crm-2.1-ccm-3.6, is CRM version 2.1 which is
+built on top of CCM version 3.6.  CRM version 2.x allows the user to take
+advantage of the more comprehensive trace gas, paleoclimate, and
+aerosol features of the latest CCM. In addition, the text and netCDF
+output files contain many more flux, albedo, and optical depth
+diagnostics. CRM version 2.1 outputs vertical and spectral profiles
+of most fields.
+
+A more detailed list of the changes and improvements to the CRM
+follows. Visit the CRM homepage at http://www.cgd.ucar.edu/cms/crm for
+complete information.
+
+Sincerely,
+Charlie Zender
+
+************************************************************************
+User-visible changes from CRM 2.0.2 to CRM 2.1
+************************************************************************
+
+1. Improved build procedure
+
+2. Many more diagnostic fields output to text file and to netCDF file
+
+3. Default build assumes Fortran90 compiler with auto-promotion ability.
+As a result, building with Solaris f90 is problematic (netCDF file is garbage). 
+Building with Solaris f77 is possible, but not with all diagnostic fields.
+See CRM homepage and INSTALL file for details.
+
+************************************************************************
+User-visible changes from CRM 2.0 to CRM 2.0.2
+************************************************************************
+
+1. Improved documentation and FAQ
+
+************************************************************************
+User-visible changes from CRM 1.16 to CRM 2.0
+************************************************************************
+
+1. Input files for CRM 2.0 are backward-compatible with previous versions
+of CRM. Note, however that the meaning of the four albedo fields has
+changed slightly.
+
+2. Source directory structure mimics CCM structure
+
+3. Eight new input parameters:
+N2O volume mixing ratio
+CH4 volume mixing ratio
+CFC11 volume mixing ratio
+CFC12 volume mixing ratio
+Aerosol visible extinction optical depth
+Solar constant
+Year AD
+Longitude
+
+4. CRM now requires netCDF, and must be compiled for IEEE double
+precision execution (internal representation as real*8).  
+
+5. Easy to configure band for extra diagnostics. 
+   Extra diagnostics will be output for the so-called "visible band".
+   By default, this is set to SW band 8 (0.3500--0.6400 um).
+   Simply edit the `bnd_idx_vsb' parameter in crmsrb.h to change bands.
+
+6. Easy to configure boundary between visible and NIR spectral regions.
+   For diagnostic purposes only, the partitioning between visible and
+   NIR regions may be set by altering the parameter `wvl_vsb_NIR_bnd'
+   in crmsrb.h. By default, the boundary is set to 0.7 um. 
+
+7. New output diagnostics in both text and netCDF files include:
+   Column paths of H2O and O3 (also in Dobson Units)
+   Column extinction optical depths
+   Visible spectral fluxes
+   Solar TOA radiation budget (including albedo ratios)
+   Solar surface radiation budget (including direct/diffuse ratios)

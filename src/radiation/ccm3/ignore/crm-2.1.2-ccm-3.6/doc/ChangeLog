@@ -1,0 +1,167 @@
+2000-02-25  Charlie Zender  <zender@uci.edu>
+
+	* Found that mls_clr.out and mls_cld.out had accidentally been
+	written using CCM4 flntc definition, causing small difference with
+	CCM3 flntc definition. Re-wrote files using CCM3 definition.
+	Tagged this release as crm-2.1.2, released without announcement.
+
+2000-02-14  Charlie Zender  <zender@uci.edu>
+
+	* Tagged and released this as crm-2.1.1
+
+	* Added workaround to cvs export problem in crm_dst.pl for cvs 1.10.
+	cvs 1.10, which controls the CRM repository, can only export
+	correctly to machines cross-mounted to /fs/cgd. 
+	So this workaround only works on CGD network.
+
+	* Changed Makefile to use environment $NETCDF_INC and $NETCDF_LIB,
+	if available 
+
+2000-02-11  Charlie Zender  <zender@uci.edu>
+
+	* Changed mls_cld.in surface type to land to agree with mls_clr.in
+	surface type. Of course this changed answers in mls_cld.out.
+
+2000-01-04  Charlie Zender  <zender@uci.edu>
+
+	* Added missing lon loop to diagnostic flx_LW_up/down definitions
+	in radclw.F to fix bug in diagnostics reported by Mike Iacono.
+
+1999-09-07  Charlie Zender  <zender@dust.acd.ucar.edu>
+
+	* Added WDC's NOAA7 satellite NIR fields
+	
+	* Changed to CCM style Makefile with automatic *.d dependencies
+	and enhancements to separate *.o and *.d files from source
+
+	* Fixed dimension bug with odxl0_* and then was able to validate
+	all new diagnostics
+
+1999-08-31  Charlie Zender  <zender@z.ppp.ucar.edu>
+
+	* Added many new diagnostics including vertical profiles of
+	spectral optical depth, SW direct, diffuse, and total fluxes, and
+	LW fluxes. Added vertical profiles of fluxes to both netCDF and
+	text output. Not yet validated, SW diffuse looks too large at TOA.
+
+1999-07-21  Charlie Zender  <zender@dust.acd.ucar.edu>
+
+	* Changed default orography from ocean to land, so that
+	user-specified surface albedos are used exactly as input.
+
+1999-07-02  Charlie Zender  <zender@z.ppp.ucar.edu>
+
+	* Tagged ccm3_6_brnchT_crm2_0_1, ccm3_6_brnchT_crm2_0_2
+
+	* The FAQ now answers questions about time, longitude, and the
+	equation of time
+
+	* Changed Linux default build to pgf90, validated against Sun
+
+Fri Aug 28 10:58:44 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Tagged crm-2.0-ccm-3.6 as ccm3_6_brnchT_crm2_0.
+
+	* Modified files to describe new aerosol advisory in AEROSOL
+
+Mon Aug 17 14:19:03 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Updated to ccm-3.6. SW answers are identical, some LW answers
+	are identical, and some change up to the fourth decimal place,
+	i.e., 0.0001 W m-2, in mls_clr.out values. This is expected due to
+	the LW bug fixes that went into CCM 3.6, including the water vapor
+	continuum overlap of nearest layer trace gas absorptivities, and
+	the radabs longitude dependent fix. Thus, both the SW and LW ports
+	from crm-1.9.0-ccm-3.5.22 to crm-2.0-ccm3.6 appear to be
+	successful. 
+
+	* Tagged crm-1.9.0-ccm-3.5.22 as ccm3_5_22_brnchT_crm1_9_0.
+
+Tue Aug 11 14:50:46 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* crm-1.9.0-ccm-3.5.22 has been commited to the CCM CVS repository
+	as ccm_brnch_crm. Both SW and LW fields were checked against CRM 1.16
+	results where both versions of CRM used the identical mls_clr.in
+	profile. The change in FSDS was 0.117 W m-2. This is smaller than
+	the change expected due to the change in cosine solar zenith angle
+	of 1.36e-4, which could account for up to about 0.185 W m-2
+	discrepency. Then change in FLNT was 0.004 W m-2, which is not
+	deemed significant. Thus both the SW and LW ports from CCM2 Omega
+	0.5 to CCM 3.5.22 appear to be successful.
+
+Wed Jul 22 16:17:33 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* CRM 1.16 has been released. Version 1.16 uses a new directory
+	structure more similar to the CCM directory structure. There are
+	no physics changes in CRM 1.16. The new directory structure is now
+	under CVS control and this should facilitate maintainance of the
+	CRM. 
+
+Fri Jul 10 15:01:26 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Fixed diagnostic surface radiation budget bug in computation of
+	direct and diffuse fluxes. Aerosol and cloud layer optical depths
+	were inadvertlently being assigned the optical depth of the last
+	(18th) spectral interval. This caused large errors in the
+	diagnosed diffuse/direct ratio. This only effected SRB
+	direct/diffuse diagnostics and had no effect on total
+	(direct+diffuse) fluxes, either spectrally or broadband. 
+	This bug affected only CRM 1.13 (released March, 1998 and 1.14). 
+	Fixed SRB version of CRM gets tagged as CRM 1.15.
+
+Thu Jun  4 21:14:26 1998  Charlie Zender  <zender@sanitas-e0.cgd.ucar.edu>
+
+	* Fixed H2O continuum overlap of trace gas absorption in nearest
+	layers. This required small changes to trcabn.F and radabs.F.
+	Solutions change by less than 0.0005 W/m2 in the tropics at the
+	surface. No changes at all above the troposphere.
+
+Wed Mar 11 08:47:06 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Changed criterion for printing out SWCF ratio so that now ratio
+	is printed whenever SWCF(TOA) != 0.
+
+Fri Mar  6 11:44:13 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Added FAQ to distribution
+
+	* Added '-DDOUBLE' precision option to produce a double precision
+	netCDF output file. '-DDOUBLE' should be specified whenever
+	compiling the CRM with '-r8 -i4'-type promotion. 
+
+Mon Mar  2 22:33:39 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Announced release of CRM version 1.13
+
+Thu Feb 19 15:08:12 1998  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Installed Surface Radiation Budget (SRB) module and common
+	block. Cleaned up and reformatted output. 
+
+Mon Nov  3 14:33:35 1997  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Unannounced release of CRM version 1.12
+
+	* Probably a netCDF3 vs. netCDF2 related bug appeared in ncvptg()
+	in netcdf.F. Work around has been to define plon=plond=PLON=1 in 
+	pmgrid.h and prgrid.h and use ncvpt() output routine instead.
+	This has side effect of reducing most array sizes by a factor of
+	four. Unfortunately, pmgrid.h and prgrid.h must now be maintained
+	outside the default CCM source tree.
+
+	* Starting this ChangeLog for the CRM. Everything before this
+	entry has been merged in by hand.
+	
+Wed Jul 16 12:53:10 1997  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Announced release of CRM version 1.11
+
+        * Imposed aerosol extinction optical depth has been changed from
+          0.12 to 0.14 in aermix.F. This resolves an inconsistancy between
+          the CRM and CCM3.
+
+Mon Jan 13 22:52:55 1997  Charlie Zender  <zender@odin.cgd.ucar.edu>
+
+	* Announced Web page availability of CRM version 1.10 at CSM
+	Atmospheric model working group meeting in Boulder.
+
