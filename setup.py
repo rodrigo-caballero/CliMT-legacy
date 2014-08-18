@@ -6,7 +6,7 @@ from numpy.distutils import fcompiler
 from distutils.dep_util import newer
 
 ## -------- set these
-KM = 32
+KM = 26
 JM = 1
 IM = 1
 NC_INC = '/usr/local/include'
@@ -84,8 +84,8 @@ if compiler == 'gnu95':
     f77flags='-ffixed-line-length-132 -fdefault-real-8'
     f90flags='-fdefault-real-8 -fno-range-check -ffree-form'
 elif compiler == 'intel' or compiler == 'intelem':
-    f77flags='-132 -r8 -w95 -w90 -mp'
-    f90flags='-r8 -w95 -mp'
+    f77flags='-132 -r8'
+    f90flags='-132 -r8'
 elif compiler == 'ibm':
     f77flags='-qautodbl=dbl4 -qsuffix=f=f:cpp=F -qfixed=132'
     f90flags='-qautodbl=dbl4 -qsuffix=f=f90:cpp=F90 -qfree=f90'
