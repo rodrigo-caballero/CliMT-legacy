@@ -954,14 +954,14 @@
  
 ! Set flux adjustment for current Earth/Sun distance (two options).
 ! 1) Use Earth/Sun distance flux adjustment provided by GCM (input as adjes);
-      adjflx = adjes
+       adjflx = adjes
 !
 ! 2) Calculate Earth/Sun distance from DYOFYR, the cumulative day of the year.
 !    (Set adjflx to 1. to use constant Earth/Sun distance of 1 AU). 
       if (dyofyr .gt. 0) then
          adjflx = earth_sun(dyofyr)
       endif
-
+       
 ! Set incoming solar flux adjustment to include adjustment for
 ! current Earth/Sun distance (ADJFLX) and scaling of default internal
 ! solar constant (rrsw_scon = 1368.22 Wm-2) by band (SOLVAR).  SOLVAR can be set 
@@ -973,7 +973,6 @@
          solvar(ib) = scon / rrsw_scon 
          adjflux(ib) = adjflx * solvar(ib)
       enddo
-
 
 !  Set surface temperature.
       tbound = tsfc(iplon)

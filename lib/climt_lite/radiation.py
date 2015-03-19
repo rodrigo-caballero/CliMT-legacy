@@ -185,7 +185,7 @@ class radiation(Component):
         self.ToExtension = _rrtm_radiation.INPUTS
         self.FromExtension = _rrtm_radiation.OUTPUTS
         self.Required = [field for field in _rrtm_radiation.INPUTS if field not in \
-                         ['co2', 'n2o', 'ch4', 'cfc11', 'cfc12', 'cfc22', 'o2', 'ccl4',
-                          'tauaer_sw', 'ssaaer_sw', 'asmaer_sw', 'tauaer_lw', 'lw_surface_emissivity','Cpd','dt']]
-        self.Prognostic = ['T'] 
+                         ['co2', 'n2o', 'ch4', 'cfc11', 'cfc12', 'cfc22', 'scon', 'o2', 'ccl4',
+                          'tauaer_sw', 'ssaaer_sw', 'asmaer_sw', 'tauaer_lw', 'lw_surface_emissivity','Cpd']]
+        self.Prognostic = [] 
         self.Diagnostic = [] 

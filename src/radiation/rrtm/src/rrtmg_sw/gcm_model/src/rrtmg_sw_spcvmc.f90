@@ -312,7 +312,10 @@
             iw = iw+1
 
 ! Apply adjustment for correct Earth/Sun distance and zenith angle to incoming solar flux
-            zincflx(iw) = adjflux(jb) * zsflxzen(iw) * prmu0
+!+++ CliMT: zenith angle adjustment already included in solin input!
+!            zincflx(iw) = adjflux(jb) * zsflxzen(iw) * prmu0
+            zincflx(iw) = adjflux(jb) * zsflxzen(iw)
+!--- CliMT
 !             zincflux = zincflux + adjflux(jb) * zsflxzen(iw) * prmu0           ! inactive
 ! Compute layer reflectances and transmittances for direct and diffuse sources, 
 ! first clear then cloudy

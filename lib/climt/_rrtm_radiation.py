@@ -1,7 +1,7 @@
 from scipy.interpolate import interp1d
 from math import cos, pi
 import _rrtm_radiation_fortran
-from numpy import ndarray
+import numpy as np
 
 INPUTS = [
             # 'do_sw', #     0  Shortwave switch     (integer)       1   1 / 0 => do / do not compute SW        
@@ -34,8 +34,8 @@ INPUTS = [
             # 'avg', #       0  Insolation average   (string)   'daily'  Choices are: 'inst', 'daily', 'annual'
             # 'lat', #     0-1  Latitude                 dgr      0.         day and lat/lon if  solin 
             # 'lon', #     0-1  Longitude                dgr      0.         and zen are NOT specified
-            # 'solin', #   0-2  Insolation               W/m2     417.4   Daily-mean on equator at equinox
-            'scon', #      0  Solar constant       W m-2        1367.
+            'solin', #   0-2  Insolation               W/m2     417.4   Daily-mean on equator at equinox
+            # 'scon', #      0  Solar constant       W m-2        1367.
             
             # 'tauvis', #    0  Aerosol opt. depth   (float)         0.   CCM3 only
             # 'tau_inf', #   0  Total opt. depth        -            1.   Greygas scheme only
@@ -55,10 +55,11 @@ INPUTS = [
             'asmaer_sw', # Aerosol asymmetry parameter (iaer=10 only), Dimensions: (ncol,nlay,nbndsw), (non-delta scaled)
             'tauaer_lw', # Aerosol optical depth (iaer=10 only), Dimensions: (ncol,nlay,nbndlw), (non-delta scaled)
             'Cpd',
-            'tauc_lw'
+            'tauc_lw',
+            'dt'
             ]
 
-OUTPUTS =  ['swuflx', 'swdflx', 'lwuflx', 'lwdflx', 'SwToa', 'LwToa', 'lwflx', 'swflx', 'hr']
+OUTPUTS =  ['swuflx', 'swdflx', 'lwuflx', 'lwdflx', 'SwToa', 'LwToa', 'lwflx', 'swflx', 'hr',  'SwSrf', 'LwSrf', 'SrfRadFlx', 'Tinc']
 
 def driver(*args):
     # wavenumber bands used by RRTM:
@@ -67,7 +68,6 @@ def driver(*args):
     
     # gotta translate between the APIs:
     climt_inputs = dict(zip(INPUTS, args))
-
     number_of_layers = len(climt_inputs['T'])
     
     if not climt_inputs['Tbound']: climt_inputs['Tbound'] = climt_inputs['T']
@@ -137,10 +137,11 @@ def driver(*args):
         # LW
         ['emis',  [[1. or 1 - emis for emis in climt_inputs['lw_surface_emissivity']]]],
         # THE SUN - SW
-        ['coszen',  [cos(climt_inputs['zen'][0][0] * 2 * pi / 360.)]], # cosine of the solar zenith angle
+        ['coszen',  [cos(climt_inputs['zen'][0][0] * 2. * pi / 360.)]], # cosine of the solar zenith angle
         ['adjes',  1.], # flux adjustment for earth/sun distance (if not dyofyr)
         ['dyofyr',  0], # day of the year used to get Earth/Sun distance (if not adjes)
-        ['scon',  climt_inputs['scon']], # solar constant
+        ['solin',  climt_inputs['solin']], # solar constant
+        # ['scon',  climt_inputs['scon']], # solar constant
         # CLOUDS, SW see http://www.arm.gov/publications/proceedings/conf16/extended_abs/iacono_mj.pdf
         ['inflgsw',  2], # Flag for cloud optical properties
             # INFLAG = 0 direct specification of optical depths of clouds;
@@ -244,12 +245,18 @@ def driver(*args):
     # TOA fluxes
     out['LwToa'] = out['lwuflx'][0]+out['lwdflx'][0]
     out['SwToa'] = out['swuflx'][0]+out['swdflx'][0]
+    # surface fluxes
+    out['LwSrf'] = out['lwuflx'][0]+out['lwdflx'][0]
+    out['SwSrf'] = out['swuflx'][-1]+out['swdflx'][-1]
+    out['SrfRadFlx'] = out['SwSrf']+out['LwSrf']
     # output fluxes at layer midpoints:
     for key in ['swuflx','swdflx','swuflxc','swdflxc','lwuflx','lwdflx','lwuflxc','lwdflxc']: out[key] = (out[key][1:]+out[key][:-1])/2. 
     # total fluxes
     out['lwflx'] = out['lwuflx']+out['lwdflx']
     out['swflx'] = out['swuflx']+out['swdflx']
     out['hr'] = out['swhr']+out['lwhr']
-        
+    out['Tinc'] =  np.zeros((out['hr'].shape[0],1,1))*0.
+    out['Tinc'][:,0,0] =  (2.*climt_inputs['dt']*out['hr']/86400.).squeeze()
+    
     return tuple([out[key] for key in OUTPUTS])
     
