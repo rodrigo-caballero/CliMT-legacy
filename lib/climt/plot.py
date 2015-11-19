@@ -15,11 +15,11 @@ try:
     # increase vertical gap between plots
     pylab.rcParams['figure.subplot.hspace']=0.3
     # turn on interactive mode
-    pylab.ion() 
+    pylab.ion()
     gotMatplotlib = True
 except:
     if not Lite: print '\n ++++ CliMT: WARNING: matplotlib.pylab ' \
-       +'could not be loaded, so no runtime monitoring !\n' 
+       +'could not be loaded, so no runtime monitoring !\n'
     gotMatplotlib = False
 
 from numpy import *
@@ -42,13 +42,13 @@ def _figureSetUp(FieldKeys, Component):
         Subplot = Subplots[key]
         exec('pylab.subplot(%s)' % Subplot)
         Figure[key] = Panel(Component, key, Subplot)
-        
+
     return Figure
 
 class Plot:
     """
     Enables plotting of up to 4 variables.
-    """    
+    """
     def __init__(self):
         pass
 
@@ -57,7 +57,7 @@ class Plot:
         Plots fields indicated by FieldKeys
         """
         if not gotMatplotlib: return
-        
+
         if len(FieldKeys) == 0: return
         # Clear figure
         pylab.clf()
@@ -89,7 +89,7 @@ class Monitor:
         if not gotMatplotlib:
             self.Monitoring = False
             return
-        
+
         # List of fields to monitor
         try:    self.FieldKeys = kwargs['MonitorFields']
         except: self.FieldKeys = []
@@ -98,7 +98,7 @@ class Monitor:
         for key in self.FieldKeys:
             assert key in Component.State, \
                    '\n\n ++++ CliMT.monitor: %s not in component' % key
-            if rank(Component[key]) == 0:
+            if ndim(Component[key]) == 0:
                 print '\n\n ++++ CliMT.monitor: WARNING: cannot '\
                       +'monitor scalar variable %s' % key
                 self.FieldKeys.pop(self.FieldKeys.index(key))
@@ -136,12 +136,12 @@ class Monitor:
             Panel = self.Figure[key]
 
             # If Field is 3D, show zonal average
-            if rank(Field) == 3:
+            if ndim(Field) == 3:
                 Field = average(Field,axis=2)
                 Field = squeeze(Field)
 
             # Reset data
-            if rank(Field) == 1:
+            if ndim(Field) == 1:
                 if min(Field) == max(Field) == 0.: Field=Field+1.e-7
                 MinVal = min(Field) - 0.01*abs(min(Field))
                 MaxVal = max(Field) + 0.01*abs(max(Field))
@@ -151,7 +151,7 @@ class Monitor:
                 else:
                     Panel.handle.set_ydata(Field)
                     Panel.axes.set_ylim([MinVal, MaxVal])
-            if rank(Field) == 2:
+            if ndim(Field) == 2:
                 if Panel.orientation == 0:
                     Panel.handle.set_data(Field[::-1])
                 if Panel.orientation == 1:
@@ -175,7 +175,7 @@ class Panel:
     Configures single panel of monitor display.
     """
     def __init__(self, Component, FieldKey, Subplot):
-        
+
         # get Field value
         Field = Component.State[FieldKey]
         Dims  = KnownFields[FieldKey][2]
@@ -191,7 +191,7 @@ class Panel:
 
         # If Field is 3D, show zonal average
         Field = squeeze(Field)
-        if rank(Field) == 3:
+        if ndim(Field) == 3:
             Field = average(Field,axis=2)
             Field = squeeze(Field)
             AxisKey.pop(2)
@@ -202,7 +202,7 @@ class Panel:
         for key in AxisKey:
             AxisName.append(Component.Grid.long_name[key])
             AxisVal.append(Component.Grid[key])
-        
+
         # Get handles to figure and properties
         if len(AxisName) == 1:
             if min(Field) == max(Field) == 0.: Field=Field+1.e-7
@@ -248,8 +248,8 @@ class Panel:
             self.handle.set_norm(None)
 
         # Title
-        self.TitleTemplate = '%s  [%s]' % (FieldKey,KnownFields[FieldKey][1]) + ' %6.2f days' 
-        if len(AxisName) == 2: self.TitleTemplate = self.TitleTemplate + '\n min=%g max=%g' 
+        self.TitleTemplate = '%s  [%s]' % (FieldKey,KnownFields[FieldKey][1]) + ' %6.2f days'
+        if len(AxisName) == 2: self.TitleTemplate = self.TitleTemplate + '\n min=%g max=%g'
         day = Component.State.ElapsedTime/86400.
         try:
             TitleText = self.TitleTemplate % day
@@ -262,7 +262,7 @@ class Panel:
 if __name__=='__main__':
 
     import climt
-    r=climt.radiation(lat=arange(0.,90.,10.))    
+    r=climt.radiation(lat=arange(0.,90.,10.))
     m=Monitor(r, MonitorFields=['T','Ts'])
     for i in range(10):
         r.step()

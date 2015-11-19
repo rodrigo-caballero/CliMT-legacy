@@ -48,10 +48,10 @@ class Component:
 
         # Create output file
         self.Io.createOutputFile(self.State, self.Params.value)
-        
+
         # Write out initial state
         if not self.Io.Appending: self.write()
-            
+
         # Initialize plotting facilities
         self.Plot = Plot()
 
@@ -60,7 +60,7 @@ class Component:
 
         # Notify user of unused input quantities
         self._checkUnused(kwargs)
-                
+
         # Set some redundant attributes (mainly for backward compatibility)
         self.nlon = self.Grid['nlon']
         self.nlat = self.Grid['nlat']
@@ -76,7 +76,7 @@ class Component:
         if not ForcedCompute:
             freq = self.UpdateFreq
             time = self.State.ElapsedTime
-            if int(time/freq) == int((time-self['dt'])/freq): return 
+            if int(time/freq) == int((time-self['dt'])/freq): return
 
         # Set up union of State, Grid and Params
         Input = {}
@@ -88,7 +88,7 @@ class Component:
 
         # For semimplicit time stepping, append previous (old) time level to Input dict
         if self.SteppingScheme == 'semi-implicit':
-            for key in self.Prognostic: Input[key+'old'] = self.State.Old[key]        
+            for key in self.Prognostic: Input[key+'old'] = self.State.Old[key]
 
         # List of arguments to be passed to extension
         args = [ Input[key] for key in self.ToExtension ]
@@ -107,24 +107,24 @@ class Component:
             if key in self.Inc: self.Inc.pop(key)
             if key in Output: Output.pop(key)
 
-        # Update State 
+        # Update State
         self.State.update(Output)
         for key in Output: exec('self.'+key+'=Output[key]')
 
         # No further need for input dictionary
         del(Input)
-        
+
     def step(self, RunLength=1, Inc={}):
         """
         Advances component one timestep and writes to output file if necessary.
         Inc is an externally-specified set of increments added to the internally-computed
-        increments at each time step. 
+        increments at each time step.
         """
 
         # If RunLength is integer, interpret as number of time steps
         if type(RunLength) is type(1):
             NSteps = RunLength
-            
+
         # If RunLength is float, interpret as length of run in seconds
         if type(RunLength) is type(1.):
             NSteps = int(RunLength/self['dt'])
@@ -136,10 +136,10 @@ class Component:
                     self.Inc[key] += Inc[key]
                 else:
                     self.Inc[key] = Inc[key]
-            
+
             # Avance prognostics 1 time step
             self.State.advance(self)
-            
+
             # Bring diagnostics and increments up to date
             self.compute()
 
@@ -147,7 +147,7 @@ class Component:
             self['calday'] += self['dt']/self['lod']
             if self['calday'] > self['daysperyear']:
                 self['calday'] -= self['daysperyear']
-            
+
             # Write to file, if it's time to
             dt   = self.Params['dt']
             time = self.State.ElapsedTime
@@ -158,10 +158,10 @@ class Component:
             if self.Monitor.Monitoring:
                 freq = self.Monitor.MonitorFreq
                 if int(time/freq) != int((time-dt)/freq): self.Monitor.refresh(self)
-        
+
     def __call__(self,**kwargs):
         """
-        # Provides a simple interface to extension, useful e.g. for diagnostics. 
+        # Provides a simple interface to extension, useful e.g. for diagnostics.
         """
         # Re-initialize parameters, grid and state
         self.Params  = Parameters(**kwargs)
@@ -192,7 +192,7 @@ class Component:
 
     def plot(self, *FieldKeys):
         self.Plot(self, *FieldKeys)
-        
+
     def setFigure(self, FigureNumber=None):
         self.Plot.setFigure(FigureNumber)
 
@@ -227,10 +227,10 @@ class Component:
             and key not in self.Grid   \
             and key not in KnownFields \
             and key not in io_keys \
-            and key not in monitor_keys: 
+            and key not in monitor_keys:
                 unused.append(key)
 
-        if len(unused) > 0: 
+        if len(unused) > 0:
            if len(unused) == 1: suffix = 'y'
            else              : suffix = 'ies'
            print '\n ++++ CliMT.'+self.Name+'.initialize: WARNING: Input quantit%s %s not used.\n' \
@@ -256,10 +256,10 @@ class Component:
         # See if axis was supplied in input
         n = None
         if AxisName in kwargs:
-            if rank(array(kwargs[AxisName])) == 0:
+            if ndim(array(kwargs[AxisName])) == 0:
                 n = 1
             else:
-                assert rank(array(kwargs[AxisName])) == 1, \
+                assert ndim(array(kwargs[AxisName])) == 1, \
                     '\n\n ++++ CliMT.%s.init: input %s must be rank 1' % (self.Name,AxisName)
                 n = len(array(kwargs[AxisName]))
 
@@ -269,7 +269,7 @@ class Component:
                 if key in KnownFields:
                     if KnownFields[key][2] == '2D' and AxisName != 'lev':
                         i = ['lat','lon'].index(AxisName)
-                        try:    n = array(kwargs[key]).shape[i] 
+                        try:    n = array(kwargs[key]).shape[i]
                         except: n = 1
                     elif KnownFields[key][2] == '3D':
                         i = ['lev','lat','lon'].index(AxisName)
@@ -313,4 +313,3 @@ class Component:
             self.State[key]=reshape(value,self.Grid.Shape3D)
             return
         else: raise IndexError,'\n\n CliMT.State: %s not in Params, Grid or State' % str(key)
-
