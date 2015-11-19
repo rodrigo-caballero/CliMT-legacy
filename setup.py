@@ -9,8 +9,8 @@ from distutils.dep_util import newer
 KM = 26
 JM = 1
 IM = 1
-NC_INC = '/usr/local/include'
-NC_LIB = '/usr/local/lib'
+NC_INC = '/sw/include'
+NC_LIB = '/sw/lib'
 ##----------------------
 
 if '--lite' in sys.argv:
