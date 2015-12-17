@@ -22,12 +22,11 @@ def demean(a,axis=0):
     assert axis <= len(shape(a)), \
                   '\n\n ++++ CliMT.utils.demean: axis index out of range'
 
-    if rank(a)==1: return a - average(a)
-    
-    x=[':']*rank(a)
+    if ndim(a)==1: return a - average(a)
+
+    x=[':']*ndim(a)
     x[axis]='NewAxis'
-    s='['+'%s,'*(rank(a)-1)+'%s]'
+    s='['+'%s,'*(ndim(a)-1)+'%s]'
     sx = s % tuple(x)
     exec('a = a - average(a,axis=axis)'+sx)
     return a
-
