@@ -25,5 +25,80 @@ Reading in the absorptivity data at the Python level is trivial. The trick will 
 
 I will focus on the RRTM scheme. Presumably it will be straightforward to implement the same solution for CAM3 scheme later, but most users will be more interested in the more up-to-date RRTM code.
 
-## Notes on the existing code
+## Notes on the existing code: LONGWAVE
+
+Let's just note where the code actually calls `netcdf` library routines, and work out from there.
+
+The file `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_read_nc.f90`
+seems to do all the calls to `netcdf` in the longwave code.
+
+It contains these 16 subroutines (`grep "subroutine" rrtmg_lw_read_nc.f90 | grep -v "end"`)
+
+```
+subroutine lw_kgb01
+subroutine lw_kgb02
+subroutine lw_kgb03
+subroutine lw_kgb04
+subroutine lw_kgb05
+subroutine lw_kgb06
+subroutine lw_kgb07
+subroutine lw_kgb08
+subroutine lw_kgb09
+subroutine lw_kgb10
+subroutine lw_kgb11
+subroutine lw_kgb12
+subroutine lw_kgb13
+subroutine lw_kgb14
+subroutine lw_kgb15
+subroutine lw_kgb16
+```
+
+Each subroutine loads some modules in which the storage is declared. For example, the last `subroutine lw_kgb16` has
+
+```
+use rrlw_kg16, only : fracrefao, fracrefbo, kao, kbo, selfrefo, forrefo, no16
+use rrlw_ncpar
+```
+
+The module ``rrlw_kg16`` is defined in `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules/rrlw_kg16.f90`
+
+What we need to do is:
+
+- Write python code to read the data file into a `netCDF4.Dataset` object
+- Split the data up into individual strings, arrays, etc following exactly what occurs in `rrtmg_lw_read_nc.f90`
+- Figure out how to pass all these arrays from Python level to Fortran.
+
+Is there a way to do this once at import time and leave all the data is some kind of Fortran shared object that modules can link to dynamically? Well, just follow the logic that the existing Fortran code actually uses.
+
+What code actually calls all the subroutines in `rrtmg_lw_read_nc.f90`?
+
+The calls are in `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_init.f90` in `subroutine rrtmg_lw_ini`
+
+The driver for the whole RRTMG_LW code is `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_rad.f90`. In this code, the call to `rrtmg_lw_init` is commented out! The comment says
+
+```
+! *** Move the required call to rrtmg_lw_ini below and the following 
+! use association to the GCM initialization area ***
+!      use rrtmg_lw_init, only: rrtmg_lw_ini
+```
+and later
+
+```
+! NOTE: The call to RRTMG_LW_INI should be moved to the GCM initialization
+!  area, since this has to be called only once. 
+```
+
+So the question is, when does `CliMT` actually call it?
+
+Answer: in `CliMT/src/radiation/rrtm/Driver.f90`, line 129. Just before the actual calls to `rrtmg_sw` and `rrtmg_lw` (i.e. where the underlying RRTM code is actually called).
+
+What if we get rid of this, but instead have a stand-alone object that we can just import that already has all the fortran modules properly populated with their data?
+
+Do this:
+
+```
+cd /Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
+f2py -c -m rrlw_kg parkind.f90 rrlw_kg*.f90
+```
+which creates a file `rrlw_kg.so`. This is an object that is importable from Python that gives access to the fortran modules that store the data.
 
