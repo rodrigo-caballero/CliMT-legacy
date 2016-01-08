@@ -1,26 +1,19 @@
-! see _rrtm_radiation for the python that prepares these arguments...
-subroutine driver &
-    (nbndlw, nbndsw, naerec, ncol, nlay, icld, &
-    permuteseed_sw, permuteseed_lw, irng, idrv, cpdair, play, plev, &
-    tlay, tlev, tsfc, h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, &
-    o2vmr, cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, aldif, aldir, asdif, &
-    asdir, emis, coszen, adjes, dyofyr, scon, &
-    inflgsw, inflglw, iceflgsw, iceflgslw, liqflgsw, liqflglw, tauc_sw, tauc_lw, cldfrac, ssac_sw, asmc_sw, &
-    fsfc_sw, ciwp, clwp, reic, relq, &
-    tauaer_sw, ssaaer_sw, asmaer_sw, ecaer_sw, tauaer_lw, &
-    swuflx, swdflx, swhr, swuflxc, &
-    swdflxc, swhrc, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt)
+!  BRIAN experimental reorganization of this driver to expose
+!  RRTM absortptivity data modules to Python layer
+!  Move all data declarations to a wrapping module
+!  and have an inner subroutine with all the executable statements
 
-! Modules                                              
+module driver
+! Modules
     use rrtmg_lw_rad, only: rrtmg_lw
     use rrtmg_sw_rad, only: rrtmg_sw
-    use parkind, only: im => kind_im
+    use parkind ,only : im => kind_im!, rb => kind_rb
     use mcica_subcol_gen_lw, only: mcica_subcol_lw
     use mcica_subcol_gen_sw, only: mcica_subcol_sw
     use rrtmg_lw_init, only: rrtmg_lw_ini
     use rrtmg_sw_init, only: rrtmg_sw_ini
 
-    
+
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
     integer(kind=im), intent(in) :: nbndlw
@@ -78,7 +71,7 @@ subroutine driver &
     real(kind=rb), intent(in) :: tauaer_sw(ncol,nlay,nbndsw)
     real(kind=rb), intent(in) :: ssaaer_sw(ncol,nlay,nbndsw)
     real(kind=rb), intent(in) :: asmaer_sw(ncol,nlay,nbndsw)
-    real(kind=rb), intent(in) :: ecaer_sw(ncol,nlay,naerec)    
+    real(kind=rb), intent(in) :: ecaer_sw(ncol,nlay,naerec)
     real(kind=rb), intent(in) :: tauaer_lw(ncol,nlay,nbndlw)
 
 ! Output
@@ -89,7 +82,7 @@ subroutine driver &
     real(kind=rb), intent(out) :: swuflxc(ncol,nlay+1)      ! Clear sky shortwave upward flux (W/m2)
     real(kind=rb), intent(out) :: swdflxc(ncol,nlay+1)      ! Clear sky shortwave downward flux (W/m2)
     real(kind=rb), intent(out) :: swhrc(ncol,nlay)        ! Clear sky shortwave radiative heating rate (K/d)
-                                                
+
     ! LW
     real(kind=rb), intent(out) :: uflx(ncol,nlay+1)         ! Total sky longwave upward flux (W/m2)
     real(kind=rb), intent(out) :: dflx(ncol,nlay+1)         ! Total sky longwave downward flux (W/m2)
@@ -117,7 +110,24 @@ subroutine driver &
     real(kind=rb) :: clwpmcl_lw(140,ncol,nlay)
     real(kind=rb) :: reicmcl_lw(ncol,nlay)
     real(kind=rb) :: relqmcl_lw(ncol,nlay)
-    
+
+
+contains
+
+! see _rrtm_radiation for the python that prepares these arguments...
+subroutine subdriver &
+    (nbndlw, nbndsw, naerec, ncol, nlay, icld, &
+    permuteseed_sw, permuteseed_lw, irng, idrv, cpdair, play, plev, &
+    tlay, tlev, tsfc, h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, &
+    o2vmr, cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, aldif, aldir, asdif, &
+    asdir, emis, coszen, adjes, dyofyr, scon, &
+    inflgsw, inflglw, iceflgsw, iceflgslw, liqflgsw, liqflglw, tauc_sw, tauc_lw, cldfrac, ssac_sw, asmc_sw, &
+    fsfc_sw, ciwp, clwp, reic, relq, &
+    tauaer_sw, ssaaer_sw, asmaer_sw, ecaer_sw, tauaer_lw, &
+    swuflx, swdflx, swhr, swuflxc, &
+    swdflxc, swhrc, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt)
+
+
     call mcica_subcol_sw(1, ncol, nlay, icld, permuteseed_sw, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc_sw, ssac_sw, asmc_sw, fsfc_sw, &
                        cldfmcl_sw, ciwpmcl_sw, clwpmcl_sw, reicmcl_sw, relqmcl_sw, &
@@ -138,7 +148,7 @@ subroutine driver &
              tauaer_sw  ,ssaaer_sw ,asmaer_sw  ,ecaer_sw   , &
              swuflx  ,swdflx  ,swhr    ,swuflxc ,swdflxc ,swhrc)
     call rrtmg_lw(ncol    ,nlay    ,icld    ,idrv    , &
-             play    ,plev    ,tlay    ,tlev    ,tsfc    , & 
+             play    ,plev    ,tlay    ,tlev    ,tsfc    , &
              h2ovmr  ,o3vmr   ,co2vmr  ,ch4vmr  ,n2ovmr  ,o2vmr , &
              cfc11vmr,cfc12vmr,cfc22vmr,ccl4vmr ,emis    , &
              inflglw ,iceflglw,liqflglw,cldfmcl_lw , &
@@ -147,4 +157,6 @@ subroutine driver &
              uflx    ,dflx    ,hr      ,uflxc   ,dflxc,  hrc, &
              duflx_dt,duflxc_dt )
 
-end subroutine driver
+end subroutine subdriver
+
+end module driver
