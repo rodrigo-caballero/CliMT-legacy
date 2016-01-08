@@ -102,3 +102,8 @@ f2py -c -m rrlw_kg parkind.f90 rrlw_kg*.f90
 ```
 which creates a file `rrlw_kg.so`. This is an object that is importable from Python that gives access to the fortran modules that store the data.
 
+_______________
+
+Okay so I have written a python script `netcdf_test.py` that loads that fortran shared object and populates it with the data from the netcdf file in (I think) exactly the same way as the fortran code in `rrtmg_lw_read_nc.f90` does.  The question now is, can I make sure that this data gets passed to the RRTM code at execution time?
+
+
