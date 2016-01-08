@@ -13,6 +13,22 @@ module driver
     use rrtmg_lw_init, only: rrtmg_lw_ini
     use rrtmg_sw_init, only: rrtmg_sw_ini
 
+Cf2py intent(in) rrtmg_lw_ini
+
+contains
+
+! see _rrtm_radiation for the python that prepares these arguments...
+subroutine subdriver &
+    (nbndlw, nbndsw, naerec, ncol, nlay, icld, &
+    permuteseed_sw, permuteseed_lw, irng, idrv, cpdair, play, plev, &
+    tlay, tlev, tsfc, h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, &
+    o2vmr, cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, aldif, aldir, asdif, &
+    asdir, emis, coszen, adjes, dyofyr, scon, &
+    inflgsw, inflglw, iceflgsw, iceflgslw, liqflgsw, liqflglw, tauc_sw, tauc_lw, cldfrac, ssac_sw, asmc_sw, &
+    fsfc_sw, ciwp, clwp, reic, relq, &
+    tauaer_sw, ssaaer_sw, asmaer_sw, ecaer_sw, tauaer_lw, &
+    swuflx, swdflx, swhr, swuflxc, &
+    swdflxc, swhrc, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt)
 
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
@@ -110,23 +126,6 @@ module driver
     real(kind=rb) :: clwpmcl_lw(140,ncol,nlay)
     real(kind=rb) :: reicmcl_lw(ncol,nlay)
     real(kind=rb) :: relqmcl_lw(ncol,nlay)
-
-
-contains
-
-! see _rrtm_radiation for the python that prepares these arguments...
-subroutine subdriver &
-    (nbndlw, nbndsw, naerec, ncol, nlay, icld, &
-    permuteseed_sw, permuteseed_lw, irng, idrv, cpdair, play, plev, &
-    tlay, tlev, tsfc, h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, &
-    o2vmr, cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, aldif, aldir, asdif, &
-    asdir, emis, coszen, adjes, dyofyr, scon, &
-    inflgsw, inflglw, iceflgsw, iceflgslw, liqflgsw, liqflglw, tauc_sw, tauc_lw, cldfrac, ssac_sw, asmc_sw, &
-    fsfc_sw, ciwp, clwp, reic, relq, &
-    tauaer_sw, ssaaer_sw, asmaer_sw, ecaer_sw, tauaer_lw, &
-    swuflx, swdflx, swhr, swuflxc, &
-    swdflxc, swhrc, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt)
-
 
     call mcica_subcol_sw(1, ncol, nlay, icld, permuteseed_sw, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc_sw, ssac_sw, asmc_sw, fsfc_sw, &

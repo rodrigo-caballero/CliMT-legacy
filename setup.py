@@ -170,7 +170,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             print '+++ Compilation failed'
             sys.exit()
         os.system('mv -f _%s.so lib/climt' % name)
-        #os.system('rm -f _%s.pyf' % name)  #  leave these (temporary hack)
+        #os.system('rm -f _%s.pyf' % name)
 
 def setupClimt():
 

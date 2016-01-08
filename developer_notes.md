@@ -115,5 +115,19 @@ Currently the logic is that the Python driver calls the Fortran code at every ti
 So in effect the initialization of the absorptivity is occuring **at every timestep**. 
 
 All we should need to do is put Python code in 
-
+...
 and remove the call to initialization code in `Driver.f90`. There should be no need to modify the timestepping code passing values back and forth from Python to fortran modules.
+
+__________________________________
+It's a bit more complicated.
+
+What happens in the call to `f2py` in `setup.py` is that a signature file is generated for just `Driver.f90`. So when you import the resulting fortran object in a python session, e.g.
+
+```
+import climt
+r = climt.radiation(scheme='rrtm')
+r.Extension._rrtm_radiation_fortran.driver
+```
+shows the `<fortran object>` which is the compiled code in `Driver.f90` for the RRTM module. But you do **not** have interactive access to any of the modules contained within it.
+
+I **think** what we need to to is modify the `f2py` calls in `setup.py` (just for RRTM scheme) and add the list `rrlw_kg*.f90` to the call to generate a signature `*.pyf` file. Then these modules should be visible from Python, like in my example above. 
