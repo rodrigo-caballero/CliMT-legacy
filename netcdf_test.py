@@ -68,7 +68,7 @@ varname = {'fracrefao': 'PlanckFractionLowerAtmos',
            'cfc11adjo': 'AbsorptionCoefficientsLowerAtmos',
            'cfc12o':    'AbsorptionCoefficientsLowerAtmos',
            'kao_mo2':   'AbsorptionCoefficientsLowerAtmos',
-           'kbo_mo2':   'AbsorptionCoefficientsUpperAtmos'
+           'kbo_mo2':   'AbsorptionCoefficientsUpperAtmos',
            }
 
 #  A dictionary that holds list of all the names of fields that need to be set for each band
@@ -98,7 +98,7 @@ fields = {'rrlw_kg01': ['fracrefao', 'fracrefbo', 'kao', 'kbo', 'kao_mn2',
                           'kbo_mo3', 'selfrefo', 'forrefo'],
           'rrlw_kg14': ['fracrefao', 'fracrefbo', 'kao', 'kbo', 'selfrefo', 'forrefo'],
           'rrlw_kg15': ['fracrefao', 'kao', 'kao_mn2', 'selfrefo', 'forrefo'],
-          'rrlw_kg16': ['fracrefao', 'fracrefbo', 'kao', 'kbo', 'selfrefo', 'forrefo']
+          'rrlw_kg16': ['fracrefao', 'fracrefbo', 'kao', 'kbo', 'selfrefo', 'forrefo'],
          }
 
 
@@ -108,14 +108,28 @@ for bandNumber in range(1,17):
     except:
         print 'oheh'
 
-#  The bands that have a single dimension in fracrefao (16,)
-fracrefao_one = [1,2,6,8,10,11,14]
-#  And those that have two (16,9)
-fracrefao_two = [3,4,5,7,9,12,13,15,16]
-
 #  Some arrays are all the same size: selfrefo and forrefo
 for bandNumber in range(1,17):
-    this_module = getattr(rrlw_kg, name(bandNumber))
+    this_name = name(bandNumber)
+    this_module = getattr(rrlw_kg, this_name)
+    for this_field in fields[this_name]:
+        this_var = data.variables[varname[this_field]]
+        if this_field == 'selfrefo':
+            this_array = this_var[gPointSetNumber-1,bandNumber-1,:numGPoints,:Tself]
+        elif this_field == 'forrefo':
+            this_array = this_var[gPointSetNumber-1,bandNumber-1,:numGPoints,:Tforeign]
+        elif this_field == 'fracrefao':
+            if this_module.fracrefao.shape == (16, 9):
+                this_array = this_var[gPointSetNumber-1,bandNumber-1,:keylower,:numGPoints].T
+            elif this_module.fracrefao.shape == (16,):
+                this_array = this_var[gPointSetNumber-1,bandNumber-1,0,:numGPoints].T
+        elif this_field ==
+
+
+        #  Also need to transpose each array to get the right order of dimensions
+        setattr(this_module, this_field, this_array.T)
+
+
     #  selfrefo
     this_module.selfrefo = data.variables['H20SelfAbsorptionCoefficients'][gPointSetNumber-1,bandNumber-1,:numGPoints,:Tself].T
     #  forrefo
