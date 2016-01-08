@@ -106,4 +106,14 @@ _______________
 
 Okay so I have written a python script `netcdf_test.py` that loads that fortran shared object and populates it with the data from the netcdf file in (I think) exactly the same way as the fortran code in `rrtmg_lw_read_nc.f90` does.  The question now is, can I make sure that this data gets passed to the RRTM code at execution time?
 
+------------------
 
+I think it's straightforward. The fortran modules get initialized in memory when the radiation objection is instantiated by a Python call to climt.
+
+Currently the logic is that the Python driver calls the Fortran code at every timestep by a call to `_rrtm_radiation_fortran.driver` in `_rrtm_radiation.py` (which is the Python wrapper for the Fortran `Driver.f90` code.
+
+So in effect the initialization of the absorptivity is occuring **at every timestep**. 
+
+All we should need to do is put Python code in 
+
+and remove the call to initialization code in `Driver.f90`. There should be no need to modify the timestepping code passing values back and forth from Python to fortran modules.
