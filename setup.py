@@ -146,7 +146,8 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             # Add a bunch of other stuff to the signature file
             #  The files are in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
             #  and they are: parkind.f90 rrlw_kg*.f90
-            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
+            os.system('DIR=/Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules')
+            os.system('f2py --overwrite-signature $DIR/parkind.f90 $DIR/rrlw_kg*.f90 %s -m _%s -h _%s.pyf'%(driver,name,name))
         else:
             os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
         # compile extension
