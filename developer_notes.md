@@ -4,7 +4,7 @@
 
 ### The issue
 
-Currently `CliMT` must be compiled against the `netcdf` Fortran libraries. This is a significant barrier to getting `CliMT` up and running on a new machine -- it is often a multi-step process of obtaining the main `netcdf` libraries, compiling them, then compiling the Fortran libraries, then building `CliMT`. 
+Currently `CliMT` must be compiled against the `netcdf` Fortran libraries. This is a significant barrier to getting `CliMT` up and running on a new machine -- it is often a multi-step process of obtaining the main `netcdf` libraries, compiling them, then compiling the Fortran libraries, then building `CliMT`.
 
 This is not practical for all users, especially students who might want to use `CliMT` or some other interface to the radiation code but are not skilled at command-line development tools.
 
@@ -13,7 +13,7 @@ So my take is to figure out how to remove this dependence from `CliMT`. `CliMT` 
 - CAM3 radiation
 - RRTM radiation
 
-In both cases, the underlying Fortran code uses calls to `netcdf` to load absorptivity data from a `.nc` file. That is the *only* part of the `CliMT` code that actually depends on `netcdf` at the Fortran level. 
+In both cases, the underlying Fortran code uses calls to `netcdf` to load absorptivity data from a `.nc` file. That is the *only* part of the `CliMT` code that actually depends on `netcdf` at the Fortran level.
 
 ### A better solution
 
@@ -77,7 +77,7 @@ The calls are in `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_i
 The driver for the whole RRTMG_LW code is `CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_rad.f90`. In this code, the call to `rrtmg_lw_init` is commented out! The comment says
 
 ```
-! *** Move the required call to rrtmg_lw_ini below and the following 
+! *** Move the required call to rrtmg_lw_ini below and the following
 ! use association to the GCM initialization area ***
 !      use rrtmg_lw_init, only: rrtmg_lw_ini
 ```
@@ -85,7 +85,7 @@ and later
 
 ```
 ! NOTE: The call to RRTMG_LW_INI should be moved to the GCM initialization
-!  area, since this has to be called only once. 
+!  area, since this has to be called only once.
 ```
 
 So the question is, when does `CliMT` actually call it?
@@ -112,9 +112,9 @@ I think it's straightforward. The fortran modules get initialized in memory when
 
 Currently the logic is that the Python driver calls the Fortran code at every timestep by a call to `_rrtm_radiation_fortran.driver` in `_rrtm_radiation.py` (which is the Python wrapper for the Fortran `Driver.f90` code.
 
-So in effect the initialization of the absorptivity is occuring **at every timestep**. 
+So in effect the initialization of the absorptivity is occuring **at every timestep**.
 
-All we should need to do is put Python code in 
+All we should need to do is put Python code in
 ...
 and remove the call to initialization code in `Driver.f90`. There should be no need to modify the timestepping code passing values back and forth from Python to fortran modules.
 
@@ -130,4 +130,8 @@ r.Extension._rrtm_radiation_fortran.driver
 ```
 shows the `<fortran object>` which is the compiled code in `Driver.f90` for the RRTM module. But you do **not** have interactive access to any of the modules contained within it.
 
-I **think** what we need to to is modify the `f2py` calls in `setup.py` (just for RRTM scheme) and add the list `rrlw_kg*.f90` to the call to generate a signature `*.pyf` file. Then these modules should be visible from Python, like in my example above. 
+I **think** what we need to to is modify the `f2py` calls in `setup.py` (just for RRTM scheme) and add the list `rrlw_kg*.f90` to the call to generate a signature `*.pyf` file. Then these modules should be visible from Python, like in my example above.
+
+-------------------------------------
+
+Ok, I did this. In hacked form. Need to fix up the setup.py code to handle file paths more intelligently, and then ...  set up Python code to initialize the data, and get rid of calls to equivalent Fortran code.
