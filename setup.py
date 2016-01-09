@@ -142,7 +142,13 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
     if buildNeeded(target,src):
         print '\n Building %s ... \n' % os.path.basename(target)
         # generate signature file
-        os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
+        if name == 'rrtm_radiation_fortran':
+            # Add a bunch of other stuff to the signature file
+            #  The files are in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
+            #  and they are: parkind.f90 rrlw_kg*.f90
+            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
+        else:
+            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
         # compile extension
         F2pyCommand = []
         F2pyCommand.append('f2py -c -m _%s' % name)
