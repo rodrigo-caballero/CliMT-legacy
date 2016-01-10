@@ -147,8 +147,19 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             #  The files are in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
             #  and they are: parkind.f90 rrlw_kg*.f90
             print '\n OH EH!!!!! \n'
-            #os.system('DIR=/Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules')
-            os.system('f2py --overwrite-signature /Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules/parkind.f90 /Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules/rrlw_kg*.f90 %s -m _%s -h _%s.pyf'%(driver,name,name))
+            path = os.path.join(dir, 'src', 'rrtmg_lw', 'gcm_model')
+            modpath = os.path.join(path, 'modules')
+            #  add all these modules to the *.pyf signature
+            mod = os.path.join(modpath, '*.f90')
+            #  And the module with the init subroutine
+            rrtmg_lw_init = os.path.join(path, 'src', 'rrtmg_lw_init.f90')
+            #srcpath = os.path.join(path, 'src')
+            #parkind = os.path.join(modpath, 'parkind.f90')
+            #parrrtm = os.path.join(modpath, 'parrrtm.f90')
+            #rrlw_wvn = os.path.join(modpath, )
+            #rrlw_kg = os.path.join(modpath, 'rrlw_kg*.f90')
+
+            os.system('f2py --overwrite-signature %s %s %s -m _%s -h _%s.pyf'%(mod,rrtmg_lw_init,driver,name,name))
         else:
             os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
         # compile extension
