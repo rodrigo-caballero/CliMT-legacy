@@ -143,9 +143,9 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
         print '\n Building %s ... \n' % os.path.basename(target)
         # generate signature file
         if name == 'rrtm_radiation_fortran':
-            # Add a bunch of other stuff to the signature file
-            #  The files are in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
-            #  and they are: parkind.f90 rrlw_kg*.f90
+            # Add a bunch of other stuff to the signature file:
+            #  All files in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
+            #  and CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_init.f90
             print '\n OH EH!!!!! \n'
             path = os.path.join(dir, 'src', 'rrtmg_lw', 'gcm_model')
             modpath = os.path.join(path, 'modules')
@@ -153,12 +153,6 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             mod = os.path.join(modpath, '*.f90')
             #  And the module with the init subroutine
             rrtmg_lw_init = os.path.join(path, 'src', 'rrtmg_lw_init.f90')
-            #srcpath = os.path.join(path, 'src')
-            #parkind = os.path.join(modpath, 'parkind.f90')
-            #parrrtm = os.path.join(modpath, 'parrrtm.f90')
-            #rrlw_wvn = os.path.join(modpath, )
-            #rrlw_kg = os.path.join(modpath, 'rrlw_kg*.f90')
-
             os.system('f2py --overwrite-signature %s %s %s -m _%s -h _%s.pyf'%(mod,rrtmg_lw_init,driver,name,name))
         else:
             os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
@@ -189,7 +183,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             print '+++ Compilation failed'
             sys.exit()
         os.system('mv -f _%s.so lib/climt' % name)
-        os.system('rm -f _%s.pyf' % name)
+        #os.system('rm -f _%s.pyf' % name)
 
 def setupClimt():
 

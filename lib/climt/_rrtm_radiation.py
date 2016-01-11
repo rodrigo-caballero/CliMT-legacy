@@ -112,14 +112,16 @@ def read_lw_abs_data():
 
     #  get the data type for the fortran modules
     mod = getattr(fort, name(1))
+    #  Not really sure how much of this f2py will handle automatically
+    #  Trying numpy.asfortranarray() on each array before assigning to fortran modules
     dtype = mod.fracrefao.dtype
     #  Some arrays are all the same size: selfrefo and forrefo
     #  We will loop through each band here and set these two field
     #  (unlike in RRTM code)
     for bandNumber in range(1,17):
         mod = getattr(fort, name(bandNumber))
-        mod.selfrefo = data.variables['H20SelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T.astype(dtype)
-        mod.forrefo = data.variables['H20ForeignAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeign].T.astype(dtype)
+        mod.selfrefo = np.asfortranarray(data.variables['H20SelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T)
+        mod.forrefo = np.asfortranarray(data.variables['H20ForeignAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeign].T)
 
     ####  All other fields we will set 'by hand' to mirror how it is done in
     ####  the RRTM code file `rrtmg_lw_read_nc.f90`
@@ -130,187 +132,187 @@ def read_lw_abs_data():
     # subroutine `lw_kgb01`
     bandNumber = 1
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
     #	!Get absorber index for N2
     ab = ncpar.getabsorberindex('N2')
-    mod.kao_mn2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
-    mod.kbo_mn2 = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mn2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
+    mod.kbo_mn2 = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
 
     # subroutine `lw_kgb02`
     bandNumber = 2
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
 
     # subroutine `lw_kgb03`
     bandNumber = 3
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T)
     #	!Get absorber index for N2
     #  (comment in the RRTM code is wrong, it's actually N2O)
     ab = ncpar.getabsorberindex('N2O')
-    mod.kao_mn2o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
-    mod.kbo_mn2o = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keyupper].T.astype(dtype)
+    mod.kao_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
+    mod.kbo_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keyupper].T)
 
     # subroutine `lw_kgb04`
     bandNumber = 4
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T)
 
     # subroutine `lw_kgb05`
     bandNumber = 5
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T)
     #	!Get absorber index for O3
     ab = ncpar.getabsorberindex('O3')
-    mod.kao_mo3 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
+    mod.kao_mo3 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
     #	!Get absorber index for CCL4
     ab = ncpar.getabsorberindex('CCL4')
-    mod.ccl4o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T.astype(dtype)
+    mod.ccl4o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T)
 
     # subroutine `lw_kgb06`
     bandNumber = 6
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
     #	!Get absorber index for CO2
     ab = ncpar.getabsorberindex('CO2')
-    mod.kao_mco2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
     #	!Get absorber index for CFC11
     ab = ncpar.getabsorberindex('CFC11')
-    mod.cfc11adjo = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T.astype(dtype)
+    mod.cfc11adjo = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T)
     #	!Get absorber index for CFC12
     ab = ncpar.getabsorberindex('CFC12')
-    mod.cfc12o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T.astype(dtype)
+    mod.cfc12o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T)
 
     # subroutine `lw_kgb07`
     bandNumber = 7
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
     #	!Get absorber index for CO2
     ab = ncpar.getabsorberindex('CO2')
-    mod.kao_mco2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
-    mod.kbo_mco2 = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
+    mod.kbo_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
 
     # subroutine `lw_kgb08`
     bandNumber = 8
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
     #	!Get absorber index for O3
     ab = ncpar.getabsorberindex('O3')
-    mod.kao_mo3 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mo3 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
     #	!Get absorber index for CO2
     ab = ncpar.getabsorberindex('CO2')
-    mod.kao_mco2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
-    mod.kbo_mco2 = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
+    mod.kbo_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
     #	!Get absorber index for N2O
     ab = ncpar.getabsorberindex('N2O')
-    mod.kao_mn2o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
-    mod.kbo_mn2o = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
+    mod.kbo_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
     #	!Get absorber index for CFC12
     ab = ncpar.getabsorberindex('CFC12')
-    mod.cfc12o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T.astype(dtype)
+    mod.cfc12o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T)
     #	!Get absorber index for CFC22
     ab = ncpar.getabsorberindex('CFC22')
-    mod.cfc22adjo = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T.astype(dtype)
+    mod.cfc22adjo = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T)
 
     # subroutine `lw_kgb09`
     bandNumber = 9
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
     #	!Get absorber index for N2O
     ab = ncpar.getabsorberindex('N2O')
-    mod.kao_mn2o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
-    mod.kbo_mn2o = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
+    mod.kbo_mn2o = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
 
     # subroutine `lw_kgb10`
     bandNumber = 10
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
 
     # subroutine `lw_kgb11`
     bandNumber = 11
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
     #	!Get absorber index for O2
-    mod.kao_mo2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
-    mod.kbo_mo2 = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kao_mo2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
+    mod.kbo_mo2 = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
 
     # subroutine `lw_kgb12`
     bandNumber = 12
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
 
     # subroutine `lw_kgb13`
     bandNumber = 13
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
     #	!Get absorber index for O3
     ab = ncpar.getabsorberindex('O3')
-    mod.kbo_mo3 = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T.astype(dtype)
+    mod.kbo_mo3 = np.asfortranarray(data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, 0].T)
     #	!Get absorber index for CO2
     ab = ncpar.getabsorberindex('CO2')
-    mod.kao_mco2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
+    mod.kao_mco2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
     #	!Get absorber index for CO
     ab = ncpar.getabsorberindex('CO')
-    mod.kao_mco = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
+    mod.kao_mco = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
 
     # subroutine `lw_kgb14`
     bandNumber = 14
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
 
     # subroutine `lw_kgb15`
     bandNumber = 15
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
     #	!Get absorber index for N2
     ab = ncpar.getabsorberindex('N2')
-    mod.kao_mn2 = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T.astype(dtype)
+    mod.kao_mn2 = np.asfortranarray(data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, :T, :keylower].T)
 
     #  subroutine `lw_kgb16`
     bandNumber = 16
     mod = getattr(fort, name(bandNumber))
-    mod.fracrefao = data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T.astype(dtype)
-    mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T.astype(dtype)
-    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T.astype(dtype)
-    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T.astype(dtype)
+    mod.fracrefao = np.asfortranarray(data.variables['PlanckFractionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T)
+    mod.fracrefbo = np.asfortranarray(data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T)
+    mod.kao = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T)
+    mod.kbo = np.asfortranarray(data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T)
 
 
 ##############
@@ -318,9 +320,11 @@ def read_lw_abs_data():
 #  Call initialization routines here, instead of at each timestep
 from parameters import Parameters
 Cpd = Parameters()['Cpd']
+#  Python-based initialization of absorption data from netcdf file
 read_lw_abs_data()
-#  Call the modified fortran init subroutine
+#  Call the modified fortran init subroutine (netcdf calls are commented out)
 _rrtm_radiation_fortran.rrtmg_lw_init.rrtmg_lw_ini(Cpd)
+
 
 def driver(*args):
     # wavenumber bands used by RRTM:

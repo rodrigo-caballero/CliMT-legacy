@@ -140,3 +140,18 @@ Ok, I did this. In hacked form. Need to fix up the setup.py code to handle file 
 And now I have set things up to call the RRTM initialization subroutine **from Python** upon instantiation of the RRTM radiation object, and commented out the init call in the Driver.f90 subroutine that gets called at every time step. The data are still being read in Fortran code. Next step is to replace the Fortran code with Python code to populate the relevant data modules. Almost there.
 
 And test, of course. Make sure this code actually reproduces results from the old code.
+
+--------------------------------------
+
+Things are now complete... Python code to populate the storage modules, Fortran code to do the rest of the initialization. But unfortunately... it doesn't work. I haven't sorted out why.
+But if I include the old Fortran code to read the data, and then do this:
+```
+import climt
+r = climt.radiation(scheme='rrtm')
+r.Extension._rrtm_radiation_fortran.rrlw_kg01.fracrefao
+```
+
+I do **not** get the same array as we get by reading in the data with Python.
+And a test script `forcing_due_to_co2_doubling_rrtm` produces gobbledeegook with my code.
+
+It really looks like the `f2py` wrapper to the storage modules is getting mixed up about data types. But if that's the case, then why aren't there other bugs in the interface? I don't know. Frustrating.
