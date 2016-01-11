@@ -135,3 +135,8 @@ I **think** what we need to to is modify the `f2py` calls in `setup.py` (just fo
 -------------------------------------
 
 Ok, I did this. In hacked form. Need to fix up the setup.py code to handle file paths more intelligently, and then ...  set up Python code to initialize the data, and get rid of calls to equivalent Fortran code.
+
+---------------------------------------
+And now I have set things up to call the RRTM initialization subroutine **from Python** upon instantiation of the RRTM radiation object, and commented out the init call in the Driver.f90 subroutine that gets called at every time step. The data are still being read in Fortran code. Next step is to replace the Fortran code with Python code to populate the relevant data modules. Almost there.
+
+And test, of course. Make sure this code actually reproduces results from the old code.
