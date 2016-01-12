@@ -68,7 +68,7 @@ Cpd = Parameters()['Cpd']
 from _rrtm_radiation_init import read_lw_abs_data
 read_lw_abs_data(_rrtm_radiation_fortran)
 #  Call the modified fortran init subroutine (netcdf calls are commented out)
-#_rrtm_radiation_fortran.rrtmg_sw_init.rrtmg_sw_ini(Cpd)
+_rrtm_radiation_fortran.rrtmg_sw_init.rrtmg_sw_ini(Cpd)
 _rrtm_radiation_fortran.rrtmg_lw_init.rrtmg_lw_ini(Cpd)
 
 
