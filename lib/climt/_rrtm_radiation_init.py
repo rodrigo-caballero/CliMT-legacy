@@ -8,6 +8,15 @@ def name(bandNumber):
     name = thisstr + index
     return name
 
+def nameSW(bandNumber):
+    '''Just creates a string `rrsw_kgxx` where `xx` is
+    the input number plus 15, e.g. `rrsw_kg16` for `bandNumber=1`'''
+    index = '{:02}'.format(bandNumber+15)
+    thisstr = 'rrsw_kg'
+    name = thisstr + index
+    return name
+
+
 def read_lw_abs_data(fort):
     '''
     Python code to read RRTM Lw absorption data from netcdf file
@@ -45,11 +54,6 @@ def read_lw_abs_data(fort):
     GPoint = ncpar.gpoint
     GPointSet = ncpar.gpointset
 
-    #  get the data type for the fortran modules
-    mod = getattr(fort, name(1))
-    #  Not really sure how much of this f2py will handle automatically
-    #  Trying numpy.asfortranarray() on each array before assigning to fortran modules
-    dtype = mod.fracrefao.dtype
     #  Some arrays are all the same size: selfrefo and forrefo
     #  We will loop through each band here and set these two field
     #  (unlike in RRTM code)
@@ -248,3 +252,184 @@ def read_lw_abs_data(fort):
     mod.fracrefbo = data.variables['PlanckFractionUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
     mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
     mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+
+
+def read_sw_abs_data(fort):
+    '''
+    Python code to read RRTM SW absorption data from netcdf file
+    and store it in appropriate fortran modules
+
+    This code replicates the functionality in
+    `CliMT/src/radiation/rrtm/src/rrtmg_sw/gcm_model/src/rrtmg_sw_read_nc.f90`
+    but removes dependency on compiled netcdf libraries.
+
+    input argument: fortran object _rrtm_radiation_fortran
+    '''
+    ncfilepath = '/Users/Brian/CliMT/src/radiation/rrtm/src/rrtmg_sw/gcm_model/data/rrtmg_sw.nc'
+    data = nc.Dataset(ncfilepath)
+    gPointSetNumber = 1
+    numGPoints = 16
+
+    #  Some dimension constants
+    #  For some reason the cases got messed up
+    ncpar = fort.rrsw_ncpar
+    keylower = ncpar.keylower
+    keyupper = ncpar.keyupper
+    Tdiff = ncpar.tdiff
+    ps = ncpar.ps
+    plower = ncpar.plower
+    pupper = ncpar.pupper
+    Tself = ncpar.tself
+    Tforeignlower = ncpar.tforeignlower
+    Tforeignupper = ncpar.tforeignupper
+    T = ncpar.t
+    band = ncpar.band
+    GPoint = ncpar.gpoint
+    GPointSet = ncpar.gpointset
+
+    # subroutine `sw_kgb16`
+    bandNumber = 1
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+
+    # subroutine `sw_kgb17`
+    bandNumber = 2
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo[0:3,:] = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+    mod.forrefo[3,:] = data.variables['H2OForeignAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, 1].T
+
+    # subroutine `sw_kgb18`
+    bandNumber = 3
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+
+    # subroutine `sw_kgb19`
+    bandNumber = 4
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+
+    # subroutine `sw_kgb20`
+    bandNumber = 5
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo[0:3,:] = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+    mod.forrefo[3,:] = data.variables['H2OForeignAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, 1].T
+
+    # subroutine `sw_kgb21`
+    bandNumber = 6
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo[0:3,:] = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+    mod.forrefo[3,:] = data.variables['H2OForeignAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, 1].T
+
+    # subroutine `sw_kgb22`
+    bandNumber = 7
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+
+    # subroutine `sw_kgb23`
+    bandNumber = 8
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.raylo = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+
+    # subroutine `sw_kgb24`
+    bandNumber = 9
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.raylao = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :keylower, :numGPoints].T
+    mod.raylbo = data.variables['RayleighExtinctionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+    #	!Get absorber index for O3
+    ab = ncpar.getabsorberindex('O3')
+    mod.abso3ao = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T
+    mod.abso3bo = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T
+
+    # subroutine `sw_kgb25`
+    bandNumber = 10
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.raylo = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T
+    #	!Get absorber index for O3
+    ab = ncpar.getabsorberindex('O3')
+    mod.abso3ao = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T
+    mod.abso3bo = data.variables['AbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T
+
+    # subroutine `sw_kgb26`
+    bandNumber = 11
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.raylo = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+
+    # subroutine `sw_kgb27`
+    bandNumber = 12
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.raylo = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+
+    # subroutine `sw_kgb28`
+    bandNumber = 13
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionUpperAtmos'][gPointSetNumber-1, bandNumber-1, :keyupper, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, :keylower].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, :keyupper].T
+
+    # subroutine `sw_kgb29`
+    bandNumber = 14
+    mod = getattr(fort, nameSW(bandNumber))
+    mod.sfluxrefo = data.variables['SolarSourceFunctionLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, :numGPoints].T
+    mod.ncrayl = data.variables['RayleighExtinctionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, 0, 0].T
+    mod.kao = data.variables['KeySpeciesAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :plower, :Tdiff, 0].T
+    mod.kbo = data.variables['KeySpeciesAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :pupper, :Tdiff, 0].T
+    mod.selfrefo = data.variables['H2OSelfAbsorptionCoefficients'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tself].T
+    mod.forrefo[0:3,:] = data.variables['H2OForeignAbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, :Tforeignlower].T
+    mod.forrefo[3,:] = data.variables['H2OForeignAbsorptionCoefficientsUpperAtmos'][gPointSetNumber-1, bandNumber-1, :numGPoints, 1].T
+    #	!Get absorber index for H2O
+    ab = ncpar.getabsorberindex('H2O')
+    mod.absh2oo = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T
+    #	!Get absorber index for CO2
+    ab = ncpar.getabsorberindex('CO2')
+    mod.absco2o = data.variables['AbsorptionCoefficientsLowerAtmos'][gPointSetNumber-1, bandNumber-1, ab-1, :numGPoints, 0, 0].T

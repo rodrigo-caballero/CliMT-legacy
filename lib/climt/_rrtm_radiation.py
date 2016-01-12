@@ -65,7 +65,8 @@ OUTPUTS =  ['swuflx', 'swdflx', 'lwuflx', 'lwdflx', 'SwToa', 'LwToa', 'lwflx', '
 from parameters import Parameters
 Cpd = Parameters()['Cpd']
 #  Python-based initialization of absorption data from netcdf file
-from _rrtm_radiation_init import read_lw_abs_data
+from _rrtm_radiation_init import read_lw_abs_data, read_sw_abs_data
+read_sw_abs_data(_rrtm_radiation_fortran)
 read_lw_abs_data(_rrtm_radiation_fortran)
 #  Call the modified fortran init subroutine (netcdf calls are commented out)
 _rrtm_radiation_fortran.rrtmg_sw_init.rrtmg_sw_ini(Cpd)
