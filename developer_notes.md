@@ -160,3 +160,13 @@ It really looks like the `f2py` wrapper to the storage modules is getting mixed 
 
 Success! Indeed, it was a problem with custom Fortran data types declared in RRTM code.
 The solution is to include a file `.f2py_f2cmap` that tells `f2py` what C data type to use.
+
+--------------------------
+
+Following essentially the same procedure, I have now succeeded in initializing both LW and SW code from Python.
+
+**BUT I AM A BLOODY IDIOT** because I have just now noticed that **RRTM never actually calls the subroutines in `rrtmg_lw_read_nc.f90` and `rrtmg_sw_read_nc.f90`**. It actually just hard-codes the  data in subroutines in `rrtmg_sw_k_g.f90` and `rrtmg_lw_k_g.f90`
+
+So essentially several days of work has been completely unnecessary. Except now we have a working, more modular RRTM code and all I/O occurs through Python, which is at least logically satisfying.
+
+But **the netcdf dependence in CliMT is actually ALL in CAM3 radiation, NOT RRTM!!!!**
