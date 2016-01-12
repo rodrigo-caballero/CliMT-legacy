@@ -126,7 +126,8 @@ subroutine driver &
                        cldfrac, ciwp, clwp, reic, relq, tauc_lw, cldfmcl_lw, &
                        ciwpmcl_lw, clwpmcl_lw, reicmcl_lw, relqmcl_lw, taucmcl_lw)
     call rrtmg_sw_ini(cpdair)
-    !  Now calling the init subroutine from Python instead
+    !  Now calling the init subroutine from Python
+    !  when object is first instantiated (see _rrtm_radiation.py)
     !call rrtmg_lw_ini(cpdair)
     call rrtmg_sw(ncol    ,nlay    ,icld    , &
              play    ,plev    ,tlay    ,tlev    ,tsfc   , &

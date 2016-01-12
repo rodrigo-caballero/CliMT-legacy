@@ -146,7 +146,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             # Add a bunch of other stuff to the signature file:
             #  All files in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
             #  and CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_init.f90
-            print '\n OH EH!!!!! \n'
+            print 'Adding extra RRTM modules to the signature file to enable Python-level access.'
             path = os.path.join(dir, 'src', 'rrtmg_lw', 'gcm_model')
             modpath = os.path.join(path, 'modules')
             #  add all these modules to the *.pyf signature
@@ -183,7 +183,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             print '+++ Compilation failed'
             sys.exit()
         os.system('mv -f _%s.so lib/climt' % name)
-        #os.system('rm -f _%s.pyf' % name)
+        os.system('rm -f _%s.pyf' % name)
 
 def setupClimt():
 

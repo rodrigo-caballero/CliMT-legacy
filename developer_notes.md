@@ -155,3 +155,8 @@ I do **not** get the same array as we get by reading in the data with Python.
 And a test script `forcing_due_to_co2_doubling_rrtm` produces gobbledeegook with my code.
 
 It really looks like the `f2py` wrapper to the storage modules is getting mixed up about data types. But if that's the case, then why aren't there other bugs in the interface? I don't know. Frustrating.
+
+-------------------------
+
+Success! Indeed, it was a problem with custom Fortran data types declared in RRTM code.
+The solution is to include a file `.f2py_f2cmap` that tells `f2py` what C data type to use.
