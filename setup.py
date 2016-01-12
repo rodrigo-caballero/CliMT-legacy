@@ -147,13 +147,23 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             #  All files in CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/modules
             #  and CliMT/src/radiation/rrtm/src/rrtmg_lw/gcm_model/src/rrtmg_lw_init.f90
             print 'Adding extra RRTM modules to the signature file to enable Python-level access.'
-            path = os.path.join(dir, 'src', 'rrtmg_lw', 'gcm_model')
-            modpath = os.path.join(path, 'modules')
+            path_lw = os.path.join(dir, 'src', 'rrtmg_lw', 'gcm_model')
+            modpath_lw = os.path.join(path_lw, 'modules')
             #  add all these modules to the *.pyf signature
-            mod = os.path.join(modpath, '*.f90')
+            mod_lw = os.path.join(modpath_lw, '*.f90')
             #  And the module with the init subroutine
-            rrtmg_lw_init = os.path.join(path, 'src', 'rrtmg_lw_init.f90')
-            os.system('f2py --overwrite-signature %s %s %s -m _%s -h _%s.pyf'%(mod,rrtmg_lw_init,driver,name,name))
+            rrtmg_lw_init = os.path.join(path_lw, 'src', 'rrtmg_lw_init.f90')
+            path_sw = os.path.join(dir, 'src', 'rrtmg_sw', 'gcm_model')
+            modpath_sw = os.path.join(path_sw, 'modules')
+            #  add all these modules to the *.pyf signature
+            mod_sw = os.path.join(modpath_sw, '*.f90')
+            #  And the module with the init subroutine
+            rrtmg_sw_init = os.path.join(path_sw, 'src', 'rrtmg_sw_init.f90')
+            #  NEED TO REMOVE parkind.f90 from this list!!!
+            #  because it is causing conflicts (there are two identical files in SW and LW)
+            #  actually why don't we just set up a list file like
+            #  sources_in_order_of_compilation but for the signature file
+            os.system('f2py --overwrite-signature %s %s %s %s %s -m _%s -h _%s.pyf'%(mod_sw,rrtmg_sw_init,mod_lw,rrtmg_lw_init,driver,name,name))
         else:
             os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
         # compile extension

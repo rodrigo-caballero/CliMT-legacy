@@ -125,9 +125,9 @@ subroutine driver &
     call mcica_subcol_lw(1, ncol, nlay, icld, permuteseed_lw, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc_lw, cldfmcl_lw, &
                        ciwpmcl_lw, clwpmcl_lw, reicmcl_lw, relqmcl_lw, taucmcl_lw)
-    call rrtmg_sw_ini(cpdair)
-    !  Now calling the init subroutine from Python
+    !  Now calling the init subroutines from Python
     !  when object is first instantiated (see _rrtm_radiation.py)
+    !call rrtmg_sw_ini(cpdair)
     !call rrtmg_lw_ini(cpdair)
     call rrtmg_sw(ncol    ,nlay    ,icld    , &
              play    ,plev    ,tlay    ,tlev    ,tsfc   , &
