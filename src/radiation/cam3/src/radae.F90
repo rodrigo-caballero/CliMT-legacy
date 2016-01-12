@@ -32,7 +32,7 @@ module radae
   use abortutils, only: endrun
   use prescribed_aerosols, only: strat_volcanic
 !+++CliMT  BRIAN now storing abs/ems data in separate module
-  use absems,       only: ah2onw, ah2ow, cn_ah2ow, cn_eh2ow, eh2onw, ln_ah2ow, ln_eh2ow
+  use absems
 !+++CliMT
 
   implicit none
@@ -70,20 +70,21 @@ module radae
   real(r8) :: dpfo3      ! Voigt correction factor for O3
   real(r8) :: dpfco2     ! Voigt correction factor for CO2
 
-  integer, parameter :: n_u = 25   ! Number of U in abs/emis tables
-  integer, parameter :: n_p = 10   ! Number of P in abs/emis tables
-  integer, parameter :: n_tp = 10  ! Number of T_p in abs/emis tables
-  integer, parameter :: n_te = 21  ! Number of T_e in abs/emis tables
-  integer, parameter :: n_rh = 7   ! Number of RH in abs/emis tables
-
-!+++CliMT  BRIAN these arrays are now defined in module absems
-!  real(r8):: ah2onw(n_p, n_tp, n_u, n_te, n_rh)   ! absorptivity (non-window)
-!  real(r8):: eh2onw(n_p, n_tp, n_u, n_te, n_rh)   ! emissivity   (non-window)
-!  real(r8):: ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! absorptivity (window, for adjacent layers)
-!  real(r8):: cn_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for absorptivity (window)
-!  real(r8):: cn_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for emissivity   (window)
-!  real(r8):: ln_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for absorptivity (window)
-!  real(r8):: ln_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for emissivity   (window)
+!+++CliMT  BRIAN these arrays and dimensions are now defined in module absems
+  !
+  ! integer, parameter :: n_u = 25   ! Number of U in abs/emis tables
+  ! integer, parameter :: n_p = 10   ! Number of P in abs/emis tables
+  ! integer, parameter :: n_tp = 10  ! Number of T_p in abs/emis tables
+  ! integer, parameter :: n_te = 21  ! Number of T_e in abs/emis tables
+  ! integer, parameter :: n_rh = 7   ! Number of RH in abs/emis tables
+  !
+  ! real(r8):: ah2onw(n_p, n_tp, n_u, n_te, n_rh)   ! absorptivity (non-window)
+  ! real(r8):: eh2onw(n_p, n_tp, n_u, n_te, n_rh)   ! emissivity   (non-window)
+  ! real(r8):: ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! absorptivity (window, for adjacent layers)
+  ! real(r8):: cn_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for absorptivity (window)
+  ! real(r8):: cn_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for emissivity   (window)
+  ! real(r8):: ln_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for absorptivity (window)
+  ! real(r8):: ln_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for emissivity   (window)
 !+++CliMT
 !
 ! Constant coefficients for water vapor overlap with trace gases.
@@ -2758,7 +2759,9 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
 #ifdef SPMD
    use mpishorthand, only: mpir8, mpicom
 #endif
-   include 'netcdf.inc'
+!+++CliMT  BRIAN getting rid of netcdf dependence
+!   include 'netcdf.inc'
+!+++CliMT
 !
 ! Input variables
 !
@@ -2775,37 +2778,39 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
 
 !      Variables for loading absorptivity/emissivity
 !
-   integer ncid_ae                ! NetCDF file id for abs/ems file
-
-   integer pdimid                 ! pressure dimension id
-   integer psize                  ! pressure dimension size
-
-   integer tpdimid                ! path temperature dimension id
-   integer tpsize                 ! path temperature size
-
-   integer tedimid                ! emission temperature dimension id
-   integer tesize                 ! emission temperature size
-
-   integer udimid                 ! u (H2O path) dimension id
-   integer usize                  ! u (H2O path) dimension size
-
-   integer rhdimid                ! relative humidity dimension id
-   integer rhsize                 ! relative humidity dimension size
-
-   integer    ah2onwid            ! var. id for non-wndw abs.
-   integer    eh2onwid            ! var. id for non-wndw ems.
-   integer    ah2owid             ! var. id for wndw abs. (adjacent layers)
-   integer cn_ah2owid             ! var. id for continuum trans. for wndw abs.
-   integer cn_eh2owid             ! var. id for continuum trans. for wndw ems.
-   integer ln_ah2owid             ! var. id for line trans. for wndw abs.
-   integer ln_eh2owid             ! var. id for line trans. for wndw ems.
-
-   character*(NF_MAX_NAME) tmpname! dummy variable for var/dim names
-   character(len=256) locfn       ! local filename
-   integer tmptype                ! dummy variable for variable type
-   integer ndims                  ! number of dimensions
-   integer dims(NF_MAX_VAR_DIMS)  ! vector of dimension ids
-   integer natt                   ! number of attributes
+   !+++CliMT  BRIAN getting rid of netcdf dependence
+   ! integer ncid_ae                ! NetCDF file id for abs/ems file
+   !
+   ! integer pdimid                 ! pressure dimension id
+   ! integer psize                  ! pressure dimension size
+   !
+   ! integer tpdimid                ! path temperature dimension id
+   ! integer tpsize                 ! path temperature size
+   !
+   ! integer tedimid                ! emission temperature dimension id
+   ! integer tesize                 ! emission temperature size
+   !
+   ! integer udimid                 ! u (H2O path) dimension id
+   ! integer usize                  ! u (H2O path) dimension size
+   !
+   ! integer rhdimid                ! relative humidity dimension id
+   ! integer rhsize                 ! relative humidity dimension size
+   !
+   ! integer    ah2onwid            ! var. id for non-wndw abs.
+   ! integer    eh2onwid            ! var. id for non-wndw ems.
+   ! integer    ah2owid             ! var. id for wndw abs. (adjacent layers)
+   ! integer cn_ah2owid             ! var. id for continuum trans. for wndw abs.
+   ! integer cn_eh2owid             ! var. id for continuum trans. for wndw ems.
+   ! integer ln_ah2owid             ! var. id for line trans. for wndw abs.
+   ! integer ln_eh2owid             ! var. id for line trans. for wndw ems.
+   !
+   ! character*(NF_MAX_NAME) tmpname! dummy variable for var/dim names
+   ! character(len=256) locfn       ! local filename
+   ! integer tmptype                ! dummy variable for variable type
+   ! integer ndims                  ! number of dimensions
+   ! integer dims(NF_MAX_VAR_DIMS)  ! vector of dimension ids
+   ! integer natt                   ! number of attributes
+   !+++CliMT
 !
 ! Variables for setting up H2O table
 !
@@ -2860,116 +2865,119 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
 !!--CliMT
 
    if ( masterproc ) then
-!!++CliMT
-!      call getfil(absems_data, locfn)
-!      call wrap_open(locfn, NF_NOWRITE, ncid_ae)
-      call wrap_open(absemsfile, NF_NOWRITE, ncid_ae)
-!!--CliMT
+!!++CliMT  BRIAN  commented out this whole block -- no more calls to netcdf
+! !!++CliMT
+! !      call getfil(absems_data, locfn)
+! !      call wrap_open(locfn, NF_NOWRITE, ncid_ae)
+!       call wrap_open(absemsfile, NF_NOWRITE, ncid_ae)
+! !!--CliMT
+!
+!       call wrap_inq_dimid(ncid_ae, 'p', pdimid)
+!       call wrap_inq_dimlen(ncid_ae, pdimid, psize)
+!
+!       call wrap_inq_dimid(ncid_ae, 'tp', tpdimid)
+!       call wrap_inq_dimlen(ncid_ae, tpdimid, tpsize)
+!
+!       call wrap_inq_dimid(ncid_ae, 'te', tedimid)
+!       call wrap_inq_dimlen(ncid_ae, tedimid, tesize)
+!
+!       call wrap_inq_dimid(ncid_ae, 'u', udimid)
+!       call wrap_inq_dimlen(ncid_ae, udimid, usize)
+!
+!       call wrap_inq_dimid(ncid_ae, 'rh', rhdimid)
+!       call wrap_inq_dimlen(ncid_ae, rhdimid, rhsize)
+!
+!       if (psize    /= n_p  .or. &
+!           tpsize   /= n_tp .or. &
+!           usize    /= n_u  .or. &
+!           tesize   /= n_te .or. &
+!           rhsize   /= n_rh) then
+!          call endrun ('RADAEINI: dimensions for abs/ems do not match internal def.')
+!       endif
+!
+!       call wrap_inq_varid(ncid_ae, 'ah2onw',   ah2onwid)
+!       call wrap_inq_varid(ncid_ae, 'eh2onw',   eh2onwid)
+!       call wrap_inq_varid(ncid_ae, 'ah2ow',    ah2owid)
+!       call wrap_inq_varid(ncid_ae, 'cn_ah2ow', cn_ah2owid)
+!       call wrap_inq_varid(ncid_ae, 'cn_eh2ow', cn_eh2owid)
+!       call wrap_inq_varid(ncid_ae, 'ln_ah2ow', ln_ah2owid)
+!       call wrap_inq_varid(ncid_ae, 'ln_eh2ow', ln_eh2owid)
+!
+!       call wrap_inq_var(ncid_ae, ah2onwid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: non-wndw abs. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, eh2onwid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: non-wndw ems. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, ah2owid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: window abs. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, cn_ah2owid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: cont. trans for abs. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, cn_eh2owid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: cont. trans. for ems. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, ln_ah2owid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: line trans for abs. in file /= internal def.')
+!       endif
+!       call wrap_inq_var(ncid_ae, ln_eh2owid, tmpname, tmptype, ndims, dims, natt)
+!       if (ndims /= 5 .or. &
+!            dims(1) /= pdimid    .or. &
+!            dims(2) /= tpdimid   .or. &
+!            dims(3) /= udimid    .or. &
+!            dims(4) /= tedimid   .or. &
+!            dims(5) /= rhdimid) then
+!          call endrun ('RADAEINI: line trans. for ems. in file /= internal def.')
+!       endif
+!
+!       call wrap_get_var_realx (ncid_ae, ah2onwid,   ah2onw)
+!       call wrap_get_var_realx (ncid_ae, eh2onwid,   eh2onw)
+!       call wrap_get_var_realx (ncid_ae, ah2owid,    ah2ow)
+!       call wrap_get_var_realx (ncid_ae, cn_ah2owid, cn_ah2ow)
+!       call wrap_get_var_realx (ncid_ae, cn_eh2owid, cn_eh2ow)
+!       call wrap_get_var_realx (ncid_ae, ln_ah2owid, ln_ah2ow)
+!       call wrap_get_var_realx (ncid_ae, ln_eh2owid, ln_eh2ow)
+!
+!       call wrap_close(ncid_ae)
+!!++CliMT  BRIAN end of commented out block of netcdf calls
 
-      call wrap_inq_dimid(ncid_ae, 'p', pdimid)
-      call wrap_inq_dimlen(ncid_ae, pdimid, psize)
-
-      call wrap_inq_dimid(ncid_ae, 'tp', tpdimid)
-      call wrap_inq_dimlen(ncid_ae, tpdimid, tpsize)
-
-      call wrap_inq_dimid(ncid_ae, 'te', tedimid)
-      call wrap_inq_dimlen(ncid_ae, tedimid, tesize)
-
-      call wrap_inq_dimid(ncid_ae, 'u', udimid)
-      call wrap_inq_dimlen(ncid_ae, udimid, usize)
-
-      call wrap_inq_dimid(ncid_ae, 'rh', rhdimid)
-      call wrap_inq_dimlen(ncid_ae, rhdimid, rhsize)
-
-      if (psize    /= n_p  .or. &
-          tpsize   /= n_tp .or. &
-          usize    /= n_u  .or. &
-          tesize   /= n_te .or. &
-          rhsize   /= n_rh) then
-         call endrun ('RADAEINI: dimensions for abs/ems do not match internal def.')
-      endif
-
-      call wrap_inq_varid(ncid_ae, 'ah2onw',   ah2onwid)
-      call wrap_inq_varid(ncid_ae, 'eh2onw',   eh2onwid)
-      call wrap_inq_varid(ncid_ae, 'ah2ow',    ah2owid)
-      call wrap_inq_varid(ncid_ae, 'cn_ah2ow', cn_ah2owid)
-      call wrap_inq_varid(ncid_ae, 'cn_eh2ow', cn_eh2owid)
-      call wrap_inq_varid(ncid_ae, 'ln_ah2ow', ln_ah2owid)
-      call wrap_inq_varid(ncid_ae, 'ln_eh2ow', ln_eh2owid)
-
-      call wrap_inq_var(ncid_ae, ah2onwid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: non-wndw abs. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, eh2onwid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: non-wndw ems. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, ah2owid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: window abs. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, cn_ah2owid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: cont. trans for abs. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, cn_eh2owid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: cont. trans. for ems. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, ln_ah2owid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: line trans for abs. in file /= internal def.')
-      endif
-      call wrap_inq_var(ncid_ae, ln_eh2owid, tmpname, tmptype, ndims, dims, natt)
-      if (ndims /= 5 .or. &
-           dims(1) /= pdimid    .or. &
-           dims(2) /= tpdimid   .or. &
-           dims(3) /= udimid    .or. &
-           dims(4) /= tedimid   .or. &
-           dims(5) /= rhdimid) then
-         call endrun ('RADAEINI: line trans. for ems. in file /= internal def.')
-      endif
-
-      call wrap_get_var_realx (ncid_ae, ah2onwid,   ah2onw)
-      call wrap_get_var_realx (ncid_ae, eh2onwid,   eh2onw)
-      call wrap_get_var_realx (ncid_ae, ah2owid,    ah2ow)
-      call wrap_get_var_realx (ncid_ae, cn_ah2owid, cn_ah2ow)
-      call wrap_get_var_realx (ncid_ae, cn_eh2owid, cn_eh2ow)
-      call wrap_get_var_realx (ncid_ae, ln_ah2owid, ln_ah2ow)
-      call wrap_get_var_realx (ncid_ae, ln_eh2owid, ln_eh2ow)
-
-      call wrap_close(ncid_ae)
 !
 ! Set up table of H2O saturation vapor pressures for use in calculation
 !     effective path RH.  Need separate table from table in wv_saturation
