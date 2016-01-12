@@ -8,7 +8,7 @@ module radae
 ! Data and subroutines to calculate absorptivities and emissivity needed
 ! for the LW radiation calculation.
 !
-! Public interfaces are: 
+! Public interfaces are:
 !
 ! radae_init ------------ Initialization
 ! initialize_radbuffer -- Initialize the 3D abs/emis arrays.
@@ -31,6 +31,9 @@ module radae
   use volcrad
   use abortutils, only: endrun
   use prescribed_aerosols, only: strat_volcanic
+!+++CliMT  BRIAN now storing abs/ems data in separate module
+  use absems,       only: ah2onw, ah2ow, cn_ah2ow, cn_eh2ow, eh2onw, ln_ah2ow, ln_eh2ow
+!+++CliMT
 
   implicit none
 
@@ -73,13 +76,15 @@ module radae
   integer, parameter :: n_te = 21  ! Number of T_e in abs/emis tables
   integer, parameter :: n_rh = 7   ! Number of RH in abs/emis tables
 
-  real(r8):: ah2onw(n_p, n_tp, n_u, n_te, n_rh)   ! absorptivity (non-window)
-  real(r8):: eh2onw(n_p, n_tp, n_u, n_te, n_rh)   ! emissivity   (non-window)
-  real(r8):: ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! absorptivity (window, for adjacent layers)
-  real(r8):: cn_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for absorptivity (window)
-  real(r8):: cn_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for emissivity   (window)
-  real(r8):: ln_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for absorptivity (window)
-  real(r8):: ln_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for emissivity   (window)
+!+++CliMT  BRIAN these arrays are now defined in module absems
+!  real(r8):: ah2onw(n_p, n_tp, n_u, n_te, n_rh)   ! absorptivity (non-window)
+!  real(r8):: eh2onw(n_p, n_tp, n_u, n_te, n_rh)   ! emissivity   (non-window)
+!  real(r8):: ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! absorptivity (window, for adjacent layers)
+!  real(r8):: cn_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for absorptivity (window)
+!  real(r8):: cn_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! continuum transmission for emissivity   (window)
+!  real(r8):: ln_ah2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for absorptivity (window)
+!  real(r8):: ln_eh2ow(n_p, n_tp, n_u, n_te, n_rh)    ! line-only transmission for emissivity   (window)
+!+++CliMT
 !
 ! Constant coefficients for water vapor overlap with trace gases.
 ! Reference: Ramanathan, V. and  P.Downey, 1986: A Nonisothermal
@@ -107,10 +112,10 @@ module radae
 ! calculations.  Just used for water vapor overlap with trace gases.
 !
   real(r8):: fwcoef      ! Farwing correction constant
-  real(r8):: fwc1,fwc2   ! Farwing correction constants 
-  real(r8):: fc1         ! Farwing correction constant 
+  real(r8):: fwc1,fwc2   ! Farwing correction constants
+  real(r8):: fc1         ! Farwing correction constant
 !
-! Collins/Hackney/Edwards (C/H/E) & Collins/Lee-Taylor/Edwards (C/LT/E) 
+! Collins/Hackney/Edwards (C/H/E) & Collins/Lee-Taylor/Edwards (C/LT/E)
 !       H2O parameterization
 !
 ! Notation:
@@ -124,10 +129,10 @@ module radae
 !
 ! absorptivity/emissivity in window are fit using an expression:
 !
-!      a/e = f_a/e * {1.0 - ln_a/e * cn_a/e} 
+!      a/e = f_a/e * {1.0 - ln_a/e * cn_a/e}
 !
 ! absorptivity/emissivity in non-window are fit using:
-! 
+!
 !      a/e = f_a/e * a/e_norm
 !
 ! where
@@ -143,8 +148,8 @@ module radae
 !
 ! The H2O saturation table spans 160K to 351K in 1K intervals).
 !
-  real(r8), parameter:: min_tp_h2o = 160.0        ! min T_p for pre-calculated abs/emis 
-  real(r8), parameter:: max_tp_h2o = 349.999999   ! max T_p for pre-calculated abs/emis 
+  real(r8), parameter:: min_tp_h2o = 160.0        ! min T_p for pre-calculated abs/emis
+  real(r8), parameter:: max_tp_h2o = 349.999999   ! max T_p for pre-calculated abs/emis
   integer, parameter :: ntemp = 192 ! Number of temperatures in H2O sat. table for Tp
   real(r8) :: estblh2o(0:ntemp)       ! saturation vapor pressure for H2O for Tp rang
   integer, parameter :: o_fa = 6   ! Degree+1 of poly of T_e for absorptivity as U->inf.
@@ -169,7 +174,7 @@ module radae
 !
 ! Coefficients of polynomial for f_e in T_e
 !
-  real(r8), parameter:: fet(o_fe,nbands) = reshape( (/ & 
+  real(r8), parameter:: fet(o_fe,nbands) = reshape( (/ &
       (/3.46148163E-01,  1.51240299E-02, -1.21846479E-04,   &   ! 0-800&1200-2200 cm^-1
         4.04970123E-07, -6.15368936E-10,  3.52415071E-13/), &   !   0-800&1200-2200 cm^-1
       (/6.53851837E-01, -1.51240299E-02,  1.21846479E-04,   &   ! 800-1200 cm^-1
@@ -178,24 +183,24 @@ module radae
 !
 ! Note: max values should be slightly underestimated to avoid index bound violations
 !
-  real(r8), parameter:: min_lp_h2o = -3.0         ! min log_10(P) for pre-calculated abs/emis 
-  real(r8), parameter:: min_p_h2o = 1.0e-3        ! min log_10(P) for pre-calculated abs/emis 
-  real(r8), parameter:: max_lp_h2o = -0.0000001   ! max log_10(P) for pre-calculated abs/emis 
+  real(r8), parameter:: min_lp_h2o = -3.0         ! min log_10(P) for pre-calculated abs/emis
+  real(r8), parameter:: min_p_h2o = 1.0e-3        ! min log_10(P) for pre-calculated abs/emis
+  real(r8), parameter:: max_lp_h2o = -0.0000001   ! max log_10(P) for pre-calculated abs/emis
   real(r8), parameter:: dlp_h2o = 0.3333333333333 ! difference in adjacent elements of lp_h2o
- 
+
   real(r8), parameter:: dtp_h2o = 21.111111111111 ! difference in adjacent elements of tp_h2o
 
-  real(r8), parameter:: min_rh_h2o = 0.0          ! min RH for pre-calculated abs/emis 
-  real(r8), parameter:: max_rh_h2o = 1.19999999   ! max RH for pre-calculated abs/emis 
+  real(r8), parameter:: min_rh_h2o = 0.0          ! min RH for pre-calculated abs/emis
+  real(r8), parameter:: max_rh_h2o = 1.19999999   ! max RH for pre-calculated abs/emis
   real(r8), parameter:: drh_h2o = 0.2             ! difference in adjacent elements of RH
 
-  real(r8), parameter:: min_te_h2o = -120.0       ! min T_e-T_p for pre-calculated abs/emis 
-  real(r8), parameter:: max_te_h2o = 79.999999    ! max T_e-T_p for pre-calculated abs/emis 
+  real(r8), parameter:: min_te_h2o = -120.0       ! min T_e-T_p for pre-calculated abs/emis
+  real(r8), parameter:: max_te_h2o = 79.999999    ! max T_e-T_p for pre-calculated abs/emis
   real(r8), parameter:: dte_h2o  = 10.0           ! difference in adjacent elements of te_h2o
 
-  real(r8), parameter:: min_lu_h2o = -8.0         ! min log_10(U) for pre-calculated abs/emis 
+  real(r8), parameter:: min_lu_h2o = -8.0         ! min log_10(U) for pre-calculated abs/emis
   real(r8), parameter:: min_u_h2o  = 1.0e-8       ! min pressure-weighted path-length
-  real(r8), parameter:: max_lu_h2o =  3.9999999   ! max log_10(U) for pre-calculated abs/emis 
+  real(r8), parameter:: max_lu_h2o =  3.9999999   ! max log_10(U) for pre-calculated abs/emis
   real(r8), parameter:: dlu_h2o  = 0.5            ! difference in adjacent elements of lu_h2o
 
 
@@ -214,12 +219,12 @@ subroutine radabs(lchnk   ,ncol    ,             &
    bn2o0  ,bn2o1   ,bch4    ,abplnk1  ,abplnk2 , &
    abstot ,absnxt  ,plh2ob  ,wb       , &
    aer_mpp ,aer_trn_ttl)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Compute absorptivities for h2o, co2, o3, ch4, n2o, cfc11 and cfc12
-! 
-! Method: 
+!
+! Method:
 ! h2o  ....  Uses nonisothermal emissivity method for water vapor from
 !            Ramanathan, V. and  P.Downey, 1986: A Nonisothermal
 !            Emissivity and Absorptivity Formulation for Water Vapor
@@ -264,7 +269,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 ! Computes individual absorptivities for non-adjacent layers, accounting
 ! for band overlap, and sums to obtain the total; then, computes the
 ! nearest layer contribution.
-! 
+!
 ! Author: W. Collins (H2O absorptivity) and J. Kiehl
 !------------------------------Arguments--------------------------------
 !
@@ -291,12 +296,12 @@ subroutine radabs(lchnk   ,ncol    ,             &
    real(r8), intent(in) :: plos(pcols,pverp)          ! Ozone path length
    real(r8), intent(in) :: pmln(pcols,pver)           ! Ln(pmidm1)
    real(r8), intent(in) :: piln(pcols,pverp)          ! Ln(pintm1)
-   real(r8), intent(in) :: plh2ob(nbands,pcols,pverp) ! Pressure weighted h2o path with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
-   real(r8), intent(in) :: wb(nbands,pcols,pverp)     ! H2o path length with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
+   real(r8), intent(in) :: plh2ob(nbands,pcols,pverp) ! Pressure weighted h2o path with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
+   real(r8), intent(in) :: wb(nbands,pcols,pverp)     ! H2o path length with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
 
    real(r8), intent(in) :: aer_mpp(pcols,pverp) ! STRAER path above kth interface level
    real(r8), intent(in) :: aer_trn_ttl(pcols,pverp,pverp,bnd_nbr_LW) ! aer trn.
@@ -452,7 +457,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
    real(r8) dbvtit(pcols,pverp)! Intrfc drvtv plnck fnctn for o3
    real(r8) dbvtly(pcols,pver) ! Level drvtv plnck fnctn for o3
 !
-! Variables for Collins/Hackney/Edwards (C/H/E) & 
+! Variables for Collins/Hackney/Edwards (C/H/E) &
 !       Collins/Lee-Taylor/Edwards (C/LT/E) H2O parameterization
 
 !
@@ -476,7 +481,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
    real(r8) te4              ! te^4
    real(r8) te5              ! te^5
 
-   real(r8) log_u            ! log base 10 of U 
+   real(r8) log_u            ! log base 10 of U
    real(r8) log_uc           ! log base 10 of H2O continuum path
    real(r8) log_p            ! log base 10 of P
    real(r8) t_p              ! T_p
@@ -569,8 +574,8 @@ subroutine radabs(lchnk   ,ncol    ,             &
       real(r8) aer_pth_ngh(pcols)
                              ! [kg m-2] STRAER path between neighboring layers
       real(r8) odap_aer_ttl  ! [fraction] Total path absorption optical depth
-      real(r8) aer_trn_ngh(pcols,bnd_nbr_LW) 
-                             ! [fraction] Total transmission between 
+      real(r8) aer_trn_ngh(pcols,bnd_nbr_LW)
+                             ! [fraction] Total transmission between
                              !            nearest neighbor sub-levels
 !
 !--------------------------Statement function---------------------------
@@ -676,7 +681,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !
 ! Calculate effective u, pnew for each band using
 !        Hulst-Curtis-Godson approximation:
-! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis, 
+! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis,
 !           2nd edition, Oxford University Press, 1989.
 ! Effective H2O path (w)
 !      eq. 6.24, p. 228
@@ -685,7 +690,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !
             ub(1) = abs(plh2ob(1,i,k1) - plh2ob(1,i,k2)) / psi(t_p,1)
             ub(2) = abs(plh2ob(2,i,k1) - plh2ob(2,i,k2)) / psi(t_p,2)
-            
+
             pnewb(1) = ub(1) / abs(wb(1,i,k1) - wb(1,i,k2)) * phi(t_p,1)
             pnewb(2) = ub(2) / abs(wb(2,i,k1) - wb(2,i,k2)) * phi(t_p,2)
 
@@ -705,7 +710,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !                only 2 slots needed for H2O absorptivity
 !
 ! Notation:
-! U   = integral (P/P_0 dW)  
+! U   = integral (P/P_0 dW)
 ! P   = atmospheric pressure
 ! P_0 = reference atmospheric pressure
 ! W   = precipitable water path
@@ -730,14 +735,14 @@ subroutine radabs(lchnk   ,ncol    ,             &
             itp1 = itp + 1
             wtp = dvar - floor(dvar)
             wtp1 = 1.0 - wtp
-            
+
             t_e = min(max(tplnka(i,k2)-t_p, min_te_h2o), max_te_h2o)
             dvar = (t_e - min_te_h2o) / dte_h2o
             ite = min(max(int(aint(dvar,r8)) + 1, 1), n_te - 1)
             ite1 = ite + 1
             wte = dvar - floor(dvar)
             wte1 = 1.0 - wte
-            
+
             rh_path = min(max(q_path / qsx, min_rh_h2o), max_rh_h2o)
             dvar = (rh_path - min_rh_h2o) / drh_h2o
             irh = min(max(int(aint(dvar,r8)) + 1, 1), n_rh - 1)
@@ -747,9 +752,9 @@ subroutine radabs(lchnk   ,ncol    ,             &
 
             w_0_0_ = wtp  * wte
             w_0_1_ = wtp  * wte1
-            w_1_0_ = wtp1 * wte 
+            w_1_0_ = wtp1 * wte
             w_1_1_ = wtp1 * wte1
-            
+
             w_0_00 = w_0_0_ * wrh
             w_0_01 = w_0_0_ * wrh1
             w_0_10 = w_0_1_ * wrh
@@ -764,13 +769,13 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !
 !    Assume foreign continuum dominates total H2O continuum in these bands
 !    per Clough et al, JGR, v. 97, no. D14 (Oct 20, 1992), p. 15776
-!    Then the effective H2O path is just 
+!    Then the effective H2O path is just
 !         U_c = integral[ f(P) dW ]
-!    where 
-!           W = water-vapor mass and 
-!        f(P) = dependence of foreign continuum on pressure 
+!    where
+!           W = water-vapor mass and
+!        f(P) = dependence of foreign continuum on pressure
 !             = P / sslp
-!    Then 
+!    Then
 !         U_c = U (the same effective H2O path as for lines)
 !
 !
@@ -778,10 +783,10 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !
 !    Assume self continuum dominates total H2O continuum for this band
 !    per Clough et al, JGR, v. 97, no. D14 (Oct 20, 1992), p. 15776
-!    Then the effective H2O self-continuum path is 
+!    Then the effective H2O self-continuum path is
 !         U_c = integral[ h(e,T) dW ]                        (*eq. 1*)
-!    where 
-!           W = water-vapor mass and 
+!    where
+!           W = water-vapor mass and
 !           e = partial pressure of H2O along path
 !           T = temperature along path
 !      h(e,T) = dependence of foreign continuum on e,T
@@ -810,7 +815,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !
 !        U' = (U_c * epsilo) / (q * f(T))
 !
-            fch2o = fh2oself(t_p) 
+            fch2o = fh2oself(t_p)
             uch2o = (pch2o * epsilo) / (q_path * fch2o)
 
 !
@@ -825,30 +830,30 @@ subroutine radabs(lchnk   ,ncol    ,             &
             iu1 = iu + 1
             wu = dvar - floor(dvar)
             wu1 = 1.0 - wu
-            
+
             log_p  = min(log10(max(pnewb(ib), min_p_h2o)), max_lp_h2o)
             dvar = (log_p - min_lp_h2o) / dlp_h2o
             ip = min(max(int(aint(dvar,r8)) + 1, 1), n_p - 1)
             ip1 = ip + 1
             wp = dvar - floor(dvar)
             wp1 = 1.0 - wp
-         
-            w00_00 = wp  * w_0_00 
-            w00_01 = wp  * w_0_01 
-            w00_10 = wp  * w_0_10 
-            w00_11 = wp  * w_0_11 
-            w01_00 = wp  * w_1_00 
-            w01_01 = wp  * w_1_01 
-            w01_10 = wp  * w_1_10 
-            w01_11 = wp  * w_1_11 
-            w10_00 = wp1 * w_0_00 
-            w10_01 = wp1 * w_0_01 
-            w10_10 = wp1 * w_0_10 
-            w10_11 = wp1 * w_0_11 
-            w11_00 = wp1 * w_1_00 
-            w11_01 = wp1 * w_1_01 
-            w11_10 = wp1 * w_1_10 
-            w11_11 = wp1 * w_1_11 
+
+            w00_00 = wp  * w_0_00
+            w00_01 = wp  * w_0_01
+            w00_10 = wp  * w_0_10
+            w00_11 = wp  * w_0_11
+            w01_00 = wp  * w_1_00
+            w01_01 = wp  * w_1_01
+            w01_10 = wp  * w_1_10
+            w01_11 = wp  * w_1_11
+            w10_00 = wp1 * w_0_00
+            w10_01 = wp1 * w_0_01
+            w10_10 = wp1 * w_0_10
+            w10_11 = wp1 * w_0_11
+            w11_00 = wp1 * w_1_00
+            w11_01 = wp1 * w_1_01
+            w11_10 = wp1 * w_1_10
+            w11_11 = wp1 * w_1_11
 !
 ! Asymptotic value of absorptivity as U->infinity
 !
@@ -891,7 +896,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  ah2onw(ip1, itp1, iu1, ite , irh ) * w00_11 * wu  + &
                  ah2onw(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
                  ah2onw(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
-                 ah2onw(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu 
+                 ah2onw(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
             abso(i,ib) = min(max(fa * (1.0 - (1.0 - a_star) * &
                                  aer_trn_ttl(i,k1,k2,ib)), &
                              0.0_r8), 1.0_r8)
@@ -902,7 +907,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                uscl = uvar / min_u_h2o
                abso(i,ib) = abso(i,ib) * uscl
             endif
-                         
+
 !
 ! Band-dependent indices for window
 !
@@ -915,30 +920,30 @@ subroutine radabs(lchnk   ,ncol    ,             &
             iu1 = iu + 1
             wu = dvar - floor(dvar)
             wu1 = 1.0 - wu
-            
+
             log_p  = min(log10(max(pnewb(ib), min_p_h2o)), max_lp_h2o)
             dvar = (log_p - min_lp_h2o) / dlp_h2o
             ip = min(max(int(aint(dvar,r8)) + 1, 1), n_p - 1)
             ip1 = ip + 1
             wp = dvar - floor(dvar)
             wp1 = 1.0 - wp
-         
-            w00_00 = wp  * w_0_00 
-            w00_01 = wp  * w_0_01 
-            w00_10 = wp  * w_0_10 
-            w00_11 = wp  * w_0_11 
-            w01_00 = wp  * w_1_00 
-            w01_01 = wp  * w_1_01 
-            w01_10 = wp  * w_1_10 
-            w01_11 = wp  * w_1_11 
-            w10_00 = wp1 * w_0_00 
-            w10_01 = wp1 * w_0_01 
-            w10_10 = wp1 * w_0_10 
-            w10_11 = wp1 * w_0_11 
-            w11_00 = wp1 * w_1_00 
-            w11_01 = wp1 * w_1_01 
-            w11_10 = wp1 * w_1_10 
-            w11_11 = wp1 * w_1_11 
+
+            w00_00 = wp  * w_0_00
+            w00_01 = wp  * w_0_01
+            w00_10 = wp  * w_0_10
+            w00_11 = wp  * w_0_11
+            w01_00 = wp  * w_1_00
+            w01_01 = wp  * w_1_01
+            w01_10 = wp  * w_1_10
+            w01_11 = wp  * w_1_11
+            w10_00 = wp1 * w_0_00
+            w10_01 = wp1 * w_0_01
+            w10_10 = wp1 * w_0_10
+            w10_11 = wp1 * w_0_11
+            w11_00 = wp1 * w_1_00
+            w11_01 = wp1 * w_1_01
+            w11_10 = wp1 * w_1_10
+            w11_11 = wp1 * w_1_11
 
             log_uc  = min(log10(max(uch2o * fdif, min_u_h2o)), max_lu_h2o)
             dvar = (log_uc - min_lu_h2o) / dlu_h2o
@@ -988,7 +993,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  ln_ah2ow(ip1, itp1, iu1, ite , irh ) * w00_11 * wu  + &
                  ln_ah2ow(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
                  ln_ah2ow(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
-                 ln_ah2ow(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu 
+                 ln_ah2ow(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
 
             c_star = &
                  cn_ah2ow(ip , itp , iuc , ite , irh ) * w11_11 * wuc1 + &
@@ -1022,10 +1027,10 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  cn_ah2ow(ip1, itp1, iuc1, ite , irh ) * w00_11 * wuc  + &
                  cn_ah2ow(ip1, itp1, iuc1, ite , irh1) * w00_10 * wuc  + &
                  cn_ah2ow(ip1, itp1, iuc1, ite1, irh ) * w00_01 * wuc  + &
-                 cn_ah2ow(ip1, itp1, iuc1, ite1, irh1) * w00_00 * wuc 
+                 cn_ah2ow(ip1, itp1, iuc1, ite1, irh1) * w00_00 * wuc
             abso(i,ib) = min(max(fa * (1.0 - l_star * c_star * &
                                  aer_trn_ttl(i,k1,k2,ib)), &
-                             0.0_r8), 1.0_r8) 
+                             0.0_r8), 1.0_r8)
 !
 ! Invoke linear limit for scaling wrt u below min_u_h2o
 !
@@ -1054,7 +1059,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                (1. + (c28 + c29*(dty(i)-10.))*sqrtu(i))
             tr1    = exp(-(k21*(sqrtu(i) + fc1*fwku(i))))
             tr2    = exp(-(k22*(sqrtu(i) + fc1*fwku(i))))
-            tr1=tr1*aer_trn_ttl(i,k1,k2,idx_LW_0650_0800) 
+            tr1=tr1*aer_trn_ttl(i,k1,k2,idx_LW_0650_0800)
 !                                          ! H2O line+STRAER trn 650--800 cm-1
             tr2=tr2*aer_trn_ttl(i,k1,k2,idx_LW_0500_0650)
 !                                          ! H2O line+STRAER trn 500--650 cm-1
@@ -1163,8 +1168,8 @@ subroutine radabs(lchnk   ,ncol    ,             &
             abstot(i,k1,k2) = abso(i,1) + abso(i,2) + &
                abso(i,3) + abso(i,4) + abstrc(i)
          end do
-      end do ! do k2 = 
-   end do ! do k1 = 
+      end do ! do k2 =
+   end do ! do k1 =
 !
 ! Adjacent layer absorptivity:
 !
@@ -1214,7 +1219,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
             bplnk(wvl,i,4) = bplnk(wvl,i,2)
          end do
       end do
-      
+
       do i=1,ncol
          rdpnmsq    = 1./(pnmsq(i,k2+1) - pnmsq(i,k2))
          rdpnm      = 1./dpnm(i)
@@ -1256,22 +1261,22 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  (t_p - min_tp_h2o - iest)
             qsx = epsilo * esx / (pnew_mks - omeps * esx)
             q_path = dw(i) / ABS(dpnm(i)) / rga
-            
+
             ds2c     = abs(s2c(i,k2) - s2c(i,k2+1))
             uc1(i)   = uinpl(i,kn)*ds2c
             pch2o    = uc1(i)
             uc1(i)   = (uc1(i) + 1.7e-3*u(i))*(1. +  2.*uc1(i))/(1. + 15.*uc1(i))
             dtx(i)      = temh2o(i,kn) - 250.
             dty(i)      = tbar(i,kn) - 250.
-            
+
             fwk(i)    = fwcoef + fwc1/(1. + fwc2*u(i))
             fwku(i)   = fwk(i)*u(i)
 
             if(strat_volcanic) then
               aer_pth_dlt=uinpl(i,kn)*aer_pth_ngh(i)
-  
+
               do bnd_idx=1,bnd_nbr_LW
-                 odap_aer_ttl=abs_cff_mss_aer(bnd_idx) * aer_pth_dlt 
+                 odap_aer_ttl=abs_cff_mss_aer(bnd_idx) * aer_pth_dlt
                  aer_trn_ngh(i,bnd_idx)=exp(-fdif * odap_aer_ttl)
               end do
             else
@@ -1289,7 +1294,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
 !                only 2 slots needed for H2O absorptivity
 !
 ! Notation:
-! U   = integral (P/P_0 dW)  
+! U   = integral (P/P_0 dW)
 ! P   = atmospheric pressure
 ! P_0 = reference atmospheric pressure
 ! W   = precipitable water path
@@ -1307,7 +1312,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
             te5  = te4 * te1
 
 !
-! Indices for lines and continuum tables 
+! Indices for lines and continuum tables
 ! Note: because we are dealing with the nearest layer,
 !       the Hulst-Curtis-Godson corrections
 !       for inhomogeneous paths are not applied.
@@ -1319,39 +1324,39 @@ subroutine radabs(lchnk   ,ncol    ,             &
             iu1 = iu + 1
             wu = dvar - floor(dvar)
             wu1 = 1.0 - wu
-            
+
             log_p  = min(log10(max(pnew(i), min_p_h2o)), max_lp_h2o)
             dvar = (log_p - min_lp_h2o) / dlp_h2o
             ip = min(max(int(aint(dvar,r8)) + 1, 1), n_p - 1)
             ip1 = ip + 1
             wp = dvar - floor(dvar)
             wp1 = 1.0 - wp
-            
+
             dvar = (t_p - min_tp_h2o) / dtp_h2o
             itp = min(max(int(aint(dvar,r8)) + 1, 1), n_tp - 1)
             itp1 = itp + 1
             wtp = dvar - floor(dvar)
             wtp1 = 1.0 - wtp
-            
+
             t_e = min(max(temh2o(i,kn)-t_p,min_te_h2o),max_te_h2o)
             dvar = (t_e - min_te_h2o) / dte_h2o
             ite = min(max(int(aint(dvar,r8)) + 1, 1), n_te - 1)
             ite1 = ite + 1
             wte = dvar - floor(dvar)
             wte1 = 1.0 - wte
-            
+
             rh_path = min(max(q_path / qsx, min_rh_h2o), max_rh_h2o)
             dvar = (rh_path - min_rh_h2o) / drh_h2o
             irh = min(max(int(aint(dvar,r8)) + 1, 1), n_rh - 1)
             irh1 = irh + 1
             wrh = dvar - floor(dvar)
             wrh1 = 1.0 - wrh
-            
+
             w_0_0_ = wtp  * wte
             w_0_1_ = wtp  * wte1
-            w_1_0_ = wtp1 * wte 
+            w_1_0_ = wtp1 * wte
             w_1_1_ = wtp1 * wte1
-            
+
             w_0_00 = w_0_0_ * wrh
             w_0_01 = w_0_0_ * wrh1
             w_0_10 = w_0_1_ * wrh
@@ -1360,36 +1365,36 @@ subroutine radabs(lchnk   ,ncol    ,             &
             w_1_01 = w_1_0_ * wrh1
             w_1_10 = w_1_1_ * wrh
             w_1_11 = w_1_1_ * wrh1
-            
-            w00_00 = wp  * w_0_00 
-            w00_01 = wp  * w_0_01 
-            w00_10 = wp  * w_0_10 
-            w00_11 = wp  * w_0_11 
-            w01_00 = wp  * w_1_00 
-            w01_01 = wp  * w_1_01 
-            w01_10 = wp  * w_1_10 
-            w01_11 = wp  * w_1_11 
-            w10_00 = wp1 * w_0_00 
-            w10_01 = wp1 * w_0_01 
-            w10_10 = wp1 * w_0_10 
-            w10_11 = wp1 * w_0_11 
-            w11_00 = wp1 * w_1_00 
-            w11_01 = wp1 * w_1_01 
-            w11_10 = wp1 * w_1_10 
-            w11_11 = wp1 * w_1_11 
+
+            w00_00 = wp  * w_0_00
+            w00_01 = wp  * w_0_01
+            w00_10 = wp  * w_0_10
+            w00_11 = wp  * w_0_11
+            w01_00 = wp  * w_1_00
+            w01_01 = wp  * w_1_01
+            w01_10 = wp  * w_1_10
+            w01_11 = wp  * w_1_11
+            w10_00 = wp1 * w_0_00
+            w10_01 = wp1 * w_0_01
+            w10_10 = wp1 * w_0_10
+            w10_11 = wp1 * w_0_11
+            w11_00 = wp1 * w_1_00
+            w11_01 = wp1 * w_1_01
+            w11_10 = wp1 * w_1_10
+            w11_11 = wp1 * w_1_11
 
 !
 ! Non-window absorptivity
 !
             ib = 1
-            
+
             fa = fat(1,ib) + &
                  fat(2,ib) * te1 + &
                  fat(3,ib) * te2 + &
                  fat(4,ib) * te3 + &
                  fat(5,ib) * te4 + &
                  fat(6,ib) * te5
-            
+
             a_star = &
                  ah2onw(ip , itp , iu , ite , irh ) * w11_11 * wu1 + &
                  ah2onw(ip , itp , iu , ite , irh1) * w11_10 * wu1 + &
@@ -1423,7 +1428,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  ah2onw(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
                  ah2onw(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
                  ah2onw(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
-            
+
             abso(i,ib) = min(max(fa * (1.0 - (1.0 - a_star) * &
                                  aer_trn_ngh(i,ib)), &
                              0.0_r8), 1.0_r8)
@@ -1435,19 +1440,19 @@ subroutine radabs(lchnk   ,ncol    ,             &
                uscl = uvar / min_u_h2o
                abso(i,ib) = abso(i,ib) * uscl
             endif
-            
+
 !
 ! Window absorptivity
 !
             ib = 2
-            
+
             fa = fat(1,ib) + &
                  fat(2,ib) * te1 + &
                  fat(3,ib) * te2 + &
                  fat(4,ib) * te3 + &
                  fat(5,ib) * te4 + &
                  fat(6,ib) * te5
-            
+
             a_star = &
                  ah2ow(ip , itp , iu , ite , irh ) * w11_11 * wu1 + &
                  ah2ow(ip , itp , iu , ite , irh1) * w11_10 * wu1 + &
@@ -1481,7 +1486,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                  ah2ow(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
                  ah2ow(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
                  ah2ow(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
-            
+
             abso(i,ib) = min(max(fa * (1.0 - (1.0 - a_star) * &
                                  aer_trn_ngh(i,ib)), &
                              0.0_r8), 1.0_r8)
@@ -1493,7 +1498,7 @@ subroutine radabs(lchnk   ,ncol    ,             &
                uscl = uvar / min_u_h2o
                abso(i,ib) = abso(i,ib) * uscl
             endif
-            
+
          end do
 !
 ! Line transmission in 800-1000 and 1000-1200 cm-1 intervals
@@ -1515,9 +1520,9 @@ subroutine radabs(lchnk   ,ncol    ,             &
             k22        = term7(i,2) + term8(i,2)/denom
             tr1     = exp(-(k21*(sqrtu(i) + fc1*fwku(i))))
             tr2     = exp(-(k22*(sqrtu(i) + fc1*fwku(i))))
-            tr1=tr1*aer_trn_ngh(i,idx_LW_0650_0800) 
+            tr1=tr1*aer_trn_ngh(i,idx_LW_0650_0800)
 !                                         ! H2O line+STRAER trn 650--800 cm-1
-            tr2=tr2*aer_trn_ngh(i,idx_LW_0500_0650) 
+            tr2=tr2*aer_trn_ngh(i,idx_LW_0500_0650)
 !                                         ! H2O line+STRAER trn 500--650 cm-1
             tr5     = exp(-((coefh(1,3) + coefh(2,3)*dtx(i))*uc1(i)))
             tr6     = exp(-((coefh(1,4) + coefh(2,4)*dtx(i))*uc1(i)))
@@ -1622,12 +1627,12 @@ subroutine radems(lchnk   ,ncol    ,                            &
                   co2t    ,h2otr   ,abplnk1 ,abplnk2 ,emstot  , &
                   plh2ob  ,wb      , &
                   aer_trn_ttl)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Compute emissivity for H2O, CO2, O3, CH4, N2O, CFC11 and CFC12
-! 
-! Method: 
+!
+! Method:
 ! H2O  ....  Uses nonisothermal emissivity method for water vapor from
 !            Ramanathan, V. and  P.Downey, 1986: A Nonisothermal
 !            Emissivity and Absorptivity Formulation for Water Vapor
@@ -1692,16 +1697,16 @@ subroutine radems(lchnk   ,ncol    ,                            &
    real(r8), intent(in) :: tlayr4(pcols,pverp)     ! Tlayr to the 4th power
    real(r8), intent(in) :: plol(pcols,pverp)       ! Pressure wghtd ozone path
    real(r8), intent(in) :: plos(pcols,pverp)       ! Ozone path
-   real(r8), intent(in) :: plh2ob(nbands,pcols,pverp) ! Pressure weighted h2o path with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
-   real(r8), intent(in) :: wb(nbands,pcols,pverp)     ! H2o path length with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
+   real(r8), intent(in) :: plh2ob(nbands,pcols,pverp) ! Pressure weighted h2o path with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
+   real(r8), intent(in) :: wb(nbands,pcols,pverp)     ! H2o path length with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
 
-   real(r8), intent(in) :: aer_trn_ttl(pcols,pverp,pverp,bnd_nbr_LW) 
+   real(r8), intent(in) :: aer_trn_ttl(pcols,pverp,pverp,bnd_nbr_LW)
 !                               ! [fraction] Total strat. aerosol
-!                               ! transmission between interfaces k1 and k2  
+!                               ! transmission between interfaces k1 and k2
 
 !
 ! Trace gas variables
@@ -1749,7 +1754,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
 ! The 500-800 cm^-1 emission in emis(i,4) has been combined
 !              into the 0-800 cm^-1 emission in emis(i,1)
 !
-   real(r8) emis(pcols,2)           ! H2O emissivity 
+   real(r8) emis(pcols,2)           ! H2O emissivity
 !
 !
 !
@@ -1870,7 +1875,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
    real(r8) te4              ! te^4
    real(r8) te5              ! te^5
 
-   real(r8) log_u            ! log base 10 of U 
+   real(r8) log_u            ! log base 10 of U
    real(r8) log_uc           ! log base 10 of H2O continuum path
    real(r8) log_p            ! log base 10 of P
    real(r8) t_p              ! T_p
@@ -2017,11 +2022,11 @@ subroutine radems(lchnk   ,ncol    ,                            &
    call trcplk(ncol    ,                                     &
                tint    ,tlayr   ,tplnke  ,emplnk  ,abplnk1 , &
                abplnk2 )
-         
+
    if ( ntoplw > 1 )then
       emstot(:ncol,:ntoplw-1) = 0.
    end if
-          
+
 !
 ! Interface loop
 !
@@ -2066,7 +2071,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
 !
 ! Calculate effective u, pnew for each band using
 !        Hulst-Curtis-Godson approximation:
-! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis, 
+! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis,
 !           2nd edition, Oxford University Press, 1989.
 ! Effective H2O path (w)
 !      eq. 6.24, p. 228
@@ -2096,7 +2101,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
 ! emis(i,3)   = 0.0
 !
 ! Notation:
-! U   = integral (P/P_0 dW)  
+! U   = integral (P/P_0 dW)
 ! P   = atmospheric pressure
 ! P_0 = reference atmospheric pressure
 ! W   = precipitable water path
@@ -2136,7 +2141,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
 
          w_0_0_ = wtp  * wte
          w_0_1_ = wtp  * wte1
-         w_1_0_ = wtp1 * wte 
+         w_1_0_ = wtp1 * wte
          w_1_1_ = wtp1 * wte1
 
          w_0_00 = w_0_0_ * wrh
@@ -2152,13 +2157,13 @@ subroutine radems(lchnk   ,ncol    ,                            &
 !
 !    Assume foreign continuum dominates total H2O continuum in these bands
 !    per Clough et al, JGR, v. 97, no. D14 (Oct 20, 1992), p. 15776
-!    Then the effective H2O path is just 
+!    Then the effective H2O path is just
 !         U_c = integral[ f(P) dW ]
-!    where 
-!           W = water-vapor mass and 
-!        f(P) = dependence of foreign continuum on pressure 
+!    where
+!           W = water-vapor mass and
+!        f(P) = dependence of foreign continuum on pressure
 !             = P / sslp
-!    Then 
+!    Then
 !         U_c = U (the same effective H2O path as for lines)
 !
 !
@@ -2166,10 +2171,10 @@ subroutine radems(lchnk   ,ncol    ,                            &
 !
 !    Assume self continuum dominates total H2O continuum for this band
 !    per Clough et al, JGR, v. 97, no. D14 (Oct 20, 1992), p. 15776
-!    Then the effective H2O self-continuum path is 
+!    Then the effective H2O self-continuum path is
 !         U_c = integral[ h(e,T) dW ]                        (*eq. 1*)
-!    where 
-!           W = water-vapor mass and 
+!    where
+!           W = water-vapor mass and
 !           e = partial pressure of H2O along path
 !           T = temperature along path
 !      h(e,T) = dependence of foreign continuum on e,T
@@ -2213,7 +2218,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
          iu1 = iu + 1
          wu = dvar - floor(dvar)
          wu1 = 1.0 - wu
-         
+
          log_p  = min(log10(max(pnewb(ib), min_p_h2o)), max_lp_h2o)
          dvar = (log_p - min_lp_h2o) / dlp_h2o
          ip = min(max(int(aint(dvar,r8)) + 1, 1), n_p - 1)
@@ -2221,22 +2226,22 @@ subroutine radems(lchnk   ,ncol    ,                            &
          wp = dvar - floor(dvar)
          wp1 = 1.0 - wp
 
-         w00_00 = wp  * w_0_00 
-         w00_01 = wp  * w_0_01 
-         w00_10 = wp  * w_0_10 
-         w00_11 = wp  * w_0_11 
-         w01_00 = wp  * w_1_00 
-         w01_01 = wp  * w_1_01 
-         w01_10 = wp  * w_1_10 
-         w01_11 = wp  * w_1_11 
-         w10_00 = wp1 * w_0_00 
-         w10_01 = wp1 * w_0_01 
-         w10_10 = wp1 * w_0_10 
-         w10_11 = wp1 * w_0_11 
-         w11_00 = wp1 * w_1_00 
-         w11_01 = wp1 * w_1_01 
-         w11_10 = wp1 * w_1_10 
-         w11_11 = wp1 * w_1_11 
+         w00_00 = wp  * w_0_00
+         w00_01 = wp  * w_0_01
+         w00_10 = wp  * w_0_10
+         w00_11 = wp  * w_0_11
+         w01_00 = wp  * w_1_00
+         w01_01 = wp  * w_1_01
+         w01_10 = wp  * w_1_10
+         w01_11 = wp  * w_1_11
+         w10_00 = wp1 * w_0_00
+         w10_01 = wp1 * w_0_01
+         w10_10 = wp1 * w_0_10
+         w10_11 = wp1 * w_0_11
+         w11_00 = wp1 * w_1_00
+         w11_01 = wp1 * w_1_01
+         w11_10 = wp1 * w_1_10
+         w11_11 = wp1 * w_1_11
 
 !
 ! Asymptotic value of emissivity as U->infinity
@@ -2280,7 +2285,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
               eh2onw(ip1, itp1, iu1, ite , irh ) * w00_11 * wu  + &
               eh2onw(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
               eh2onw(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
-              eh2onw(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu 
+              eh2onw(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
          emis(i,ib) = min(max(fe * (1.0 - (1.0 - e_star) * &
                               aer_trn_ttl(i,k1,1,ib)), &
                           0.0_r8), 1.0_r8)
@@ -2292,7 +2297,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
             emis(i,ib) = emis(i,ib) * uscl
          endif
 
-                      
+
 
 !
 ! Band-dependent indices for window
@@ -2306,7 +2311,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
          iu1 = iu + 1
          wu = dvar - floor(dvar)
          wu1 = 1.0 - wu
-         
+
          log_p  = min(log10(max(pnewb(ib), min_p_h2o)), max_lp_h2o)
          dvar = (log_p - min_lp_h2o) / dlp_h2o
          ip = min(max(int(aint(dvar,r8)) + 1, 1), n_p - 1)
@@ -2314,22 +2319,22 @@ subroutine radems(lchnk   ,ncol    ,                            &
          wp = dvar - floor(dvar)
          wp1 = 1.0 - wp
 
-         w00_00 = wp  * w_0_00 
-         w00_01 = wp  * w_0_01 
-         w00_10 = wp  * w_0_10 
-         w00_11 = wp  * w_0_11 
-         w01_00 = wp  * w_1_00 
-         w01_01 = wp  * w_1_01 
-         w01_10 = wp  * w_1_10 
-         w01_11 = wp  * w_1_11 
-         w10_00 = wp1 * w_0_00 
-         w10_01 = wp1 * w_0_01 
-         w10_10 = wp1 * w_0_10 
-         w10_11 = wp1 * w_0_11 
-         w11_00 = wp1 * w_1_00 
-         w11_01 = wp1 * w_1_01 
-         w11_10 = wp1 * w_1_10 
-         w11_11 = wp1 * w_1_11 
+         w00_00 = wp  * w_0_00
+         w00_01 = wp  * w_0_01
+         w00_10 = wp  * w_0_10
+         w00_11 = wp  * w_0_11
+         w01_00 = wp  * w_1_00
+         w01_01 = wp  * w_1_01
+         w01_10 = wp  * w_1_10
+         w01_11 = wp  * w_1_11
+         w10_00 = wp1 * w_0_00
+         w10_01 = wp1 * w_0_01
+         w10_10 = wp1 * w_0_10
+         w10_11 = wp1 * w_0_11
+         w11_00 = wp1 * w_1_00
+         w11_01 = wp1 * w_1_01
+         w11_10 = wp1 * w_1_10
+         w11_11 = wp1 * w_1_11
 
          log_uc  = min(log10(max(uch2o * fdif, min_u_h2o)), max_lu_h2o)
          dvar = (log_uc - min_lu_h2o) / dlu_h2o
@@ -2379,7 +2384,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
               ln_eh2ow(ip1, itp1, iu1, ite , irh ) * w00_11 * wu  + &
               ln_eh2ow(ip1, itp1, iu1, ite , irh1) * w00_10 * wu  + &
               ln_eh2ow(ip1, itp1, iu1, ite1, irh ) * w00_01 * wu  + &
-              ln_eh2ow(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu 
+              ln_eh2ow(ip1, itp1, iu1, ite1, irh1) * w00_00 * wu
 
          c_star = &
               cn_eh2ow(ip , itp , iuc , ite , irh ) * w11_11 * wuc1 + &
@@ -2413,10 +2418,10 @@ subroutine radems(lchnk   ,ncol    ,                            &
               cn_eh2ow(ip1, itp1, iuc1, ite , irh ) * w00_11 * wuc  + &
               cn_eh2ow(ip1, itp1, iuc1, ite , irh1) * w00_10 * wuc  + &
               cn_eh2ow(ip1, itp1, iuc1, ite1, irh ) * w00_01 * wuc  + &
-              cn_eh2ow(ip1, itp1, iuc1, ite1, irh1) * w00_00 * wuc 
+              cn_eh2ow(ip1, itp1, iuc1, ite1, irh1) * w00_00 * wuc
          emis(i,ib) = min(max(fe * (1.0 - l_star * c_star * &
                               aer_trn_ttl(i,k1,1,ib)), &
-                          0.0_r8), 1.0_r8) 
+                          0.0_r8), 1.0_r8)
 !
 ! Invoke linear limit for scaling wrt u below min_u_h2o
 !
@@ -2425,7 +2430,7 @@ subroutine radems(lchnk   ,ncol    ,                            &
             emis(i,ib) = emis(i,ib) * uscl
          endif
 
-                      
+
 !
 ! Compute total emissivity for H2O
 !
@@ -2453,9 +2458,9 @@ subroutine radems(lchnk   ,ncol    ,                            &
          fwk    = fwcoef + fwc1/(1.+fwc2*u(i))
          tr1(i) = exp(-(k21(i)*(sqrt(u(i)) + fc1*fwk*u(i))))
          tr2(i) = exp(-(k22(i)*(sqrt(u(i)) + fc1*fwk*u(i))))
-         tr1(i)=tr1(i)*aer_trn_ttl(i,k1,1,idx_LW_0650_0800) 
+         tr1(i)=tr1(i)*aer_trn_ttl(i,k1,1,idx_LW_0650_0800)
 !                                            ! H2O line+aer trn 650--800 cm-1
-         tr2(i)=tr2(i)*aer_trn_ttl(i,k1,1,idx_LW_0500_0650) 
+         tr2(i)=tr2(i)*aer_trn_ttl(i,k1,1,idx_LW_0500_0650)
 !                                            ! H2O line+aer trn 500--650 cm-1
          tr3(i) = exp(-((coefh(1,1) + coefh(2,1)*dtx(i))*uc1(i)))
          tr4(i) = exp(-((coefh(1,2) + coefh(2,2)*dtx(i))*uc1(i)))
@@ -2593,12 +2598,12 @@ subroutine radtpl(ncol    ,                                     &
    real(r8), intent(out) :: tint4(pcols,pverp)   ! Tint to the 4th power
    real(r8), intent(out) :: tlayr(pcols,pverp)   ! K-1 level temperature
    real(r8), intent(out) :: tlayr4(pcols,pverp)  ! Tlayr to the 4th power
-   real(r8), intent(out) :: plh2ob(nbands,pcols,pverp)! Pressure weighted h2o path with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
-   real(r8), intent(out) :: wb(nbands,pcols,pverp)    ! H2o path length with 
-                                                      !    Hulst-Curtis-Godson temp. factor 
-                                                      !    for H2O bands 
+   real(r8), intent(out) :: plh2ob(nbands,pcols,pverp)! Pressure weighted h2o path with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
+   real(r8), intent(out) :: wb(nbands,pcols,pverp)    ! H2o path length with
+                                                      !    Hulst-Curtis-Godson temp. factor
+                                                      !    for H2O bands
 
 !
 !---------------------------Local variables--------------------------
@@ -2761,7 +2766,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
    real(r8), intent(in) :: epsilox ! Ratio of mol. wght of H2O to dry air
    real(r8), intent(in) :: stebol  ! Stefan-Boltzmann's constant (MKS)
    real(r8), intent(in) :: pstdx   ! Standard pressure (pascals)
-   real(r8), intent(in) :: mwdryx  ! Molecular weight of dry air 
+   real(r8), intent(in) :: mwdryx  ! Molecular weight of dry air
    real(r8), intent(in) :: mwco2x  ! Molecular weight of carbon dioxide
    real(r8), intent(in) :: mwo3x   ! Molecular weight of ozone
 !!++CliMT
@@ -2794,7 +2799,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
    integer cn_eh2owid             ! var. id for continuum trans. for wndw ems.
    integer ln_ah2owid             ! var. id for line trans. for wndw abs.
    integer ln_eh2owid             ! var. id for line trans. for wndw ems.
-   
+
    character*(NF_MAX_NAME) tmpname! dummy variable for var/dim names
    character(len=256) locfn       ! local filename
    integer tmptype                ! dummy variable for variable type
@@ -2826,7 +2831,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
    amco2      = mwco2x
    mwo3       = mwo3x
 !
-! Coefficients for h2o emissivity and absorptivity for overlap of H2O 
+! Coefficients for h2o emissivity and absorptivity for overlap of H2O
 !    and trace gases.
 !
    c16  = coefj(3,1)/coefj(2,1)
@@ -2855,27 +2860,27 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
 !!--CliMT
 
    if ( masterproc ) then
-!!++CliMT      
+!!++CliMT
 !      call getfil(absems_data, locfn)
 !      call wrap_open(locfn, NF_NOWRITE, ncid_ae)
       call wrap_open(absemsfile, NF_NOWRITE, ncid_ae)
 !!--CliMT
-      
+
       call wrap_inq_dimid(ncid_ae, 'p', pdimid)
       call wrap_inq_dimlen(ncid_ae, pdimid, psize)
-      
+
       call wrap_inq_dimid(ncid_ae, 'tp', tpdimid)
       call wrap_inq_dimlen(ncid_ae, tpdimid, tpsize)
-      
+
       call wrap_inq_dimid(ncid_ae, 'te', tedimid)
       call wrap_inq_dimlen(ncid_ae, tedimid, tesize)
-      
+
       call wrap_inq_dimid(ncid_ae, 'u', udimid)
       call wrap_inq_dimlen(ncid_ae, udimid, usize)
-      
+
       call wrap_inq_dimid(ncid_ae, 'rh', rhdimid)
       call wrap_inq_dimlen(ncid_ae, rhdimid, rhsize)
-      
+
       if (psize    /= n_p  .or. &
           tpsize   /= n_tp .or. &
           usize    /= n_u  .or. &
@@ -2883,7 +2888,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
           rhsize   /= n_rh) then
          call endrun ('RADAEINI: dimensions for abs/ems do not match internal def.')
       endif
-      
+
       call wrap_inq_varid(ncid_ae, 'ah2onw',   ah2onwid)
       call wrap_inq_varid(ncid_ae, 'eh2onw',   eh2onwid)
       call wrap_inq_varid(ncid_ae, 'ah2ow',    ah2owid)
@@ -2891,7 +2896,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
       call wrap_inq_varid(ncid_ae, 'cn_eh2ow', cn_eh2owid)
       call wrap_inq_varid(ncid_ae, 'ln_ah2ow', ln_ah2owid)
       call wrap_inq_varid(ncid_ae, 'ln_eh2ow', ln_eh2owid)
-      
+
       call wrap_inq_var(ncid_ae, ah2onwid, tmpname, tmptype, ndims, dims, natt)
       if (ndims /= 5 .or. &
            dims(1) /= pdimid    .or. &
@@ -2955,7 +2960,7 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
            dims(5) /= rhdimid) then
          call endrun ('RADAEINI: line trans. for ems. in file /= internal def.')
       endif
-      
+
       call wrap_get_var_realx (ncid_ae, ah2onwid,   ah2onw)
       call wrap_get_var_realx (ncid_ae, eh2onwid,   eh2onw)
       call wrap_get_var_realx (ncid_ae, ah2owid,    ah2ow)
@@ -2963,11 +2968,11 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
       call wrap_get_var_realx (ncid_ae, cn_eh2owid, cn_eh2ow)
       call wrap_get_var_realx (ncid_ae, ln_ah2owid, ln_ah2ow)
       call wrap_get_var_realx (ncid_ae, ln_eh2owid, ln_eh2ow)
-      
+
       call wrap_close(ncid_ae)
 !
 ! Set up table of H2O saturation vapor pressures for use in calculation
-!     effective path RH.  Need separate table from table in wv_saturation 
+!     effective path RH.  Need separate table from table in wv_saturation
 !     because:
 !     (1. Path temperatures can fall below minimum of that table; and
 !     (2. Abs/Emissivity tables are derived with RH for water only.
@@ -2981,14 +2986,14 @@ subroutine radae_init(gravx, epsilox, stebol, pstdx, mwdryx, mwco2x, mwo3x, abse
    endif
 
 #ifdef SPMD
-    call mpibcast (ah2onw  , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (eh2onw  , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (ah2ow   , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (cn_ah2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (cn_eh2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (ln_ah2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (ln_eh2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom) 
-    call mpibcast (estblh2o,(ntemp)                  ,mpir8,0,mpicom) 
+    call mpibcast (ah2onw  , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (eh2onw  , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (ah2ow   , (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (cn_ah2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (cn_eh2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (ln_ah2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (ln_eh2ow, (n_p*n_tp*n_u*n_te*n_rh),mpir8,0,mpicom)
+    call mpibcast (estblh2o,(ntemp)                  ,mpir8,0,mpicom)
 #endif
 
 end subroutine radae_init
@@ -3002,9 +3007,9 @@ subroutine initialize_radbuffer
 
 !!++CliMT
 !+++rca #include <comhyb.h>
-!+++rca 
+!+++rca
 !+++rca    integer :: k
-!+++rca 
+!+++rca
 !+++rca ! If the top model level is above ~90 km (0.1 Pa), set the top level to compute
 !+++rca ! longwave cooling to about 80 km (1 Pa)
 !+++rca    if (hypm(1) .lt. 0.1) then
@@ -3017,14 +3022,14 @@ subroutine initialize_radbuffer
 !+++rca    if (masterproc) then
 !+++rca       write (6,*) 'INITIALIZE_RADBUFFER: ntoplw =',ntoplw, ' pressure:',hypm(ntoplw)
 !+++rca    endif
-!+++rca   
-!+++rca 
+!+++rca
+!+++rca
 !+++rca   allocate (abstot_3d(pcols,ntoplw:pverp,ntoplw:pverp,begchunk:endchunk))
 !+++rca   allocate (absnxt_3d(pcols,pver,4,begchunk:endchunk))
 !+++rca   allocate (emstot_3d(pcols,pverp,begchunk:endchunk))
 
   ntoplw = 1
-!!++CliMT: NOTE: buffers allocated at first instantiation, no allocation needed 
+!!++CliMT: NOTE: buffers allocated at first instantiation, no allocation needed
 !                in successive instatiations
   if (.not. allocated(abstot_3d)) then
      allocate (abstot_3d(pcols,ntoplw:pverp,ntoplw:pverp,1))
@@ -3047,18 +3052,18 @@ end subroutine initialize_radbuffer
 !====================================================================================
 
 subroutine radoz2(ncol, o3, pint, plol, plos)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Computes the path length integrals to the model interfaces given the
 ! ozone volume mixing ratio
-! 
-! Method: 
-! <Describe the algorithm(s) used in the routine.> 
-! <Also include any applicable external references.> 
-! 
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
 ! Author: CCM1, CMS Contact J. Kiehl
-! 
+!
 !------------------------------Input arguments--------------------------
 !
    integer, intent(in) :: ncol                 ! number of atmospheric columns
@@ -3121,17 +3126,17 @@ subroutine trcpth(ncol                                        , &
                   un2o1   ,uch4    ,uco211  ,uco212  ,uco213  , &
                   uco221  ,uco222  ,uco223  ,bn2o0   ,bn2o1   , &
                   bch4    ,uptype  )
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Calculate path lengths and pressure factors for CH4, N2O, CFC11
 ! and CFC12.
-! 
-! Method: 
+!
+! Method:
 ! See CCM3 description for details
-! 
+!
 ! Author: J. Kiehl
-! 
+!
 !-----------------------------------------------------------------------
 !
 ! Input arguments
@@ -3194,7 +3199,7 @@ subroutine trcpth(ncol                                        , &
 !  Calculate path lengths for the trace gases at model top
 !
 
-   co2mmr = chem_surfvals_get('CO2MMR')    ! co2 mass mixing ratio 
+   co2mmr = chem_surfvals_get('CO2MMR')    ! co2 mass mixing ratio
 
    do i = 1,ncol
       ucfc11(i,ntoplw) = 1.8 * cfc11(i,ntoplw) * pnm(i,ntoplw) * rga
@@ -3283,13 +3288,13 @@ function fh2oself( temp )
 !    by exponential interpolation/extrapolation from observations at
 !    260K and 296K by:
 !
-!         TFAC =  (T(IPATH) - 296.0)/(260.0 - 296.0) 
+!         TFAC =  (T(IPATH) - 296.0)/(260.0 - 296.0)
 !         CSFFT = CSFF296*(CSFF260/CSFF296)**TFAC
 !
 ! For 800-1200 cm^-1, (CSFF260/CSFF296) ranges from ~2.1 to ~1.9
 !     with increasing wavenumber.  The ratio <CSFF260>/<CSFF296>,
 !     where <> indicates average over wavenumber, is ~2.07
-! 
+!
 ! fh2oself is (<CSFF260>/<CSFF296>)**TFAC
 !
    real(r8),intent(in) :: temp     ! path temperature
@@ -3321,9 +3326,9 @@ function phi(tpx,iband)
 !
 ! spectral intervals:
 !   1 = 0-800 cm^-1 and 1200-2200 cm^-1
-!   2 = 800-1200 cm^-1      
+!   2 = 800-1200 cm^-1
 !
-! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis, 
+! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis,
 !           2nd edition, Oxford University Press, 1989.
 ! Phi: function for H2O path
 !      eq. 6.25, p. 228
@@ -3349,7 +3354,7 @@ function psi(tpx,iband)
 ! Short function for Hulst-Curtis-Godson temperature factors for
 !   computing effective H2O path
 ! Line data for H2O: Hitran 2000, plus H2O patches v11.0 for 1341 missing
-!                    lines between 500 and 2820 cm^-1. 
+!                    lines between 500 and 2820 cm^-1.
 !                    See cfa-www.harvard.edu/HITRAN
 ! Isotopes of H2O: all
 ! Line widths: air-broadened only (self set to 0)
@@ -3363,9 +3368,9 @@ function psi(tpx,iband)
 !
 ! spectral intervals:
 !   1 = 0-800 cm^-1 and 1200-2200 cm^-1
-!   2 = 800-1200 cm^-1      
+!   2 = 800-1200 cm^-1
 !
-! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis, 
+! Formulae: Goody and Yung, Atmospheric Radiation: Theoretical Basis,
 !           2nd edition, Oxford University Press, 1989.
 ! Psi: function for pressure along path
 !      eq. 6.30, p. 228
@@ -3392,17 +3397,17 @@ subroutine trcab(ncol    ,                                     &
                  s2c     ,uptype  ,dplh2o  ,abplnk1 ,tco2    , &
                  th2o    ,to3     ,abstrc  , &
                  aer_trn_ttl)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Calculate absorptivity for non nearest layers for CH4, N2O, CFC11 and
 ! CFC12.
-! 
-! Method: 
+!
+! Method:
 ! See CCM3 description for equations.
-! 
+!
 ! Author: J. Kiehl
-! 
+!
 !-----------------------------------------------------------------------
    use volcrad
 
@@ -3564,7 +3569,7 @@ subroutine trcab(ncol    ,                                     &
 !
    do i=1,ncol
       tw(i,1)=tw(i,1)*(0.7*aer_trn_ttl(i,k1,k2,idx_LW_0650_0800)+&! l=1: 0750--0820 cm-1
-                       0.3*aer_trn_ttl(i,k1,k2,idx_LW_0800_1000)) 
+                       0.3*aer_trn_ttl(i,k1,k2,idx_LW_0800_1000))
       tw(i,2)=tw(i,2)*aer_trn_ttl(i,k1,k2,idx_LW_0800_1000) ! l=2: 0820--0880 cm-1
       tw(i,3)=tw(i,3)*aer_trn_ttl(i,k1,k2,idx_LW_0800_1000) ! l=3: 0880--0900 cm-1
       tw(i,4)=tw(i,4)*aer_trn_ttl(i,k1,k2,idx_LW_0800_1000) ! l=4: 0900--1000 cm-1
@@ -3672,16 +3677,16 @@ subroutine trcabn(ncol    ,                                     &
                   uptype  ,dw      ,s2c     ,up2     ,pnew    , &
                   abstrc  ,uinpl   , &
                   aer_trn_ngh)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Calculate nearest layer absorptivity due to CH4, N2O, CFC11 and CFC12
-! 
-! Method: 
+!
+! Method:
 ! Equations in CCM3 description
-! 
+!
 ! Author: J. Kiehl
-! 
+!
 !-----------------------------------------------------------------------
    use volcrad
 
@@ -3721,8 +3726,8 @@ subroutine trcabn(ncol    ,                                     &
    real(r8), intent(in) :: uptype(pcols,pverp)  ! p-type path length
    real(r8), intent(in) :: up2(pcols)           ! p squared path length
    real(r8), intent(in) :: uinpl(pcols,4)       ! Nearest layer subdivision factor
-   real(r8), intent(in) :: aer_trn_ngh(pcols,bnd_nbr_LW) 
-                             ! [fraction] Total transmission between 
+   real(r8), intent(in) :: aer_trn_ngh(pcols,bnd_nbr_LW)
+                             ! [fraction] Total transmission between
                              !            nearest neighbor sub-levels
 !
 !  Output Arguments
@@ -3956,16 +3961,16 @@ subroutine trcems(ncol    ,                                     &
                   up2     ,emplnk  ,th2o    ,tco2    ,to3     , &
                   emstrc  , &
                   aer_trn_ttl)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 !  Calculate emissivity for CH4, N2O, CFC11 and CFC12 bands.
-! 
-! Method: 
+!
+! Method:
 !  See CCM3 Description for equations.
-! 
+!
 ! Author: J. Kiehl
-! 
+!
 !-----------------------------------------------------------------------
    use volcrad
 
@@ -4113,7 +4118,7 @@ subroutine trcems(ncol    ,                                     &
       end do
    end do
 
-!     Overlap H2O tranmission with STRAER continuum in 6 trace gas 
+!     Overlap H2O tranmission with STRAER continuum in 6 trace gas
 !                 subbands
 
       do i=1,ncol
@@ -4154,7 +4159,7 @@ subroutine trcems(ncol    ,                                     &
 !
       tlw = exp(-1.0*sqrt(up2(i)))
 
-!     Overlap H2O vibration rotation band with STRAER continuum 
+!     Overlap H2O vibration rotation band with STRAER continuum
 !             for CH4 1306 cm-1 and N2O 1285 cm-1 bands
 
             tlw=tlw*aer_trn_ttl(i,k,1,idx_LW_1200_2000)
@@ -4217,17 +4222,17 @@ end subroutine trcems
 subroutine trcplk(ncol    ,                                     &
                   tint    ,tlayr   ,tplnke  ,emplnk  ,abplnk1 , &
                   abplnk2 )
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 !   Calculate Planck factors for absorptivity and emissivity of
 !   CH4, N2O, CFC11 and CFC12
-! 
-! Method: 
+!
+! Method:
 !   Planck function and derivative evaluated at the band center.
-! 
+!
 ! Author: J. Kiehl
-! 
+!
 !------------------------------Arguments--------------------------------
 !
 ! Input arguments

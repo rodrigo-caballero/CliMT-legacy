@@ -9,8 +9,8 @@ from distutils.dep_util import newer
 KM = 26
 JM = 1
 IM = 1
-#NC_INC = '/usr/local/include'
-#NC_LIB = '/usr/local/lib'
+NC_INC = '/usr/local/include'
+NC_LIB = '/usr/local/lib'
 ##----------------------
 
 if '--lite' in sys.argv:
@@ -41,12 +41,12 @@ Extensions = [
     {'name':'ccm3_radiation',
      'dir':'src/radiation/ccm3',
      'cppflags':'-DSUN -DPLON=%i -DPLEV=%i -DPLEVR=%i' % (IM,KM,KM)},
-    #{'name':'cam3_radiation',
-    # 'dir':'src/radiation/cam3',
-    # 'cppflags':'-DPLEV=%i' % KM,
-    # 'lib':['netcdf','netcdff'],
-    # 'libdir': [NC_LIB],
-    # 'incdir': [NC_INC]},
+    {'name':'cam3_radiation',
+     'dir':'src/radiation/cam3',
+     'cppflags':'-DPLEV=%i' % KM,
+     'lib':['netcdf','netcdff'],
+     'libdir': [NC_LIB],
+     'incdir': [NC_INC]},
     {'name':'chou_radiation',
      'dir':'src/radiation/chou'},
     {'name':'greygas_radiation',
@@ -142,7 +142,12 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
     if buildNeeded(target,src):
         print '\n Building %s ... \n' % os.path.basename(target)
         # generate signature file
-        if name == 'rrtm_radiation_fortran':
+        if name == 'cam3_radiation':
+            print '\n \n OH EH!!!!  \n \n'
+            print 'Adding extra CAM3 modules to the signature file to enable Python-level access.'
+            src_pyf = getSources(dir, source_file_name='sources_signature_file')
+            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(string.join(src_pyf),name,name))
+        elif name == 'rrtm_radiation_fortran':
             print 'Adding extra RRTM modules to the signature file to enable Python-level access.'
             src_pyf = getSources(dir, source_file_name='sources_signature_file')
             os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(string.join(src_pyf),name,name))
@@ -175,7 +180,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             print '+++ Compilation failed'
             sys.exit()
         os.system('mv -f _%s.so lib/climt' % name)
-        os.system('rm -f _%s.pyf' % name)
+        #os.system('rm -f _%s.pyf' % name)
 
 def setupClimt():
 

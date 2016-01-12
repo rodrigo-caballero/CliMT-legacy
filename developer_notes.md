@@ -170,3 +170,43 @@ Following essentially the same procedure, I have now succeeded in initializing b
 So essentially several days of work has been completely unnecessary. Except now we have a working, more modular RRTM code and all I/O occurs through Python, which is at least logically satisfying.
 
 But **the netcdf dependence in CliMT is actually ALL in CAM3 radiation, NOT RRTM!!!!**
+
+Anyway the work is done. I have also created a data directory
+`lib/climt/data/rrtm` to hold the two data files `rrtmg_lw.nc` and `rrtmg_sw.nc`. These get copied into the user installation by the `setup.py` install script, just like CAM3 data file. My custom init code now reads from these files instead of hard-coded paths to original files in RRTM code.
+
+
+# Removing NetCDF dependence from CAM3 radiation code
+
+Now we have to work on CAM3.
+
+The calls to netcdf libraries are in
+`src/radiation/cam3/src/radae.F90` in `subroutine radae_init`
+This is called from `crm.F90` in `subroutine crm_init_absems`
+which is in turn called at object instantiation time by Python code in
+`radiation.py` in the `__cam3__init__` method.
+
+So this is a simpler procedure than in the case of RRTM. We want to call Python code that replaces functionality in `subroutine crm_init_absems`  (basically read data and write to appropriate storage). But no need to change the order of operations.
+
+The relevant calls seem to be starting on line 2959 of `radae.F90`
+```
+call wrap_get_var_realx (ncid_ae, ah2onwid,   ah2onw)
+call wrap_get_var_realx (ncid_ae, eh2onwid,   eh2onw)
+call wrap_get_var_realx (ncid_ae, ah2owid,    ah2ow)
+call wrap_get_var_realx (ncid_ae, cn_ah2owid, cn_ah2ow)
+call wrap_get_var_realx (ncid_ae, cn_eh2owid, cn_eh2ow)
+call wrap_get_var_realx (ncid_ae, ln_ah2owid, ln_ah2ow)
+call wrap_get_var_realx (ncid_ae, ln_eh2owid, ln_eh2ow)
+```
+
+Looks straightforward. `wrap_get_var_realx` is just a wrapper for netcdf read that returns doubles.
+
+And in the file `abs_ems_factors_fastvx.c030508.nc'`, each variable in `['ah2onw', 'eh2onw', 'ah2ow', 'ln_ah2ow', 'cn_ah2ow', 'ln_eh2ow', 'cn_eh2ow']`
+has the same dimensions: `(7, 21, 25, 10, 10)`
+
+Note that the variable names are the SAME as the names of the storage arrays defined in `radae.F90`
+
+So the code to read them in should be simple. Just need to expose the module variables `['ah2onw', 'eh2onw', 'ah2ow', 'ln_ah2ow', 'cn_ah2ow', 'ln_eh2ow', 'cn_eh2ow']` from `radae.F90` to Python.
+
+Actually I'm taking a slightly different approach to hopefully simplify things.
+All we want to expose to python are the storage arrays, not everything in module `radae.F90`.
+So I moved the definition of those arrays to a new module called `absems.F90`, which is now used by `radae.F90`. Seems to be working just fine -- though the values are still being set by calls to netcdf within fortran code.
