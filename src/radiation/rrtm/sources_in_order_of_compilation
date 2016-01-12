@@ -22,7 +22,6 @@ src/rrtmg_sw/gcm_model/modules/rrsw_ref.f90
 src/rrtmg_sw/gcm_model/modules/rrsw_tbl.f90
 src/rrtmg_sw/gcm_model/modules/rrsw_vsn.f90
 src/rrtmg_sw/gcm_model/modules/rrsw_wvn.f90
-src/rrtmg_lw/gcm_model/modules/parkind.f90
 src/rrtmg_lw/gcm_model/modules/parrrtm.f90
 src/rrtmg_lw/gcm_model/modules/rrlw_cld.f90
 src/rrtmg_lw/gcm_model/modules/rrlw_con.f90
