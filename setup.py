@@ -9,8 +9,8 @@ from distutils.dep_util import newer
 KM = 26
 JM = 1
 IM = 1
-NC_INC = '/usr/local/include'
-NC_LIB = '/usr/local/lib'
+#NC_INC = '/usr/local/include'
+#NC_LIB = '/usr/local/lib'
 ##----------------------
 
 if '--lite' in sys.argv:
@@ -41,12 +41,12 @@ Extensions = [
     {'name':'ccm3_radiation',
      'dir':'src/radiation/ccm3',
      'cppflags':'-DSUN -DPLON=%i -DPLEV=%i -DPLEVR=%i' % (IM,KM,KM)},
-    {'name':'cam3_radiation',
-     'dir':'src/radiation/cam3',
-     'cppflags':'-DPLEV=%i' % KM,
-     'lib':['netcdf','netcdff'],
-     'libdir': [NC_LIB],
-     'incdir': [NC_INC]},
+    #{'name':'cam3_radiation',
+    # 'dir':'src/radiation/cam3',
+    # 'cppflags':'-DPLEV=%i' % KM,
+    # 'lib':['netcdf','netcdff'],
+    # 'libdir': [NC_LIB],
+    # 'incdir': [NC_INC]},
     {'name':'chou_radiation',
      'dir':'src/radiation/chou'},
     {'name':'greygas_radiation',
