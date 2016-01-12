@@ -9,9 +9,9 @@ from distutils.dep_util import newer
 KM = 26
 JM = 1
 IM = 1
-#NC_INC = '/usr/local/include'
-#NC_LIB = '/usr/local/lib'
 ##----------------------
+#  Brian:  we have successfully removed netcdf dependence
+#  All netcdf file I/O now happens in Python
 
 if '--lite' in sys.argv:
     sys.argv.pop(sys.argv.index('--lite'))
@@ -41,12 +41,6 @@ Extensions = [
     {'name':'ccm3_radiation',
      'dir':'src/radiation/ccm3',
      'cppflags':'-DSUN -DPLON=%i -DPLEV=%i -DPLEVR=%i' % (IM,KM,KM)},
-    #{'name':'cam3_radiation',
-    # 'dir':'src/radiation/cam3',
-    # 'cppflags':'-DPLEV=%i' % KM,
-    # 'lib':['netcdf','netcdff'],
-    # 'libdir': [NC_LIB],
-    # 'incdir': [NC_INC]},
     {'name':'cam3_radiation',
      'dir':'src/radiation/cam3',
      'cppflags':'-DPLEV=%i' % KM},
@@ -145,17 +139,18 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
     if buildNeeded(target,src):
         print '\n Building %s ... \n' % os.path.basename(target)
         # generate signature file
-        if name == 'cam3_radiation':
-            print '\n \n OH EH!!!!  \n \n'
-            print 'Adding extra CAM3 modules to the signature file to enable Python-level access.'
+        #  If a file called `sources_signature_file` is present,
+        #  add all the files in that list to the signature.
+        #  (Currently used for both CAM3 and RRTM radiation modules)
+        #  Otherwise just add Driver.F90
+        pyf_src_name = 'sources_signature_file'
+        if os.path.exists(os.path.join(dir, pyf_src_name)):
+            print 'Found source file list for signature file'
             src_pyf = getSources(dir, source_file_name='sources_signature_file')
-            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(string.join(src_pyf),name,name))
-        elif name == 'rrtm_radiation_fortran':
-            print 'Adding extra RRTM modules to the signature file to enable Python-level access.'
-            src_pyf = getSources(dir, source_file_name='sources_signature_file')
-            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(string.join(src_pyf),name,name))
+            src_pyf_str = string.join(src_pyf)
         else:
-            os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
+            src_pyf_str = driver
+        os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(src_pyf_str,name,name))
         # compile extension
         F2pyCommand = []
         F2pyCommand.append('f2py -c -m _%s' % name)
@@ -183,7 +178,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
             print '+++ Compilation failed'
             sys.exit()
         os.system('mv -f _%s.so lib/climt' % name)
-        #os.system('rm -f _%s.pyf' % name)
+        os.system('rm -f _%s.pyf' % name)
 
 def setupClimt():
 
