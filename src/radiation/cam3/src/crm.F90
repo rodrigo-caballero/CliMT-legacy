@@ -32,7 +32,7 @@ subroutine crm(  &
      p,  &
      dp,  &
      ps,  &
-     q_in,  & 
+     q_in,  &
      tg,  &
      t,  &
      co2vmr,  &
@@ -57,13 +57,13 @@ subroutine crm(  &
      lw_toa,  &
      lw_srf,  &
      sw_toa,  &
-     sw_srf, & 
+     sw_srf, &
      lwup,lwdn)
 
 
   use shr_kind_mod,        only: r8 => shr_kind_r8
   use ppgrid,              only: pcols, pver, pverp
-  use prescribed_aerosols, only: naer_all  
+  use prescribed_aerosols, only: naer_all
   use radae,               only: radae_init
   use radsw,               only: radsw_init, radcswmx
   use radlw,               only: radlw_init, radclwmx
@@ -92,7 +92,7 @@ subroutine crm(  &
   real(r8), intent(in) ::  p(pver)
   real(r8), intent(in) ::  dp(pver)
   real(r8), intent(in) ::  ps
-  real(r8), intent(in) ::  q_in(pver) 
+  real(r8), intent(in) ::  q_in(pver)
   real(r8), intent(in) ::  tg
   real(r8), intent(in) ::  t(pver)
   real(r8), intent(in) ::  co2vmr
@@ -116,18 +116,17 @@ subroutine crm(  &
   real(r8), intent(out) ::  sw_cf_toa
   real(r8), intent(out) ::  sw_cf_srf
   real(r8), intent(out) ::  lw_cf_toa
-  real(r8), intent(out) ::  lw_cf_srf 
+  real(r8), intent(out) ::  lw_cf_srf
   real(r8), intent(out) ::  lw_toa
   real(r8), intent(out) ::  lw_srf
   real(r8), intent(out) ::  sw_toa
   real(r8), intent(out) ::  sw_srf
 
   ! Local
-  character(len=256) :: absemsfile
   integer  :: k
   integer  :: lchnk ! identifier (not used in climt)
   integer  :: ncol  ! no. atmos columns (fixed to 1 in climt)
-  real(r8) :: pstd  ! standard pressure in Pa 
+  real(r8) :: pstd  ! standard pressure in Pa
   real(r8) :: solincgs  ! solin in CGS
   real(r8) :: q(pver) ! specific humidity (kg/kg)
   real(r8) :: o3mmr(pver)
@@ -153,10 +152,10 @@ subroutine crm(  &
   real(r8) :: qsat(pver)  ! sat specific humid
   real(r8) :: rh(pver)    ! relative humidity
   real(r8) :: co2         ! GHG mass mixing ratios
-  real(r8) :: n2o(pver) 
-  real(r8) :: ch4(pver) 
-  real(r8) :: cfc11(pver) 
-  real(r8) :: cfc12(pver) 
+  real(r8) :: n2o(pver)
+  real(r8) :: ch4(pver)
+  real(r8) :: cfc11(pver)
+  real(r8) :: cfc12(pver)
   logical  :: doabsems ! True => compute GHG path lengths in radclw
  ! -- output stuff from radcsw, radclw
   real(r8) :: solin_out(pcols)         ! dummy
@@ -200,13 +199,12 @@ subroutine crm(  &
   real(r8) :: aerfwd(nspint,naer_groups) ! Aerosol column averaged forward scattering
 
   ! Set up variables
-  absemsfile = 'None'
   doabsems = .true.
   lchnk = 1
   ncol = 1
   rel = r_liq
   rei = r_ice
-  pstd = 1.01325e5 
+  pstd = 1.01325e5
   if (flus == -99.) then
      lwupcgs = stebol*tg**4 * 1.e3
   else
@@ -233,7 +231,7 @@ subroutine crm(  &
  ! -- define interface pressures and convert units
   pmid = p * 100. ! mb -> Pa
   if (dp(1) == -99.) then
-     pint(1)=1.e-9 
+     pint(1)=1.e-9
      do k=2,pver
         pint(k)=0.5*(pmid(k-1)+pmid(k))
      enddo
@@ -248,12 +246,12 @@ subroutine crm(  &
   lnpint = log(pint)
   ! -- Define  water paths etc
   do k=1,pver
-     if (ciwp(k) == -99.) then 
+     if (ciwp(k) == -99.) then
         ! if cloud ice is missing value, then define fractional amount
         ! of cloud that is ice using code from CCM3.6
         if(t(k).gt.263.16) then
            fice(k) = 0.0 ! if warmer than -10 degrees C then water phase
-        else if (t(k).le.263.16.and.t(k).ge.243.16) then 
+        else if (t(k).le.263.16.and.t(k).ge.243.16) then
            fice(k) = (263.16-t(k)) / 20.0 !if colder than -10C but warmer than -30C mixed phase
         else
            fice(k) = 1.0 ! if colder than -30C then ice phase
@@ -274,8 +272,8 @@ subroutine crm(  &
            cicewp(k) = ciwp(k) / max(0.01_r8,cldf(k))
            cliqwp(k) = clwp(k) / max(0.01_r8,cldf(k))
         else ! water path input as in-cloud
-           cicewp(k) = ciwp(k) 
-           cliqwp(k) = clwp(k) 
+           cicewp(k) = ciwp(k)
+           cliqwp(k) = clwp(k)
         end if
         fice(k) = cicewp(k)/max(1.e-10_r8,(cicewp(k)+cliqwp(k)))
      endif
@@ -302,7 +300,7 @@ subroutine crm(  &
   ! Initialize rad routines
   call radsw_init(gravit)
   call radlw_init(gravit, stebol)
-  call radae_init(gravit, epsilo, stebol, pstd, mwdry, mwco2, mwo3, absemsfile)
+  call radae_init(gravit, epsilo, stebol, pstd, mwdry, mwco2, mwo3)
 
   ! Compute SW
   if (idosw == 1) then
@@ -342,7 +340,7 @@ subroutine crm(  &
           flntc, flwds, flut, flutc, aerosol(:,1), &
           lwflx, fcnl,lwup,lwdn)
      ! CGS->MKS for output; change sign to give +ve downwards
-     lwflx=-lwflx*1.e-3 
+     lwflx=-lwflx*1.e-3
      lwup = -lwup*1.e-3
      lwdn = lwdn*1.e-3
      qrl = qrl*1.e-3
@@ -353,20 +351,3 @@ subroutine crm(  &
   endif
 
 end subroutine crm
-!------------------------------------------------------------------------------
-subroutine crm_init_absems(absemsfile)
-! Calls radae_init to initialise abs/ems values from file absemsfile.
-! THIS ROUTINE CALLED ONLY ONCE, WHEN CAM3 RAD IS INSTANTIATED
-
-  use radae,        only: radae_init, initialize_radbuffer
-  character(len=256) absemsfile
-
-  ! allocate buffers
-  call initialize_radbuffer()
-
-
-  ! pass dummy values of variable other than absemsfile
-  ! (these are initialised in the main crm call)
-  call radae_init(1., 1., 1., 1., 1., 1., 1., absemsfile)
-
-end subroutine crm_init_absems
