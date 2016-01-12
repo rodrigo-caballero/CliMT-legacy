@@ -113,17 +113,19 @@ class radiation(Component):
         # Load extension
         try: import _cam3_radiation
         except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load CAM3 scheme'
-        # Initialise abs/ems
+        # Initialise abs/ems.
         ClimtDir = os.path.dirname( __file__ )
         AbsEmsDataFile = os.path.join(ClimtDir,'data/cam3rad/abs_ems_factors_fastvx.c030508.nc')
-        _cam3_radiation.init_absems(AbsEmsDataFile)
-        #  BRIAN... do it in Python instead
+        #  Open the absorption data file
         import netCDF4 as nc
         data = nc.Dataset(AbsEmsDataFile)
+        #  The fortran module that holds the data
         mod = _cam3_radiation.absems
+        #  initialize storage arrays
+        mod.initialize_radbuffer()
+        #  Populate storage arrays with values from netcdf file
         for field in ['ah2onw', 'eh2onw', 'ah2ow', 'ln_ah2ow', 'cn_ah2ow', 'ln_eh2ow', 'cn_eh2ow']:
             setattr(mod, field, data.variables[field][:].T)
-        #  DONE BRIAN
         # Define some attributes
         self.Name           = 'cam3_radiation'
         self.LevType        = 'p'

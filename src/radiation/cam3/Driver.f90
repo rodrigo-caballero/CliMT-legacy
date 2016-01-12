@@ -174,15 +174,6 @@ subroutine driver(  &
 
 end subroutine driver
 
-!-----------------------------------------------------------------
-subroutine init_absems(absemsfile)
-  character(len=256) absemsfile
-!f2py intent(in) absemsfile
-
-  call crm_init_absems(absemsfile)
-
-end subroutine init_absems
-!-------------------------------------------------------------
 integer function get_nlev()
 
   integer get_km
