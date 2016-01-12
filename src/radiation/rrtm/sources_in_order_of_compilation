@@ -54,7 +54,6 @@ src/rrtmg_sw/gcm_model/src/rrtmg_sw_reftra.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_taumol.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_spcvmc.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_setcoef.f90
-src/rrtmg_sw/gcm_model/src/rrtmg_sw_k_g.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_init.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_cldprmc.f90
 src/rrtmg_sw/gcm_model/src/rrtmg_sw_rad.f90
@@ -62,7 +61,6 @@ src/rrtmg_lw/gcm_model/src/mcica_subcol_gen_lw.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_taumol.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_setcoef.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_rtrnmc.f90
-src/rrtmg_lw/gcm_model/src/rrtmg_lw_k_g.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_init.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_cldprmc.f90
 src/rrtmg_lw/gcm_model/src/rrtmg_lw_rad.f90
