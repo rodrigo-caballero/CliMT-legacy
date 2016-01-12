@@ -1,5 +1,8 @@
 module absems
-!  BRIAN hacking CliMT
+!  BRIAN ROSE added this module to the CliMT implementation of CAM3 radiation
+!  The purpose is to expose some data arrays at the Python level
+!  So all I/O can be handled by Python-level reading of netcdf files.
+
     use shr_kind_mod, only: r8 => shr_kind_r8
     use ppgrid, only: pcols, pver, pverp
 

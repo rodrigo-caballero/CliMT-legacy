@@ -123,7 +123,6 @@ subroutine crm(  &
   real(r8), intent(out) ::  sw_srf
 
   ! Local
-  !character(len=256) :: absemsfile
   integer  :: k
   integer  :: lchnk ! identifier (not used in climt)
   integer  :: ncol  ! no. atmos columns (fixed to 1 in climt)
@@ -200,7 +199,6 @@ subroutine crm(  &
   real(r8) :: aerfwd(nspint,naer_groups) ! Aerosol column averaged forward scattering
 
   ! Set up variables
-  !absemsfile = 'None'
   doabsems = .true.
   lchnk = 1
   ncol = 1
