@@ -317,7 +317,10 @@ subroutine crm(  &
           solsd   ,solld   ,frc_day ,                   &
           aertau  ,aerssa  ,aerasm  ,aerfwd  ,swflx   , &
           fcns)
-     swflx=swflx*1.e-3 ! CGS->MKS for output
+     ! heating rate in K/s
+     qrs = qrs/cpair
+     ! CGS->MKS for output
+     swflx=swflx*1.e-3 
      qrs = qrs*1.e-3
      sw_cf_srf = (fsns(1) - fsnsc(1))*1.e-3
      sw_cf_toa = (fsnt(1) - fsntc(1))*1.e-3
@@ -341,11 +344,12 @@ subroutine crm(  &
           nmxrgn, qrl, flns, flnt, flnsc,     &
           flntc, flwds, flut, flutc, aerosol(:,1), &
           lwflx, fcnl,lwup,lwdn)
+     ! heating rate in K/s
+     qrl = qrl/cpair
      ! CGS->MKS for output; change sign to give +ve downwards
      lwflx=-lwflx*1.e-3 
      lwup = -lwup*1.e-3
      lwdn = lwdn*1.e-3
-     qrl = qrl*1.e-3
      lw_cf_srf = -(flns(1) - flnsc(1))*1.e-3
      lw_cf_toa = -(flnt(1) - flntc(1))*1.e-3
      lw_toa = -flnt(1)*1.e-3
