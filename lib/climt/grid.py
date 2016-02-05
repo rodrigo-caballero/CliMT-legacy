@@ -26,13 +26,13 @@ class Grid:
         self._setAxis('lev', LevType=Component.LevType, **kwargs)
 
         # Latitude
-        self.value['nlat'] = self.Shape3D[0]
+        self.value['nlat'] = self.Shape3D[1]
         self.long_name['lat'] = 'latitude'
         self.units['lat'] = 'degrees'
         self._setAxis('lat', **kwargs)
 
         # Longitude
-        self.value['nlon'] = self.Shape3D[0]
+        self.value['nlon'] = self.Shape3D[2]
         self.long_name['lon'] = 'longitude'
         self.units['lon'] = 'degrees'
         self._setAxis('lon', **kwargs)
