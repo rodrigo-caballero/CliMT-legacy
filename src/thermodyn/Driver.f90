@@ -1,16 +1,16 @@
-     
+
 ! A collection of functions to compute various moist thermodynamic quantities
 
 ! Rodrigo Caballero Augi 2000, 2005
 
-! References: Bolton (1980), Mon. Wea. Rev. 108, 1046-1053 
+! References: Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
 !             Bohren and Albrecht (1998), "Atmospheric Thermodynamics"
 !             Flatau et al (1992), J. App. Met . 31, 1507-1513.
 
 !------------------------------------------------------------------------
 subroutine tdew(km,jm,im,p,q,t)
 
-! compute dew point temperature tdew  [K] 
+! compute dew point temperature tdew  [K]
 ! at pressure p [mb] and specific humidity q [g/kg]
 ! Use Bolton eqn (11)
 !
@@ -37,8 +37,8 @@ end subroutine tdew
 !------------------------------------------------------------------------
 subroutine tstar(km,jm,im,T,p,q,Ts)
 
-! compute saturation point temperature Ts [K] 
-! (i.e. temperature at lifting condensation level) 
+! compute saturation point temperature Ts [K]
+! (i.e. temperature at lifting condensation level)
 ! given temperature T [K], pressure p [mb], specific humidity q [g/kg].
 ! Use Bolton eqn (12)
 
@@ -62,7 +62,7 @@ subroutine tstar(km,jm,im,T,p,q,Ts)
 !  c=log( r/(r+eps*1.e3)/t**oneoverk / 1.7743e-8 )
 !  ts=217.8*c/(12.992-c) + 273.15
   e = p*r/(r+eps)
-  Ts = 2840./( 3.5*log(t) - log(e) - 4.805) + 55. 
+  Ts = 2840./( 3.5*log(t) - log(e) - 4.805) + 55.
 
 end subroutine tstar
 !------------------------------------------------------------------------
@@ -70,7 +70,7 @@ subroutine theta(km,jm,im, Rd, Rv, cpd, cpv, p0, p, T, q, th)
 
 ! compute potential temperature  theta [K]
 ! given temperature t [K], pressure p [mb], specific humidity q [g/kg].
- 
+
   implicit none
   integer,intent(in)                       :: km,jm,im
 !f2py intent(hide) km,jm,im
@@ -85,18 +85,18 @@ subroutine theta(km,jm,im, Rd, Rv, cpd, cpv, p0, p, T, q, th)
   eps   = Rd/Rv
   R     = Rd * (1.+ (1.-eps)/eps*q*1.e-3)
   cp    = cpd * (1. + (cpv/cpd-1.)*q*1.e-3)
-  kappa = R/cp 
+  kappa = R/cp
 
   th = T*(p0/p)**kappa
-      
+
 end subroutine theta
 !------------------------------------------------------------------------
 subroutine theta_old(km,jm,im,t,p,q,th)
 
 ! compute potential temperature  theta [K]
 ! given temperature t [K], pressure p [mb], specific humidity q [g/kg].
-! Use Bolton eqn (7) 
- 
+! Use Bolton eqn (7)
+
   implicit none
   integer,intent(in)                       :: km,jm,im
 !f2py intent(hide) km,jm,im
@@ -111,13 +111,13 @@ subroutine theta_old(km,jm,im,t,p,q,th)
   r = q/(1.e3 - q) * 1.e3 ! water vap. mixing ratio [g/kg]
 
   th = t*(1000./p)**( ak*(1.-0.28e-3*r) )
-      
+
 end subroutine theta_old
 !------------------------------------------------------------------------
 subroutine thetae(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p0,p,T,wt,the)
 
 ! compute equivalent potential temperature the [K]
-! given temperature t [K], pressure p [mb], 
+! given temperature t [K], pressure p [mb],
 ! total water mixing ratio [g/kg].
 ! Use Bohren+Albrecht (6.119) and (6.122), p.293
 
@@ -141,13 +141,13 @@ subroutine thetae(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p0,p,T,wt,the)
   call ws(km,jm,im,Rd,Rv,T,p,wsat)
   do i=1,im
      do j=1,jm
-        do k=1,km 
+        do k=1,km
            ! if wt was not specified, set it to wsat
            if (wt(k,j,i) < 0.)  then
               wt1(k,j,i) = wsat(k,j,i)
            ! if parcel unsaturated, bring to LCL
            else if (wt(k,j,i) < wsat(k,j,i))  then
-              q = wt(k,j,i)/(1.+wt(k,j,i)*1.e-3) 
+              q = wt(k,j,i)/(1.+wt(k,j,i)*1.e-3)
               call tstar(1,1,1,T(k,j,i),p(k,j,i),q,Tst) ! gives T at LCL
               pst = p(k,j,i)*(Tst/T(k,j,i))**(cpd/Rd)   ! gives p at LCL
               T1(k,j,i) = Tst
@@ -158,10 +158,10 @@ subroutine thetae(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p0,p,T,wt,the)
   enddo
   call es(km,jm,im,T1,esat)
   call ws(km,jm,im,Rd,Rv,T1,p1,wsat)
-  lv  = lv0 + (cpv-cl)*(T1-273.15)           
+  lv  = lv0 + (cpv-cl)*(T1-273.15)
   cp  = cpd+wt1*1.e-3*cl
   the = T1*((p1-esat)/p0)**(-Rd/cp)*exp(lv*wsat*1.e-3/cp/T1)
- 
+
 end subroutine thetae
 !------------------------------------------------------------------------
 subroutine thetaes(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p0,p,T,thes)
@@ -187,10 +187,10 @@ subroutine thetaes(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p0,p,T,thes)
   call es(km,jm,im,T,esat)
   call ws(km,jm,im,Rd,Rv,T,p,wsat)
   wsat = wsat * 1.e-3 ! g/kg -> kg/kg
-  lv  = lv0 + (cpv-cl)*(T-273.15)           
+  lv  = lv0 + (cpv-cl)*(T-273.15)
   cp  = cpd + wsat*cl
   thes = T*((p-esat)/p0)**(-Rd/cp)*exp(lv*wsat/cp/T)
- 
+
 end subroutine thetaes
 !------------------------------------------------------------------------
 subroutine thetae_old(km,jm,im,t,p,q,the)
@@ -221,7 +221,7 @@ subroutine es(km,jm,im,T,e)
 ! Compute saturation partial pressure of water vapor es [mb]
 ! at temperature T [K].
 ! Use Bohren+Albrecht p. 198
-     
+
   implicit none
   integer,intent(in)                       :: km,jm,im
 !f2py intent(hide) km,jm,im
@@ -244,7 +244,7 @@ subroutine esflatau(km,jm,im,T,i,e)
 
 ! i=1 => vapour pressure over water (valid -85C < t < 70C)
 ! i=2 => vapour pressure over ice (valid -90C < t < 0C)
-    
+
   implicit none
   integer,intent(in)                       :: km,jm,im,i
 !f2py intent(hide) km,jm,im
@@ -277,7 +277,7 @@ subroutine qs(km,jm,im,Rd,Rv,T,p,q)
 ! Compute saturation specific humidity qs [g/kg]
 ! given temperature T [K] and total (air+vapor) pressure p [mb]
 ! use Bohren+Albrecht p. 186
-     
+
   implicit none
   integer,intent(in)                        :: km,jm,im
 !f2py intent(hide) km,jm,im
@@ -319,7 +319,7 @@ subroutine qsflatau(km,jm,im,Rd,Rv,T,p,i,q)
   call esflatau(km,jm,im,T,i,e)
   q = eps*e/(p+e*(eps-1.)) * 1.e3
 !  q = eps*e/p * 1.e3
-  
+
 end subroutine qsflatau
 !------------------------------------------------------------------------
 subroutine ws(km,jm,im,Rd,Rv,T,p,w)
@@ -327,7 +327,7 @@ subroutine ws(km,jm,im,Rd,Rv,T,p,w)
 ! Compute saturation water vapor mass mixing ratio  ws [g/kg]
 ! given temperature T [K] and total (air+vapor) pressure p [mb]
 ! use Bohren+Albrecht p. 186
-     
+
   implicit none
   integer,intent(in)                        :: km,jm,im
 !f2py intent(hide) km,jm,im
@@ -374,9 +374,9 @@ end subroutine wsflatau
 subroutine pdryadiab(km,jm,im,t,theta,q,p)
 
 ! compute pressure level pdryadiab [mb] at which temperature is t [K]
-! on the dry (i.e. unsaturated) adiabat identified by 
+! on the dry (i.e. unsaturated) adiabat identified by
 ! potential temperature theta [K] and mixing ratio q [g/kg].
-! Use Bolton eqn (7) 
+! Use Bolton eqn (7)
 
   implicit none
   integer,intent(in)                       :: km,jm,im
@@ -397,10 +397,10 @@ end subroutine pdryadiab
 !------------------------------------------------------------------------
 subroutine tdryadiab(km,jm,im,theta,p,q,T)
 
-! Compute temperature T [K] at level p [mb] 
-! on the dry (i.e. unsaturated) adiabat identified by 
+! Compute temperature T [K] at level p [mb]
+! on the dry (i.e. unsaturated) adiabat identified by
 ! potential temperature theta [K] and mixing ratio q [g/kg].
-! Use Bolton eqn (7) 
+! Use Bolton eqn (7)
 
   implicit none
   integer,intent(in)                       :: km,jm,im
@@ -416,15 +416,15 @@ subroutine tdryadiab(km,jm,im,theta,p,q,T)
   r = q/(1.e3 - q) * 1.e3 ! water vap. mixing ratio [g/kg]
 
   T = theta*(1000./p)**( -ak*(1.-0.28e-3*r) )
-      
+
 end subroutine tdryadiab
 !------------------------------------------------------------------------
 subroutine tmoistadiab(km,jm,im,thetaes,p,t)
 
-! Compute temperature [K] at level p [mb] 
-! on the moist (i.e. saturated) pseudo-adiabat identified 
+! Compute temperature [K] at level p [mb]
+! on the moist (i.e. saturated) pseudo-adiabat identified
 ! by saturation equivalent potential temperature thetaes [K].
-! Do it by varying t until 
+! Do it by varying t until
 ! delthetae := thetaes - thetae(t,p,qs(t,p)) = 0
 ! Use Bolton, eqn (43)
 
@@ -462,7 +462,7 @@ do i=1,im
 2        stop 'tmoistadiab(): cannot bracket root'
 3        continue
          tmin = tmax-2.
-         !  refine estimate using Ridder's method 
+         !  refine estimate using Ridder's method
          t(k,j,i) = ridder(success,delthetae, params, tmin, tmax, 0.0001)
          if (.not.success) stop 'tmoistadiab(): root not bracketed'
       enddo
@@ -540,7 +540,7 @@ real(8) function ridder(success,func,params,xmin,xmax,acc)
   else
      success=.false.
   endif
-  
+
 end function ridder
 
 
@@ -681,10 +681,10 @@ subroutine cape(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
 ! get saturation point temp and press Tst, pst for mean parcel in mixed layer
   call mean_parcel(km,jm,im,Rd,cpd,ml_depth,p_in,T_in,q,T0,q0,Tst,pst)
 
-! get the temperature profile of the corresponding moist adiabat 
+! get the temperature profile of the corresponding moist adiabat
   call pseudoadiab(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p_in,pst,Tst,Tp)
 
-! get the temperature profile of the corresponding dry adiabat 
+! get the temperature profile of the corresponding dry adiabat
   do k=1,km
      Tp(k,:,:) = max( Tp(k,:,:), Tst*(p_in(k,:,:)/pst)**(Rd/cpd) )
   end do
@@ -697,7 +697,7 @@ subroutine cape(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
         qp(k,:,:) = min( qp(k,:,:), q0)
      end do
      Tvp = Tp*(1.+ (1.-eps)/eps*qp*1.e-3)
-  endif 
+  endif
 
 ! integrate to get CAPE
   c = 0.
@@ -709,10 +709,10 @@ subroutine cape(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
         dp = pint(1:km)-pint(0:km-1)
         dlnp = dp/p_in(:,j,i)
         do k=1,km
-           if (virtual == 0) then 
+           if (virtual == 0) then
               delT = Tp(k,j,i)-T_in(k,j,i)
            else
-              delT = Tvp(k,j,i)-Tvs(k,j,i) 
+              delT = Tvp(k,j,i)-Tvs(k,j,i)
            endif
            if ( delT > 0. ) then
               c(j,i) = c(j,i) + Rd*delT*dlnp(k)
@@ -748,10 +748,10 @@ subroutine cine(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
 ! get saturation point temp and press Tst, pst for mean parcel in mixed layer
   call mean_parcel(km,jm,im,Rd,cpd,ml_depth,p_in,T_in,q,T0,q0,Tst,pst)
 
-! get the temperature profile of the corresponding moist adiabat 
+! get the temperature profile of the corresponding moist adiabat
   call pseudoadiab(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,p_in,pst,Tst,Tp)
 
-! get the temperature profile of the corresponding dry adiabat 
+! get the temperature profile of the corresponding dry adiabat
   do k=1,km
      Tp(k,:,:) = max( Tp(k,:,:), Tst*(p_in(k,:,:)/pst)**(Rd/cpd) )
   end do
@@ -764,7 +764,7 @@ subroutine cine(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
         qp(k,:,:) = min( qp(k,:,:), q0)
      end do
      Tvp = Tp*(1.+ (1.-eps)/eps*qp*1.e-3)
-  endif 
+  endif
 
   ! integrate to get CINE
   c = 0.
@@ -776,12 +776,12 @@ subroutine cine(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
         dp = pint(1:km)-pint(0:km-1)
         dlnp = dp/p_in(:,j,i)
         inner_loop: do k=km,1,-1
-           if (virtual == 0) then 
+           if (virtual == 0) then
               delT = Tp(k,j,i)-T_in(k,j,i)
            else
-              delT = Tvp(k,j,i)-Tvs(k,j,i) 
+              delT = Tvp(k,j,i)-Tvs(k,j,i)
            endif
-           if ( delT < 0. ) then 
+           if ( delT < 0. ) then
               c(j,i) = c(j,i) + Rd*delT*dlnp(k)
            else
               exit inner_loop
@@ -789,7 +789,7 @@ subroutine cine(km,jm,im,Rd,Rv,lv0,cpd,cpv,cl,virtual,ml_depth,p_in, T_in, q_in,
            enddo inner_loop
      enddo
   enddo
-  
+
   c = -c
 
 end subroutine cine
@@ -831,7 +831,7 @@ subroutine mean_parcel(km,jm,im,Rd,cpd,ml_depth,p,T,q,T0,q0,Tst,pst)
            call interpol(p(:,j,i),q(:,j,i),km,p5(:,j,i),q5(:,j,i),5)
         end do
      end do
-  
+
 ! average conserved quantities over mixed layer
      p0 = p(km,:,:)
      do k=1,5
@@ -858,7 +858,7 @@ subroutine interpol(xin,yin,nin,xout,yout,nout)
 
   yp1=1.e30
   ypn=1.e30
-  call spline(xin,yin,nin,yp1,ypn,spl) 
+  call spline(xin,yin,nin,yp1,ypn,spl)
 
   do n=1,nout
      call splint(xin,yin,spl,nin,xout(n),yout(n))
@@ -898,7 +898,7 @@ SUBROUTINE spline(x,y,n,yp1,ypn,y2)
         y2(k)=y2(k)*y2(k+1)+u(k)
      enddo
 end SUBROUTINE spline
-!  (C) Copr. 1986-92 Numerical Recipes Software 
+!  (C) Copr. 1986-92 Numerical Recipes Software
 !---------------------------------------------------------------------------
 SUBROUTINE splint(xa,ya,y2a,n,x,y)
   INTEGER n
@@ -921,13 +921,82 @@ SUBROUTINE splint(xa,ya,y2a,n,x,y)
   a=(xa(khi)-x)/h
   b=(x-xa(klo))/h
   y=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)+(b**3-b)*y2a(khi))*(h**2)/6.
-  
+
 END SUBROUTINE splint
-!  (C) Copr. 1986-92 Numerical Recipes Software 
+!  (C) Copr. 1986-92 Numerical Recipes Software
+!-------------------------------------------------------------------------
+subroutine wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,td,p,tw)
+! Compute wet-bulb temperature tw [K] given temperature t [K],
+! dew point temperature td [K] and pressure p [mb]
+! Uses Bohren & Albrecht p 283
+  implicit none
+  integer,intent(in)                       :: km,jm,im
+!f2py intent(hide) km,jm,im
+  real(8), dimension(km,jm,im), intent(in) :: t,td,p
+  real(8), dimension(km,jm,im), intent(out) :: tw
+  real(8), intent(in) :: cpd, lv, Rd, Rv
+!local
+! mass mixing ratio
+  real(8), dimension(km,jm,im)  :: wi
+  integer :: i,j,k
+  real(8), dimension(10) :: params
+  real(8) :: deltawb, ridder, tmin, tmax
+  external :: deltawb, ridder
+  logical :: success
 
+  ! Mass mixing ratio is the saturation mass mixing ratio at td
+  call ws(km,jm,im,Rd,Rv,td,p,wi)
 
+  params(1) = cpd
+  params(2) = lv
+  params(3) = Rv
+  params(4) = Rd
 
+  do i=1,im
+    do j=1,jm
+      do k=1,km
+        params(5) = p(k,j,i)
+        params(6) = t(k,j,i)
+        params(7) = wi(k,j,i)
+        tmin = td(k,j,i)
+        tmax = t(k,j,i)
+        tw(k,j,i) = ridder(success,deltawb,params,tmin,tmax,1.e-5)
+        if (.not.success) stop 'failed to find wet-bulb'
+      enddo
+    enddo
+  enddo
 
+end subroutine wetbulb
+!-------------------------------------------------------------------------
+real(8) function deltawb(params,t)
+! LHS - RHS of eq 6.70 on p 283 of Bohren & Albrecht
+! Subroutine wetbulb uses zero value of this to find wet bulb temp
+! t is a guess at wet-bulb temperature in [K]
+! Required params are:
+! params(1): pressure [mb]
+! params(2): dry bulb temperature [K]
+! params(3): specific heat capacity of dry air [J/kg K]
+! params(4): latent heat of vaporisation of water [J/kg]
+! params(5): Gas constant for water vapor
+! params(6): Gas constant for dry air
+! params(7): mass mixing ratio of water vapor
 
+  implicit none
+  real(8) :: p,ti,t,wi,w
+  real(8) :: cpd,lv,Rv,Rd,eps
+  real(8), dimension(10) :: params
 
+  cpd = params(1)
+  lv = params(2)
+  Rv = params(3)
+  Rd = params(4)
+  p = params(5)
+  ti = params(6)
+  wi = params(7)
 
+  eps = Rd/Rv
+
+  call ws(1,1,1,Rd,Rv,t,p,w)
+  deltawb = cpd/lv*(ti-t)-(w-wi)*1.e-3
+
+end function deltawb
