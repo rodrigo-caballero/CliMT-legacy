@@ -924,28 +924,30 @@ SUBROUTINE splint(xa,ya,y2a,n,x,y)
 
 END SUBROUTINE splint
 !  (C) Copr. 1986-92 Numerical Recipes Software
+
 !-------------------------------------------------------------------------
-subroutine wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,td,p,tw)
+
+subroutine wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,p,w,td,tw)
 ! Compute wet-bulb temperature tw [K] given temperature t [K],
-! dew point temperature td [K] and pressure p [mb]
+! mass mixing ratio w [g/kg], pressure p [mb]
+! and dew point temperature td [K]
+! Dew-point temperature is used as a lower bound for the zero-crossing
+! algorithm.
+! Do not call this subroutine directly; use one of the wrappers that follow.
 ! Uses Bohren & Albrecht p 283
   implicit none
   integer,intent(in)                       :: km,jm,im
 !f2py intent(hide) km,jm,im
-  real(8), dimension(km,jm,im), intent(in) :: t,td,p
+  real(8), dimension(km,jm,im), intent(in) :: t,p,w,td
   real(8), dimension(km,jm,im), intent(out) :: tw
   real(8), intent(in) :: cpd, lv, Rd, Rv
 !local
-! mass mixing ratio
-  real(8), dimension(km,jm,im)  :: wi
+
   integer :: i,j,k
   real(8), dimension(10) :: params
   real(8) :: deltawb, ridder, tmin, tmax
   external :: deltawb, ridder
   logical :: success
-
-  ! Mass mixing ratio is the saturation mass mixing ratio at td
-  call ws(km,jm,im,Rd,Rv,td,p,wi)
 
   params(1) = cpd
   params(2) = lv
@@ -957,7 +959,7 @@ subroutine wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,td,p,tw)
       do k=1,km
         params(5) = p(k,j,i)
         params(6) = t(k,j,i)
-        params(7) = wi(k,j,i)
+        params(7) = w(k,j,i)
         tmin = td(k,j,i)
         tmax = t(k,j,i)
         tw(k,j,i) = ridder(success,deltawb,params,tmin,tmax,1.e-5)
@@ -967,6 +969,59 @@ subroutine wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,td,p,tw)
   enddo
 
 end subroutine wetbulb
+!-------------------------------------------------------------------------
+subroutine wetbulb_from_w(km,jm,im,cpd,lv,Rd,Rv,t,p,w,tw)
+! Compute wet-bulb temperature tw [K] given temperature t [K],
+! mass mixing ratio w [g/kg], and pressure p [mb]
+! The actual computation is done by the subroutine wetbulb
+
+  implicit none
+  integer,intent(in)                       :: km,jm,im
+  !f2py intent(hide) km,jm,im
+  real(8), dimension(km,jm,im), intent(in) :: t,w,p
+  real(8), dimension(km,jm,im), intent(out) :: tw
+  real(8), intent(in) :: cpd, lv, Rd, Rv
+  real(8), dimension(km,jm,im)  :: q,td
+
+  q = w/(1+w*1.e-3)
+  call tdew(km,jm,im,p,q,td)
+  call wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,p,w,td,tw)
+end subroutine wetbulb_from_w
+!-------------------------------------------------------------------------
+subroutine wetbulb_from_tdew(km,jm,im,cpd,lv,Rd,Rv,t,p,td,tw)
+! Compute wet-bulb temperature tw [K] given temperature t [K],
+! pressure p [mb], and dew point temperature td [K]
+! The actual computation is done by the subroutine wetbulb
+  implicit none
+  integer,intent(in)                       :: km,jm,im
+  !f2py intent(hide) km,jm,im
+  real(8), dimension(km,jm,im), intent(in) :: t,td,p
+  real(8), dimension(km,jm,im), intent(out) :: tw
+  real(8), intent(in) :: cpd, lv, Rd, Rv
+  real(8), dimension(km,jm,im)  :: w
+
+  ! Mass mixing ratio is the saturation mass mixing ratio at dew-point temp
+  call ws(km,jm,im,Rd,Rv,td,p,w)
+  call wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,p,w,td,tw)
+end subroutine wetbulb_from_tdew
+!-------------------------------------------------------------------------
+subroutine wetbulb_from_q(km,jm,im,cpd,lv,Rd,Rv,t,p,q,tw)
+! Compute wet-bulb temperature tw [K] given temperature t [K],
+! pressure p [mb], and specific humidity [g/kg]
+! Relation betwen quantities p. 186 in Bohren & Albrecht
+! The actual computation is done by the subroutine wetbulb
+  implicit none
+  integer,intent(in)                       :: km,jm,im
+  !f2py intent(hide) km,jm,im
+  real(8), dimension(km,jm,im), intent(in) :: t,q,p
+  real(8), dimension(km,jm,im), intent(out) :: tw
+  real(8), intent(in) :: cpd, lv, Rd, Rv
+  real(8), dimension(km,jm,im)  :: w,td
+
+  w = q/(1-q*1.e-3)
+  call tdew(km,jm,im,p,q,td)
+  call wetbulb(km,jm,im,cpd,lv,Rd,Rv,t,p,w,td,tw)
+end subroutine wetbulb_from_q
 !-------------------------------------------------------------------------
 real(8) function deltawb(params,t)
 ! LHS - RHS of eq 6.70 on p 283 of Bohren & Albrecht

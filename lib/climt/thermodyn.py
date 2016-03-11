@@ -431,15 +431,30 @@ def theta_old(T,p,q):
   '''
   return squeeze(_thermodyn.theta_old(T,p,q))
 
-def wetbulb(T, Td, p, cpd=None, Rd=None, Rv=None, Lv=None):
+def wetbulb(T, p, q=None, Td=None, w=None, cpd=None, Rd=None, Rv=None, Lv=None):
   '''
   Return wet-bulb temperature T_w [K]
-  given temperature T [K], dew-point temperature Td [K], pressure p [mb].
-  Uses Bohren & Albrecht p 283 eq 6.70. The subroutine used by function ws
-  above is used to calculate mixing ratios.
+  given temperature T [K], pressure p [mb] and exactly one of the following:
+
+    - Specific humidity q [g/kg]
+    - Dew-point temperature Td [K]
+    - Mass-mixing ratio w [g/kg]
+
+  Specific humidity q can be given as a positional argument while Td and w must
+  be named explicitly.
+  Uses Bohren & Albrecht p 283 eq 6.70.
   '''
   if Rd  is None: Rd  = Parameters()['Rd']
   if Rv  is None: Rv  = Parameters()['Rv']
   if cpd is None: cpd = Parameters()['Cpd']
   if Lv is None: Lv = Parameters()['Lv']
-  return squeeze(_thermodyn.wetbulb(cpd, Lv, Rd, Rv, T, Td, p))
+
+  if not q is None:
+      return squeeze(_thermodyn.wetbulb_from_q(cpd, Lv, Rd, Rv, T, p, q))
+  elif not Td is None:
+      return squeeze(_thermodyn.wetbulb_from_tdew(cpd, Lv, Rd, Rv, T, p, Td))
+  elif not w is None:
+      return squeeze(_thermodyn.wetbulb_from_w(cpd, Lv, Rd, Rv, T, p, w))
+  else:
+      print "CliMT error: Function thermodyn.wetbulb requires one of q, Td, or \
+        w as an argument."
