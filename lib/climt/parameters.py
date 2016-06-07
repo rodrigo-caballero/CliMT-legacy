@@ -22,7 +22,7 @@ class Parameters:
         self.long_name = {}
         
         # Physical constants
-        self.append('Cpd',     1005.7,  'J K-1 kg-1', 'Spec. heat dry air at const. press.') 
+        self.append('Cpd',     1004.,  'J K-1 kg-1', 'Spec. heat dry air at const. press.') 
         self.append('Cvd',     718.,    'J K-1 kg-1', 'Spec. heat dry air at const. volume') 
         self.append('Cpv',     1870.,   'J K-1 kg-1', 'Specific heat of water vapour at const. press') 
         self.append('Cl',      4190.,   'J K-1 kg-1', 'Specific heat pure liquid water')

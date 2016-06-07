@@ -47,7 +47,7 @@ def esflatau(T,i):
   Use 8th order polynomial fit of Flatau et al (1992),J. App. Met . 31, 1507-1513, Table 4
 
   i = 1 => return vapour pressure over water (valid -85C < t < 70C)
-  i = 2 => return vapour pressure over ice (valid -90C < t < 0C)    
+  i = 2 => return vapour pressure over ice (valid -90C < t < 0C)
   '''
   return squeeze(_thermodyn.esflatau(T,i))
 
@@ -59,7 +59,7 @@ def qsflatau(T,p,i=None,Rd=None,Rv=None):
   J. App. Met . 31, 1507-1513, Table 4
 
   i = 1 => return sat. mix. ratio over water (valid -85C < t < 70C)
-  i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)    
+  i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)
   '''
   if i   is None: i   = 1
   if Rd  is None: Rd  = Parameters()['Rd']
@@ -74,7 +74,7 @@ def wsflatau(T,p,i=None,Rd=None,Rv=None):
   J. App. Met . 31, 1507-1513, Table 4
 
   i = 1 => return sat. mix. ratio over water (valid -85C < t < 70C)
-  i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)    
+  i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)
   '''
   if i   is None: i   = 1
   if Rd  is None: Rd  = Parameters()['Rd']
@@ -83,7 +83,7 @@ def wsflatau(T,p,i=None,Rd=None,Rv=None):
 
 def tdew(p,q):
   '''
-  Return dew point temperature tdew  [K] 
+  Return dew point temperature tdew  [K]
   at pressure p [mb] and specific humidity q [g/kg]
   Use Eq. (11) in Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
   '''
@@ -92,7 +92,7 @@ def tdew(p,q):
 def tstar(T,p,q):
   '''
   Return saturation point temperature tstar [K]
-  (i.e. temperature at lifting condensation level) 
+  (i.e. temperature at lifting condensation level)
   given temperature T [K], pressure p [mb], specific humidity q [g/kg].
   Use Eq. (12) in Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
   '''
@@ -184,7 +184,7 @@ def pseudoadiab(p, p0, T0, thetae=None, \
     if thetae is not None:
         p0 = zeros(shape(thetae)) + 1.
         T0 = thetae*(p0/1000.)**(Rd/cpd)
-        
+
     flip=False
     if alltrue(p[0]>p[-1]):
         p=p[::-1]
@@ -219,7 +219,7 @@ def CAPE(p, T, q, Virtual=True, MixedLayerDepth=100., \
         ivirt = 1
     else:
         ivirt = 0
-        
+
     return squeeze(_thermodyn.cape(Rd,Rv,lv0,cpd,cpv,cl,ivirt,MixedLayerDepth,p,T,q))
 
 def CINE(p, T, q, Virtual=True, MixedLayerDepth=100.,\
@@ -246,7 +246,7 @@ def CINE(p, T, q, Virtual=True, MixedLayerDepth=100.,\
         ivirt = 1
     else:
         ivirt = 0
-        
+
     return squeeze(_thermodyn.cine(Rd,Rv,lv0,cpd,cpv,cl,ivirt,MixedLayerDepth,p,T,q))
 
 def skewT(p=None, T=None, Td=None, virtual=False):
@@ -273,14 +273,14 @@ def skewT(p=None, T=None, Td=None, virtual=False):
         for theta in range(240,480,10):
             # Dry
             kappa = Parameters()['Rd']/Parameters()['Cpd']
-            T = theta*(p1/1000.)**kappa - 273.15 
+            T = theta*(p1/1000.)**kappa - 273.15
             pylab.semilogy(T+off, p1, c='#996663', lw=1)
             # Moist
             if virtual:
-                T = pseudoadiab(p1,1.,1.,thetae=theta+5.) 
-                T = T*(1.+0.608*qs(T,p1)*1.e-3) - 273.15    
+                T = pseudoadiab(p1,1.,1.,thetae=theta+5.)
+                T = T*(1.+0.608*qs(T,p1)*1.e-3) - 273.15
             else:
-                T = pseudoadiab(p1,1.,1.,thetae=theta+5.) -273.15 
+                T = pseudoadiab(p1,1.,1.,thetae=theta+5.) -273.15
             pylab.semilogy(T+off, p1, c='#006600', lw=1)
     def plotHumidityIsopleths():
         off = getSkewOffset(p1)
@@ -295,7 +295,7 @@ def skewT(p=None, T=None, Td=None, virtual=False):
         pylab.ion()
     except:
         print '\n ++++ CliMT: WARNING: matplotlib.pylab ' \
-              +'could not be loaded, so cannot plot skew T !\n' 
+              +'could not be loaded, so cannot plot skew T !\n'
     pylab.figure(figsize=(7,10))
     plotAdiabats()
     plotHumidityIsopleths()
@@ -311,7 +311,7 @@ def skewT(p=None, T=None, Td=None, virtual=False):
             pylab.semilogy(Td+getSkewOffset(p),p, c='0.7',linewidth=3)
         if virtual and Td is not None and T is not None:
             T = T[0:kmax]
-            Tv = (T+273.15)*(1.+0.608*qs(Td+273.15,p)*1.e-3) - 273.15    
+            Tv = (T+273.15)*(1.+0.608*qs(Td+273.15,p)*1.e-3) - 273.15
             pylab.semilogy(Tv+getSkewOffset(p),p, c='k',linewidth=1)
     pylab.yticks(arange(100,1100,100),\
                  tuple([str(i) for i in arange(100,1100,100)]))
@@ -321,11 +321,11 @@ def skewT(p=None, T=None, Td=None, virtual=False):
     pylab.ylim(1050,100)
     manager = pylab.get_current_fig_manager()
     manager.canvas.draw()
-    
+
 def pdryadiab(T,theta,q):
   '''
   Return pressure level pdryadiab [mb] at which temperature is T [K]
-  on the dry (i.e. unsaturated) adiabat identified by 
+  on the dry (i.e. unsaturated) adiabat identified by
   potential temperature theta [K] and specific humidity q [g/kg].
   Use Eq. (7) in Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
   '''
@@ -333,8 +333,8 @@ def pdryadiab(T,theta,q):
 
 def tdryadiab(theta,p,q):
   '''
-  Return temperature tdryadiab [K] at level p [mb] 
-  on the dry (i.e. unsaturated) adiabat identified by 
+  Return temperature tdryadiab [K] at level p [mb]
+  on the dry (i.e. unsaturated) adiabat identified by
   potential temperature theta [K] and specific humidity q [g/kg].
   Use Eq. (7) in Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
   '''
@@ -342,10 +342,10 @@ def tdryadiab(theta,p,q):
 
 def tmoistadiab(thetaes,p):
   '''
-  Return temperature [K] at level p [mb] 
-  on the moist (i.e. saturated) pseudo-adiabat identified 
+  Return temperature [K] at level p [mb]
+  on the moist (i.e. saturated) pseudo-adiabat identified
   by saturation equivalent potential temperature thetaes [K].
-  Do it by varying t until 
+  Do it by varying t until
   delthetae := thetaes - thetae(T,p,qs(T,p)) = 0
   Use Eq. (43) in Bolton (1980), Mon. Wea. Rev. 108, 1046-1053
   '''
@@ -358,7 +358,7 @@ def relhum(p,T,q):
     '''
     w = q/(1000.-q) * 1000.
     return w/ws(T,p)
-    
+
 def moistadiabat(p, T0, Tstrat, rh):
     '''
     Given pressure levels p [mb],
@@ -380,8 +380,8 @@ def moistadiabat(p, T0, Tstrat, rh):
     # Work arrays
     InputShape = shape(p) # store for later use
     p = reshape(p,(nlev,nhor))
-    T = zeros((nlev,nhor),'d') 
-    q = zeros((nlev,nhor),'d') 
+    T = zeros((nlev,nhor),'d')
+    q = zeros((nlev,nhor),'d')
     # Bottom level temp needs special treatment
     if size(T0) == 1: # If a single bottom temp is given, spread it out horizontally
         T0 = ones(nhor,'d') * T0
@@ -398,12 +398,12 @@ def moistadiabat(p, T0, Tstrat, rh):
         T[:,i] = pseudoadiab(p[:,i],p[-1,i],T0[i])
         for k in range(nlev):
             #T[k,i] = tmoistadiab( the0, p[k,i])   # moist adiabatic profile
-            if T[k,i] < Tstrat: 
-                T[k,i]=Tstrat   # isothermal stratosphere     
+            if T[k,i] < Tstrat:
+                T[k,i]=Tstrat   # isothermal stratosphere
                 kpause = k      # since we're building from the top down,
                                 # kpause will be level just above tropopause
         # Build humidity profile
-        wpause = ws(T[kpause,i],p[kpause,i])*rh  # tropopause mixing rat 
+        wpause = ws(T[kpause,i],p[kpause,i])*rh  # tropopause mixing rat
         for k in range(nlev):
             if k <= kpause:
                 q[k,i] = 1.e-9 #wpause    # constant q in stratosphere
@@ -431,3 +431,30 @@ def theta_old(T,p,q):
   '''
   return squeeze(_thermodyn.theta_old(T,p,q))
 
+def wetbulb(T, p, q=None, Td=None, w=None, cpd=None, Rd=None, Rv=None, Lv=None):
+  '''
+  Return wet-bulb temperature T_w [K]
+  given temperature T [K], pressure p [mb] and exactly one of the following:
+
+    - Specific humidity q [g/kg]
+    - Dew-point temperature Td [K]
+    - Mass-mixing ratio w [g/kg]
+
+  Specific humidity q can be given as a positional argument while Td and w must
+  be named explicitly.
+  Uses Bohren & Albrecht p 283 eq 6.70.
+  '''
+  if Rd  is None: Rd  = Parameters()['Rd']
+  if Rv  is None: Rv  = Parameters()['Rv']
+  if cpd is None: cpd = Parameters()['Cpd']
+  if Lv is None: Lv = Parameters()['Lv']
+
+  if not q is None:
+      return squeeze(_thermodyn.wetbulb_from_q(cpd, Lv, Rd, Rv, T, p, q))
+  elif not Td is None:
+      return squeeze(_thermodyn.wetbulb_from_tdew(cpd, Lv, Rd, Rv, T, p, Td))
+  elif not w is None:
+      return squeeze(_thermodyn.wetbulb_from_w(cpd, Lv, Rd, Rv, T, p, w))
+  else:
+      print "CliMT error: Function thermodyn.wetbulb requires one of q, Td, or \
+        w as an argument."
