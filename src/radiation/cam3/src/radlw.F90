@@ -2,8 +2,8 @@
 #include <params.h>
 
 module radlw
-!----------------------------------------------------------------------- 
-! 
+!-----------------------------------------------------------------------
+!
 ! Purpose: Longwave radiation calculations.
 !
 !-----------------------------------------------------------------------
@@ -40,14 +40,14 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
                     flut    ,flutc   , &
                     aer_mass,fnl     ,fcnl, &
 !+++CliMT
-                    ful,fdl) 
+                    ful,fdl)
 !---CliMT
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Compute longwave radiation heating rates and boundary fluxes
-! 
-! Method: 
+!
+! Method:
 ! Uses broad band absorptivity/emissivity method to compute clear sky;
 ! assumes randomly overlapped clouds with variable cloud emissivity to
 ! include effects of clouds.
@@ -59,12 +59,16 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
 ! Note: This subroutine contains vertical indexing which proceeds
 !       from bottom to top rather than the top to bottom indexing
 !       used in the rest of the model.
-! 
+!
 ! Author: B. Collins
-! 
+!
 !-----------------------------------------------------------------------
-   use radae,     only: nbands, radems, radabs, radtpl, abstot_3d, &
-                        absnxt_3d, emstot_3d, ntoplw, radoz2, trcpth
+!!++CliMT  BRIAN  moved some array declarations to absems.F90
+!   use radae,     only: nbands, radems, radabs, radtpl, abstot_3d, &
+!                        absnxt_3d, emstot_3d, ntoplw, radoz2, trcpth
+   use absems,    only: abstot_3d, absnxt_3d, emstot_3d, ntoplw
+   use radae,     only: nbands, radems, radabs, radtpl, radoz2, trcpth
+!!++CliMT
    use volcrad,   only: aer_pth, aer_trn, bnd_nbr_LW
 #if ( defined SCAM )
    use history,       only: outfld
@@ -179,12 +183,12 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
    real(r8) tint4(pcols,pverp)   ! Interface temperature**4
    real(r8) tlayr(pcols,pverp)   ! Level temperature
    real(r8) tlayr4(pcols,pverp)  ! Level temperature**4
-   real(r8) plh2ob(nbands,pcols,pverp)! Pressure weighted h2o path with 
-                                      !    Hulst-Curtis-Godson temp. factor 
-                                      !    for H2O bands 
-   real(r8) wb(nbands,pcols,pverp)    ! H2o path length with 
-                                      !    Hulst-Curtis-Godson temp. factor 
-                                      !    for H2O bands 
+   real(r8) plh2ob(nbands,pcols,pverp)! Pressure weighted h2o path with
+                                      !    Hulst-Curtis-Godson temp. factor
+                                      !    for H2O bands
+   real(r8) wb(nbands,pcols,pverp)    ! H2o path length with
+                                      !    Hulst-Curtis-Godson temp. factor
+                                      !    for H2O bands
 
    real(r8) cld0                 ! previous cloud amt (for max overlap)
    real(r8) cld1                 ! next cloud amt (for max overlap)
@@ -213,7 +217,7 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
    integer ktmp              ! Temporary storage for sort when nxs = 2
 
   real(r8) aer_trn_ttl(pcols,pverp,pverp,bnd_nbr_LW) ! [fraction] Total
-!                               ! transmission between interfaces k1 and k2  
+!                               ! transmission between interfaces k1 and k2
 !
 ! Pointer variables to 3d structures
 !
@@ -1051,9 +1055,9 @@ end subroutine radclwmx
 !-------------------------------------------------------------------------------
 
 subroutine radlw_init(gravit, stebol)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
+!-----------------------------------------------------------------------
+!
+! Purpose:
 ! Initialize various constants for radiation scheme; note that
 ! the radiation scheme uses cgs units.
 !-----------------------------------------------------------------------

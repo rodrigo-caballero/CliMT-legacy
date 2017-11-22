@@ -9,7 +9,7 @@ subroutine driver(  &
      ps,   &
      t,   &
      tg,   &
-     q,   & 
+     q,   &
      o3mmr,   &
      cldf,   &
      clwp,   &
@@ -33,7 +33,7 @@ subroutine driver(  &
      cpair,   &
      epsilo,   &
      stebol,   &
-     dt,   &  
+     dt,   &
      tinc,   &
      tdot,   &
      srfflx,   &
@@ -48,7 +48,7 @@ subroutine driver(  &
      lw_toa,  &
      lw_srf,  &
      sw_toa,  &
-     sw_srf, & 
+     sw_srf, &
      lwup_out, lwdn_out)
 
 ! Input
@@ -103,7 +103,7 @@ subroutine driver(  &
   real*8, intent(out) :: sw_srf(jm,im)
   real*8, intent(out) :: srfflx(jm,im)
 
-! Local 
+! Local
   real*8 swflx(km+1)
   real*8 lwflx(km+1)
   real*8 lwup(km+1)
@@ -129,7 +129,7 @@ subroutine driver(  &
              pmid(1,j,i),  &
              dp(1,j,i),  &
              ps(j,i),  &
-             q(1,j,i),  & 
+             q(1,j,i),  &
              tg(j,i),  &
              t(1,j,i),  &
              co2vmr,  &
@@ -154,7 +154,7 @@ subroutine driver(  &
              lw_toa(j,i),  &
              lw_srf(j,i),  &
              sw_toa(j,i),  &
-             sw_srf(j,i), & 
+             sw_srf(j,i), &
              lwup,lwdn &
              )
 
@@ -166,7 +166,7 @@ subroutine driver(  &
      enddo
   enddo
 
-  tdot   = qrs + qrl 
+  tdot   = qrs + qrl
   tinc   = 2.*dt*tdot
   qrs = qrs * 86400.
   qrl = qrl * 86400.
@@ -174,20 +174,11 @@ subroutine driver(  &
 
 end subroutine driver
 
-!-----------------------------------------------------------------
-subroutine init_absems(absemsfile)
-  character(len=256) absemsfile
-!f2py intent(in) absemsfile
-
-  call crm_init_absems(absemsfile)
-
-end subroutine init_absems
-!-------------------------------------------------------------
 integer function get_nlev()
 
   integer get_km
   external get_km
 
   get_nlev = get_km()
-   
+
 end function get_nlev

@@ -11,7 +11,7 @@ subroutine driver &
     swuflx, swdflx, swhr, swuflxc, &
     swdflxc, swhrc, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt)
 
-! Modules                                              
+! Modules
     use rrtmg_lw_rad, only: rrtmg_lw
     use rrtmg_sw_rad, only: rrtmg_sw
     use parkind, only: im => kind_im
@@ -20,7 +20,7 @@ subroutine driver &
     use rrtmg_lw_init, only: rrtmg_lw_ini
     use rrtmg_sw_init, only: rrtmg_sw_ini
 
-    
+
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
     integer(kind=im), intent(in) :: nbndlw
@@ -78,7 +78,7 @@ subroutine driver &
     real(kind=rb), intent(in) :: tauaer_sw(ncol,nlay,nbndsw)
     real(kind=rb), intent(in) :: ssaaer_sw(ncol,nlay,nbndsw)
     real(kind=rb), intent(in) :: asmaer_sw(ncol,nlay,nbndsw)
-    real(kind=rb), intent(in) :: ecaer_sw(ncol,nlay,naerec)    
+    real(kind=rb), intent(in) :: ecaer_sw(ncol,nlay,naerec)
     real(kind=rb), intent(in) :: tauaer_lw(ncol,nlay,nbndlw)
 
 ! Output
@@ -89,7 +89,7 @@ subroutine driver &
     real(kind=rb), intent(out) :: swuflxc(ncol,nlay+1)      ! Clear sky shortwave upward flux (W/m2)
     real(kind=rb), intent(out) :: swdflxc(ncol,nlay+1)      ! Clear sky shortwave downward flux (W/m2)
     real(kind=rb), intent(out) :: swhrc(ncol,nlay)        ! Clear sky shortwave radiative heating rate (K/d)
-                                                
+
     ! LW
     real(kind=rb), intent(out) :: uflx(ncol,nlay+1)         ! Total sky longwave upward flux (W/m2)
     real(kind=rb), intent(out) :: dflx(ncol,nlay+1)         ! Total sky longwave downward flux (W/m2)
@@ -117,7 +117,7 @@ subroutine driver &
     real(kind=rb) :: clwpmcl_lw(140,ncol,nlay)
     real(kind=rb) :: reicmcl_lw(ncol,nlay)
     real(kind=rb) :: relqmcl_lw(ncol,nlay)
-    
+
     call mcica_subcol_sw(1, ncol, nlay, icld, permuteseed_sw, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc_sw, ssac_sw, asmc_sw, fsfc_sw, &
                        cldfmcl_sw, ciwpmcl_sw, clwpmcl_sw, reicmcl_sw, relqmcl_sw, &
@@ -125,8 +125,10 @@ subroutine driver &
     call mcica_subcol_lw(1, ncol, nlay, icld, permuteseed_lw, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc_lw, cldfmcl_lw, &
                        ciwpmcl_lw, clwpmcl_lw, reicmcl_lw, relqmcl_lw, taucmcl_lw)
-    call rrtmg_sw_ini(cpdair)
-    call rrtmg_lw_ini(cpdair)
+    !  Now calling the init subroutines from Python
+    !  when object is first instantiated (see _rrtm_radiation.py)
+    !call rrtmg_sw_ini(cpdair)
+    !call rrtmg_lw_ini(cpdair)
     call rrtmg_sw(ncol    ,nlay    ,icld    , &
              play    ,plev    ,tlay    ,tlev    ,tsfc   , &
              h2ovmr , o3vmr   ,co2vmr  ,ch4vmr  ,n2ovmr ,o2vmr , &
@@ -138,7 +140,7 @@ subroutine driver &
              tauaer_sw  ,ssaaer_sw ,asmaer_sw  ,ecaer_sw   , &
              swuflx  ,swdflx  ,swhr    ,swuflxc ,swdflxc ,swhrc)
     call rrtmg_lw(ncol    ,nlay    ,icld    ,idrv    , &
-             play    ,plev    ,tlay    ,tlev    ,tsfc    , & 
+             play    ,plev    ,tlay    ,tlev    ,tsfc    , &
              h2ovmr  ,o3vmr   ,co2vmr  ,ch4vmr  ,n2ovmr  ,o2vmr , &
              cfc11vmr,cfc12vmr,cfc22vmr,ccl4vmr ,emis    , &
              inflglw ,iceflglw,liqflglw,cldfmcl_lw , &
