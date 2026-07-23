@@ -1,6 +1,6 @@
 
 # -------- EDIT HERE TO MATCH YOUR ENVIRONMENT:
-climt_home_dir = '/Users/rca/CliMT_classic/CliMT_classic/'
+climt_home_dir = '/Users/rca/CliMT-legacy/CliMT-legacy/'
 KM = 26
 JM = 1
 IM = 1
