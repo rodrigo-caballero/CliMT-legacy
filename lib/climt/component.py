@@ -6,7 +6,7 @@ from .state      import State, KnownFields
 from .plot       import Monitor, Plot
 from .io         import IO
 from .utils      import squeeze
-from _grid      import get_nlev, get_nlat, get_nlon
+from ._grid      import get_nlev, get_nlat, get_nlon
 
 class Component:
     """

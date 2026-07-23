@@ -1,10 +1,10 @@
-from distutils.sysconfig import get_python_lib
-import sys
-sys.path.append(get_python_lib()+'/climt_classic/')
+#from distutils.sysconfig import get_python_lib
+#import sys
+#sys.path.append(get_python_lib()+'/climt_classic/')
 
 from .__version__ import __version__
  
-from _grid import get_nlev, get_nlat, get_nlon
+from ._grid import get_nlev, get_nlat, get_nlon
 
 from .thermodyn    import es,qs,ws,esflatau,qsflatau,wsflatau,tdew,\
                          tstar,theta,thetae,pdryadiab,tdryadiab, \
@@ -25,8 +25,3 @@ if 'climt_lite' not in __file__:
   from .seaice        import seaice
   from .dynamics     import dynamics
   from .turbulence   import turbulence
-
-
-
-# Import f2py functions for handling row/column storage order
-#from _ozone import as_column_major_storage, has_column_major_storage

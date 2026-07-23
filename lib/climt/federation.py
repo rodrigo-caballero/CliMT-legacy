@@ -7,8 +7,7 @@ from .parameters import Parameters
 from .state      import State
 from .plot       import Monitor, Plot
 from .io         import IO
-from _timestep  import asselin
-import _grid
+from ._timestep  import asselin
 
 class federation(Component):
     """

@@ -11,10 +11,16 @@ from setuptools import setup, Extension
 import os,glob,sys,string
 from pathlib import Path
 
-# the following 2 lines are for OSX only!!
+# on OSX, the following 2 lines are needed
 # comment out if you are using Linux
 os.environ['C_INCLUDE_PATH'] = '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include'
 os.environ['CC'] = 'clang'
+
+# on Linux, the following two lines are needed to circumvent incompatibility
+# between conda py312 compilers and system GCC libraries
+# you must have gfortran installed at system level
+#os.environ['CC'] = '/usr/bin/gcc'
+#os.environ['FC'] = '/usr/bin/gfortran'
 
 if '--lite' in sys.argv:
     sys.argv.pop(sys.argv.index('--lite'))

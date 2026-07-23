@@ -5,13 +5,8 @@
 from numpy import *
 from .utils import squeeze
 from .parameters import Parameters
-
-try:
-    import _thermodyn as _thermodyn
-except ImportError:
-    print("Thermodynamics components are currently unavailable.")
-
-
+from . import _thermodyn
+                         
 def es(T):
   '''
   Return saturation partial pressure of water vapour es [mb]
