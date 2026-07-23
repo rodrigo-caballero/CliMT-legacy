@@ -10,9 +10,9 @@ import sys
 def printout(fed,freq=86400.):
     time  = fed.State.ElapsedTime
     if int(time/freq) != int((time-fed['dt'])/freq): 
-        print "\nlev    p     T       theta   q"
+        print("\nlev    p     T       theta   q")
         for i in range(fed.nlev):
-            print "%3i %6.1f %6.1f %6.1f %6.2f" % \
-                  (i, fed['p'][i], fed['T'][i]-273.15, fed['theta'][i], fed['q'][i])
-        print 'Surface temp: %10.5f' % (fed['Ts']-273.15)
+            print("%3i %6.1f %6.1f %6.1f %6.2f" % \
+                  (i, fed['p'][i], fed['T'][i]-273.15, fed['theta'][i], fed['q'][i]))
+        print('Surface temp: %10.5f' % (fed['Ts']-273.15))
 

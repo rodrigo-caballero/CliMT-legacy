@@ -62,7 +62,7 @@ module volcrad
 !                    --sz_nbr=100 --dst_a=.35 --dst_b=0.405 --dst_c=.1e6 
 !
 ! First two values represent the overlap of volcanics with the non-window
-! (0-800, 1200-2200 cm^-1) and window (800-1200 cm^-1) regions.  Coefficients
+! (0-800, 1200-2200 cm^-1) and window (800-1200 cm^-1) regions.Â  Coefficients
 ! were derived using crm_volc_minimize.pro with spectral flux optimization
 ! on first iteration, total heating rate on subsequent iterations (2-9).
 ! Five profiles for HLS, HLW, MLS, MLW, and TRO conditions were given equal

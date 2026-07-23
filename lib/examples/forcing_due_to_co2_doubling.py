@@ -28,7 +28,7 @@ def profiles(Ts):
   ps = 1000.
   # Equispaced pressure levels
   p = ( arange(r.nlev)+ 0.5 )/r.nlev * ps
-  print r.nlev
+  print(r.nlev)
   # Return moist adiabat with given rel hum
   rh=0.4
   (T,q) = climt.thermodyn.moistadiabat(p, Ts, Tst, rh)

@@ -15,7 +15,7 @@ real(8), intent(in),  dimension(jm)       :: lat
 real(8), intent(in),  dimension(km)       :: lev
 real(8), intent(in),  dimension(km,jm,im) :: T_, U_, q_, Vold_
 
-real(8),  dimension(km,jm,im) :: V_
+real(8),  dimension(km,jm,im), intent(inout) :: V_
 !f2py intent(in,out) V_
 
 ! Out

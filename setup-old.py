@@ -1,20 +1,30 @@
-
-# -------- EDIT HERE TO MATCH YOUR ENVIRONMENT:
-climt_home_dir = '/Users/rca/CliMT_classic/CliMT_classic/'
-KM = 26
-JM = 1
-IM = 1
-NC_INC = '/Users/rca/miniconda3/envs/py312/include'
-NC_LIB = '/Users/rca/miniconda3/envs/py312/lib'
-# --------------------------------------------------------
+#!/usr/bin/env python
 
 import os,glob,sys,string
 
 # this is for OSX only!!
 os.environ['C_INCLUDE_PATH'] = '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include'
-os.environ['CC'] = 'clang'
+
+## NOTE that module has been renamed climt_classic ##
+
+## !!!! python>=3.12 and numpy >=2.0 do not have distutils!!
+## !!!! need to move to new build system https://numpy.org/devdocs/reference/distutils_status_migration.html
 
 from setuptools import setup, Extension # for python>=3.10 need to use setuptools instead of distutils
+from numpy.distutils import fcompiler
+from distutils.dep_util import newer
+
+## -------- set these
+KM = 26
+#KM = 39 
+#KM = 99 
+JM = 1
+IM = 1
+#NC_INC = '/Users/rca/miniconda3/envs/py38-intel/include'
+#NC_LIB = '/Users/rca/miniconda3/envs/py38-intel/lib'
+NC_INC = '/Users/rca/miniconda3/envs/py310/include'
+NC_LIB = '/Users/rca/miniconda3/envs/py310/lib'
+##----------------------
 
 if '--lite' in sys.argv:
     sys.argv.pop(sys.argv.index('--lite'))
@@ -24,47 +34,47 @@ else:
 
 Extensions = [
     {'name':'grid',
-     'dir':climt_home_dir+'src/grid'},
+     'dir':'src/grid'},
     {'name':'timestep',
-     'dir':climt_home_dir+'src/timestep'},
+     'dir':'src/timestep'},
     {'name':'thermodyn',
-     'dir':climt_home_dir+'src/thermodyn'},
+     'dir':'src/thermodyn'},
     {'name':'emanuel_convection',
-     'dir':climt_home_dir+'src/convection/emanuel'},
+     'dir':'src/convection/emanuel'},
     {'name':'hard_adjustment',
-     'dir':climt_home_dir+'src/convection/hard'},
+     'dir':'src/convection/hard'},
     #{'name':'sbm_convection',
-    # 'dir':climt_home_dir+'src/convection/sbm'},
+    # 'dir':'src/convection/sbm'},
     {'name':'axisymmetric_dynamics',
-     'dir':climt_home_dir+'src/dynamics/axisymmetric'},
+     'dir':'src/dynamics/axisymmetric'},
     {'name':'two_column_dynamics',
-     'dir':climt_home_dir+'src/dynamics/two_column'},
+     'dir':'src/dynamics/two_column'},
     {'name':'slab_ocean',
-     'dir':climt_home_dir+'src/ocean/slab_ocean'},
+     'dir':'src/ocean/slab_ocean'},
     {'name':'ccm3_radiation',
-     'dir':climt_home_dir+'src/radiation/ccm3',
+     'dir':'src/radiation/ccm3',
      'cppflags':'-DSUN -DPLON=%i -DPLEV=%i -DPLEVR=%i' % (IM,KM,KM)},
     {'name':'cam3_radiation',
-     'dir':climt_home_dir+'src/radiation/cam3',
+     'dir':'src/radiation/cam3',
      'cppflags':'-DPLEV=%i' % KM,
      'lib':['netcdf','netcdff'],
      'libdir': [NC_LIB],
      'incdir': [NC_INC]},
     {'name':'chou_radiation',
-     'dir':climt_home_dir+'src/radiation/chou'},
+     'dir':'src/radiation/chou'},
     {'name':'greygas_radiation',
-     'dir':climt_home_dir+'src/radiation/greygas'},
+     'dir':'src/radiation/greygas'},
     #{'name':'rrtm_radiation_fortran',
-    # 'dir':climt_home_dir+'src/radiation/rrtm'}
+    # 'dir':'src/radiation/rrtm'}
     {'name':'ozone',
-     'dir':climt_home_dir+'src/radiation/ozone'},
+     'dir':'src/radiation/ozone'},
     {'name':'insolation',
-     'dir':climt_home_dir+'src/radiation/insolation'},
+     'dir':'src/radiation/insolation'},
     {'name':'ccm3_turbulence',
-     'dir':climt_home_dir+'src/turbulence/ccm3',
+     'dir':'src/turbulence/ccm3',
      'cppflags':'-DPLON=%i -DPLEV=%i' % (IM,KM)},
     {'name':'simple_turbulence',
-     'dir':climt_home_dir+'src/turbulence/simple'}
+     'dir':'src/turbulence/simple'}
     ]
 
 # define extensions that will be built when the --lite option is used
@@ -74,15 +84,20 @@ for ext in Extensions:
     if ext['name'] in LiteExtensionsNames:
         ExtensionsLite.append(ext)
 
-# set some fortran compiler-dependent flags
-compiler = 'gfortran'
+# figure out which compiler we're goint to use
+## compiler = fcompiler.get_default_fcompiler()
+## for i in range(len(sys.argv)):
+##     if '--fcompiler' in sys.argv[i]:
+##         compiler = sys.argv.pop(i)
+##         compiler = compiler[compiler.index('=')+1:]
+## print('Using %s compiler' % compiler)
 
-if compiler == 'gfortran':
-    ## f77flags='-ffixed-line-length-132 -fdefault-real-8 -std=legacy'
-    ## f90flags='-fdefault-real-8 -fno-range-check -std=legacy'
+compiler = 'gnu95'
+
+# set some fortran compiler-dependent flags
+if compiler == 'gnu95':
     f77flags='-ffixed-line-length-132 -fdefault-real-8 -std=legacy'
-    ##f77flags='-fdefault-real-8 -std=legacy'
-    f90flags='-fdefault-real-8 -std=legacy'
+    f90flags='-fdefault-real-8 -fno-range-check -ffree-form -std=legacy'
 elif compiler == 'intel' or compiler == 'intelem':
     f77flags='-132 -r8'
     f90flags='-132 -r8'
@@ -105,27 +120,29 @@ for ExtList in [Extensions,ExtensionsLite]:
 
 def getSources(dir):
     #Gets list of source files for extensions
-    # -- some modules (eg. cam3) have a specific list of source files
-    if os.path.exists(dir+'/sources_in_order_of_compilation'):
-        Sources = open(dir+'/sources_in_order_of_compilation').readlines()
+    SrcFile = os.path.join(dir,'sources_in_order_of_compilation')
+    if os.path.exists(SrcFile):
+        Sources = open(SrcFile).readlines()
         Sources = [os.path.join(dir,s[:-1]) for s in Sources]
-    # -- if no specific list, then just get all fortran files
     else:
-        Sources = glob.glob(dir+'/**', recursive=True)
-        Sources = [file for file in Sources if ('.f90' in file) or ('.F90' in file) \
-                   or ('.f' in file) or ('.F' in file)]
-        Sources = [file for file in Sources if ('ignore' not in file)]
+        Sources = []
+        w = os.walk(dir)
+        for ww in w:
+            if 'ignore' not in ww[0]:
+                for pattern in ['*.f','*.F','*.f90','*.F90']:
+                    Sources += glob.glob(os.path.join(ww[0],pattern))
     return Sources
 
-def buildNeeded(name, src):
+def buildNeeded(name,src):
     #Checks if source code is newer than extension, so extension needs to be rebuilt
+    #target = os.path.join('lib/climt',target)
     target = glob.glob('lib/climt/_%s*.so' % name)
     if len(target) == 0:
         return True
     else:
         target = target[0]
     for file in src:
-        if os.path.getctime(file) > os.path.getctime(target):
+        if newer(file,target):
             return True
     print('Extension %s is up to date' % os.path.basename(target))
     return False
@@ -133,21 +150,26 @@ def buildNeeded(name, src):
 def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
               lib='', libdir='', incdir=''):
     #Builds an extension
+    src = getSources(dir)
+    print(dir)
+    print(glob.glob(os.path.join(dir,'Driver.f*')))
+    driver = glob.glob(os.path.join(dir,'Driver.f*'))[0]
     f77flags = '"%s %s"' % (cppflags,f77flags)
     f90flags = '"%s %s"' % (cppflags,f90flags)
-    src = getSources(dir)
-    if buildNeeded(name, src):
+    if buildNeeded(name,src):
         print('\n Building %s ... \n' % name)
         # generate signature file for Driver only
         # (need to do this because otherwise f2py tries to generate signatures for all files,
         # and runs into problems with preprocessing)
-        driver =  glob.glob(os.path.join(dir, 'Driver.f*'))[0]
-        os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf' % (driver, name, name))
+        os.system('f2py --overwrite-signature %s -m _%s -h _%s.pyf'%(driver,name,name))
         # compile extension
         F2pyCommand = []
-        F2pyCommand.append('f2py --backend meson -c -m _%s' % name)
+        F2pyCommand.append('f2py -c -m _%s' % name)
+        F2pyCommand.append('--fcompiler=%s --noopt' % compiler)
         F2pyCommand.append('-I%s' % dir)
+        F2pyCommand.append('-I%s' % os.path.join(dir,'include'))
         F2pyCommand.append('-I%s' % os.path.join(dir,'src'))
+        F2pyCommand.append('-I%s' % os.path.join(dir,'src','include'))
         if incdir != '':
             for i in incdir:
                 F2pyCommand.append('-I%s' % i)
@@ -160,7 +182,7 @@ def build_ext(name=None, dir=None, cppflags='', f77flags='', f90flags='', \
         F2pyCommand.append('--f77flags=%s' % f77flags)
         F2pyCommand.append('--f90flags=%s' % f90flags)
         F2pyCommand.append('_%s.pyf' % name)
-        F2pyCommand.append(' '.join(src))
+        F2pyCommand.append('%s' % ' '.join(src))
         F2pyCommand = ' '.join(F2pyCommand)
         print(F2pyCommand)
         if os.system(F2pyCommand) > 0:
@@ -186,15 +208,15 @@ def setupClimt():
     print(DataFiles)
     os.chdir('../..')
     
-    setup(name = "CliMT-legacy",
+    setup(name = "CliMT_classic",
           version = open('Version').read()[:-1],
           description = "Climate modelling and diagnostics toolkit",
           author = "Rodrigo Caballero",
           author_email = "rodrigo@misu.su.se",
           url = "http://people.su.se/~rcaba/climt",
-          packages = ['climt_legacy'],
-          package_dir = {'climt_legacy':'lib/climt'},
-          package_data = {'climt_legacy':['*.so']+DataFiles})
+          packages = ['climt_classic'],
+          package_dir = {'climt_classic':'lib/climt'},
+          package_data = {'climt_classic':['*.so']+DataFiles})
 
 
 def setupClimtLite():

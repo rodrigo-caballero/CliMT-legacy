@@ -37,9 +37,9 @@ class DataServer:
         self.File1 = NetCDFFile(self.FileName1,'r')
         self.File2 = NetCDFFile(self.FileName2,'r')
 
-        print 'Using input files:'
-        print self.FileName1
-        print self.FileName2
+        print('Using input files:')
+        print(self.FileName1)
+        print(self.FileName2)
 
         #  Extract hybrid coord coefficients and ref press
         File = self.File1
@@ -119,7 +119,7 @@ class Feedback:
             # l is time index
             # note it's equal to NsnapsDone
             l, self.File = self.openOutputFile()
-            print 'Doing snapshot %s of %s' % (l+1,N)
+            print('Doing snapshot %s of %s' % (l+1,N))
             Data = self.getFields(l)
             for i in range(2):
                 Data[i].update(self.Fixed)
@@ -204,7 +204,7 @@ class Feedback:
         ClimtFields = ['p','dp','ps','T','Ts','q','cldf','ciwp',
                        'clwp','o3','aldir','aldif','asdir',
                        'asdif','solin','flus','r_liq','r_ice','co2','zen']
-        Conversion = dict(zip(CamFields,ClimtFields))
+        Conversion = dict(list(zip(CamFields,ClimtFields)))
         Data=[{},{}]
         for Field in CamFields:
             x  = self.data.getData(Field,l)
@@ -224,7 +224,7 @@ class Feedback:
     def test(self):
         # Create file
         FileName = '%s_out.nc' % self.Case
-        print 'creating %s ...' % FileName
+        print('creating %s ...' % FileName)
         File = NetCDFFile(FileName,'w')
         File.createDimension('time',None)
         var = File.createVariable('time','f',('time',))
@@ -246,7 +246,7 @@ class Feedback:
             var.units = 'W m-2'
         lmax = 3
         for l in range(lmax):
-            print 'doing %s of %s' % (l+1,lmax)
+            print('doing %s of %s' % (l+1,lmax))
             # get data
             Data = self.getFields(l)[0]
             Data.update(self.Fixed)
@@ -264,7 +264,7 @@ class Feedback:
         FileName = 'results/%s-%s/Cam3Feedbacks.%s-%s.%03i.nc' % \
                    (self.Case1,self.Case2,self.Case1,self.Case2,self.FileNumber)
         if not os.path.exists(FileName):
-            print 'creating %s ...' % FileName
+            print('creating %s ...' % FileName)
             File = NetCDFFile(FileName,'w')
             File.createDimension('lat',len(self.data.lat))
             var = File.createVariable('lat','f',('lat',))
@@ -290,7 +290,7 @@ class Feedback:
             if NsnapsDone < len(self.data.time):
                 return NsnapsDone, File
             else:
-                print 'No more snaps to be done'
+                print('No more snaps to be done')
                 sys.exit(0)
 
 if __name__ == '__main__':

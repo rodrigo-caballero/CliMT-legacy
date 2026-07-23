@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component  import Component
+from .component  import Component
 from numpy import *
 import string
 
@@ -17,8 +17,8 @@ class convection(Component):
     '''
     def __init__(self, scheme = 'hard', **kwargs):
         # Initialize scheme-dependent attributes
-        try: exec('self.__%s__init__()' % string.lower(scheme))
-        except: raise ValueError,'\n \n ++++ CliMT.convection: Scheme "%s" unknown' % scheme
+        try: exec('self.__%s__init__()' % scheme.lower())
+        except: raise ValueError('\n \n ++++ CliMT.convection: Scheme "%s" unknown' % scheme)
 
         # Initialize fields etc. 
         Component.__init__(self, **kwargs)
@@ -26,7 +26,7 @@ class convection(Component):
     def __emanuel__init__(self):
         # Load extension
         try: import _emanuel_convection
-        except: raise ImportError, '\n \n ++++ CliMT.convection: Could not load Emanuel scheme'
+        except: raise ImportError('\n \n ++++ CliMT.convection: Could not load Emanuel scheme')
         # Define some attributes
         self.Name           = 'emanuel_convection'
         self.LevType        = 'p'
@@ -46,7 +46,7 @@ class convection(Component):
     def __hard__init__(self):
         # Load extension
         try: import _hard_adjustment
-        except: raise ImportError, '\n \n ++++ CliMT.convection: Could not load hard adjustment scheme'
+        except: raise ImportError('\n \n ++++ CliMT.convection: Could not load hard adjustment scheme')
         # Define some attributes
         self.Name           = 'hard_adjustment'
         self.LevType        = 'p'
@@ -62,7 +62,7 @@ class convection(Component):
     def __sbm__init__(self):
         # Load extension
         try: import _sbm_convection
-        except: raise ImportError, '\n \n ++++ CliMT.convection: Could not load SBM scheme'
+        except: raise ImportError('\n \n ++++ CliMT.convection: Could not load SBM scheme')
         # Define some attributes
         self.Name           = 'sbm_convection'
         self.LevType        = 'p'

@@ -1,7 +1,35 @@
 #!/usr/bin/env python
 
+from matplotlib import pyplot as pl
 from numpy import *
 import climt
+pl.ioff()
+
+ins = climt.insolation(avg = 'daily')
+def daily_solin(days,year,lat):
+    solin = []
+    for day in days:
+        ins(lat=lat, orb_year=year, calday=day)
+        solin.append(ins['solin'])
+    return array(solin)
+
+lat = 47
+days = arange(366)
+solin = daily_solin(days,2000,lat)
+pl.plot(days,solin,'k-',lw=2)
+solin = daily_solin(days,1950-15200,lat)
+pl.plot(days,solin)
+solin = daily_solin(days,1950-14400,lat)
+pl.plot(days,solin)
+solin = daily_solin(days,1950-12400,lat)
+pl.plot(days,solin)
+solin = daily_solin(days,1950-11800,lat)
+pl.plot(days,solin)
+pl.legend(['modern','15200','14400','12400','11800'])
+pl.xlim([0,365])
+pl.xlabel('day of year')
+pl.ylabel('insolation at 47N (W/m2)')
+pl.show()
 
 # Make annual-average insolation instance
 ins = climt.insolation(avg = 'annual')
@@ -19,16 +47,14 @@ for year in range(0, 40000, 1000):
 # Remove mean
 solin = solin - average(solin,axis=0)[None,:]
 
-# Plot
-try:
-    from matplotlib.pylab import *
-    imshow(transpose(solin)[::-1,:],extent=(0,50000,-90,90))
-    xlabel('Time (years)')
-    ylabel('Latitude')
-    title('Change in annual-mean insolation [W m-2]')
-    ylim([-90,90])
-    xlim([0,50000])
-    colorbar()
-    show()
-except:
-    pass
+pl.clf()
+pl.imshow(transpose(solin)[::-1,:],extent=(0,50000,-90,90))
+pl.xlabel('Time (years)')
+pl.ylabel('Latitude')
+pl.title('Change in annual-mean insolation [W m-2]')
+pl.ylim([-90,90])
+pl.xlim([0,50000])
+pl.colorbar()
+
+pl.show()
+

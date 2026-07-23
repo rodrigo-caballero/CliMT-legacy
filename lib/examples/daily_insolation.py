@@ -8,6 +8,7 @@ This is the same as the CGI code at David Archers site
 import sys,os
 from pylab import *
 import climt
+ioff()
 
 ## Orbital parameters:
 ecc = 0.0167
@@ -21,13 +22,15 @@ lat = (arange(nlat)+0.5)*180./nlat -90.
 solin=[]
 
 for day in range(1,366):
-  ins(lat=lat, calday=day, eccen=ecc, obliq=obl, prece=pre)
+  #ins(lat=lat, calday=day, eccen=ecc, obliq=obl, prece=pre, orb_year=0)
+  ins(lat=lat, calday=day, orb_year=-25000)
   solin.append(ins['solin'])
 
 solin = climt.utils.squeeze(transpose(solin))
 solin=solin[::-1,:]
 
-imshow(solin,extent=(1,366,-89,89))
+#imshow(solin,extent=(1,366,-89,89))
+contourf(solin,extent=(1,366,-89,89))
 cset1 = contour(solin, arange(0,2000,100),origin='upper',linewidths=1,colors='k',extent=(1,365,-89,89))
 clabel(cset1,inline=1,fmt='%1.0f',fontsize=10)
 

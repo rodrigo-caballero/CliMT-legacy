@@ -44,7 +44,7 @@ def ice1L(*args):
             Tsinc = Tfreeze - Ts
             Tsdot = Tsinc/dt
             dhdt = -net/(Lf*rhoi)
-            print Ts,alb,net,hIce,dhdt*dt
+            print(Ts,alb,net,hIce,dhdt*dt)
             hIce += dhdt*dt
             if hIce < .1: # For debugging. Should be zero otherwise
                 hIce = 0.

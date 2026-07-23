@@ -63,11 +63,11 @@ OUTPUTS =  ['swuflx', 'swdflx', 'lwuflx', 'lwdflx', 'SwToa', 'LwToa', 'lwflx', '
 
 def driver(*args):
     # wavenumber bands used by RRTM:
-    SW_BANDS = range(14)
-    LW_BANDS = range(16)
+    SW_BANDS = list(range(14))
+    LW_BANDS = list(range(16))
     
     # gotta translate between the APIs:
-    climt_inputs = dict(zip(INPUTS, args))
+    climt_inputs = dict(list(zip(INPUTS, args)))
     number_of_layers = len(climt_inputs['T'])
     
     if not climt_inputs['Tbound']: climt_inputs['Tbound'] = climt_inputs['T']
@@ -75,8 +75,8 @@ def driver(*args):
     climt_inputs['pbound'] = climt_inputs['lev'].tolist() + climt_inputs['ps'][0].tolist()
     climt_inputs['pbound'][0] = 1.e-9 # enforce TOA is at p=0
     climt_inputs['Tbound'] = [T[0][0] for T in climt_inputs['Tbound']] + [climt_inputs['Ts'][0][0]]
-    interpolated_p = interp1d(range(number_of_layers + 1), climt_inputs['pbound'])
-    interpolated_T = interp1d(range(number_of_layers + 1), climt_inputs['Tbound'])
+    interpolated_p = interp1d(list(range(number_of_layers + 1)), climt_inputs['pbound'])
+    interpolated_T = interp1d(list(range(number_of_layers + 1)), climt_inputs['Tbound'])
     
     
     # import sys; sys.stderr.write(str(climt_inputs['cldf']))
@@ -222,8 +222,8 @@ def driver(*args):
                                     if len(r_2) in [number_of_layers, number_of_layers + 1]:
                                         r_2.reverse()
     # import pdb; pdb.set_trace()
-    out = dict(zip(['swuflx','swdflx','swhr','swuflxc','swdflxc','swhrc','lwuflx','lwdflx','lwhr','lwuflxc','lwdflxc','lwhrc','duflx_dt','duflxc_dt'], \
-                           list(_rrtm_radiation_fortran.driver(*[pair[1] for pair in rrtm_inputs])) ))
+    out = dict(list(zip(['swuflx','swdflx','swhr','swuflxc','swdflxc','swhrc','lwuflx','lwdflx','lwhr','lwuflxc','lwdflxc','lwhrc','duflx_dt','duflxc_dt'], \
+                           list(_rrtm_radiation_fortran.driver(*[pair[1] for pair in rrtm_inputs])) )))
     
     # 
     ## new_output = (
@@ -237,7 +237,7 @@ def driver(*args):
     ## return new_output
 
     # get outputs into CliMT-compatible format
-    for key in out.keys():
+    for key in list(out.keys()):
         out[key] = out[key].transpose() # make level first index 
         out[key] = out[key][::-1]       # indexing goes top to bottom
     # fluxes defined positive downward

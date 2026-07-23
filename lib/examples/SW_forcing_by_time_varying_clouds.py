@@ -29,10 +29,10 @@ cldf = zeros((nz,nx),'d')
 for i in range(nx):
     kcentral = 11
     nlayers = 2*i+3
-    print getProfile(nlayers, kcentral, 3, nz)
+    print(getProfile(nlayers, kcentral, 3, nz))
     cldf[:,i] = getProfile(nlayers, kcentral, 3, nz)
 zen = arange(ny)*5. + 5.
-print zen
+print(zen)
 
 inputs = {}
 inputs['Ts']    = zeros((ny,nx))    + Ts
@@ -75,8 +75,8 @@ if gotPylab:
     ticks=array([3,5,7,9,11,13,15]) #*ps/nz
     xmin=ticks[0] - 1 #ps/nz
     xmax=ticks[-1] + 1 #3ps/nz
-    print xmin,xmax,ps/nz
-    print ticks
+    print(xmin,xmax,ps/nz)
+    print(ticks)
     extent = (xmin,xmax,2.5,52.5)
     imshow(V,extent=extent,interpolation='nearest',cmap=cm.gray)
     colorbar()

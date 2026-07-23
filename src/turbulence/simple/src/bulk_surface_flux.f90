@@ -9,8 +9,8 @@ implicit none
 ! In
 integer, intent(in)                :: jm, km, do_srf_mom_flx
 integer, intent(in)                :: do_srf_sen_flx, do_srf_lat_flx
-real, intent(in)                   :: Rd, eps, Cd, u0
-real, intent(in), dimension(jm)    :: ps, Ts
+real, intent(in)                   :: Rd, eps, Cd, u0, ps
+real, intent(in), dimension(jm)    :: Ts
 real, intent(in), dimension(jm,km) :: p, T, U, V, q
 
 ! Out
@@ -27,7 +27,7 @@ rho = p(:,km)/Rd/T(:,km)
 
 ! Sat. spec hum. at surface
 do j=1,jm
-   qsat(j) = qs( Ts(j), ps(j), eps )
+   qsat(j) = qs( Ts(j), ps, eps )
 enddo
 
 ! Fluxes (+ve upward)
@@ -41,14 +41,14 @@ end subroutine surface
 !-------------------------------------------------------------------------
 real function es(t)
 
-! Compute saturation partial pressure of water vapor es [mb]
+! Compute saturation partial pressure of water vapor es [Pa]
 ! at temperature t [K].
 ! Use Bohren+Albrecht p. 198
      
 real :: t, t0m1
 
 t0m1=1./273.15
-es = 6.11 * exp( 6808.*(t0m1-1./t)-5.09*log(t*t0m1) )
+es = 611. * exp( 6808.*(t0m1-1./t)-5.09*log(t*t0m1) )
 
 end function es
 !-------------------------------------------------------------------------
@@ -62,6 +62,6 @@ real :: t,p,eps
 external es
 
 ess = es(t)
-qs  = eps*ess/p * 1.e3
+qs  = eps*ess / (p + ess*(eps-1)) * 1.e3
 
 end function qs

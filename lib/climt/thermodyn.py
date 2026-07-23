@@ -1,15 +1,15 @@
-#!/usr/bin/env python
+###!/usr/bin/env python
 
 # Moist thermodynamics module
 
 from numpy import *
-from utils import squeeze
-from parameters import Parameters
+from .utils import squeeze
+from .parameters import Parameters
 
 try:
-    import _thermodyn
+    import _thermodyn as _thermodyn
 except ImportError:
-    print "Thermodynamics components are currently unavailable."
+    print("Thermodynamics components are currently unavailable.")
 
 
 def es(T):
@@ -40,7 +40,7 @@ def ws(T, p, Rd=None, Rv=None):
   if Rv  is None: Rv  = Parameters()['Rv']
   return squeeze(_thermodyn.ws(Rd,Rv,T,p))
 
-def esflatau(T,i):
+def esflatau(T, i=1):
   '''
   Return saturation partial pressure of water vapor es [mb]
   at temperature T [K].
@@ -51,7 +51,7 @@ def esflatau(T,i):
   '''
   return squeeze(_thermodyn.esflatau(T,i))
 
-def qsflatau(T,p,i=None,Rd=None,Rv=None):
+def qsflatau(T,p,i=1,Rd=None,Rv=None):
   '''
   Return saturation specific  humidity qs [g/kg]
   at temperature T [K] and pressure p [mb]
@@ -61,12 +61,11 @@ def qsflatau(T,p,i=None,Rd=None,Rv=None):
   i = 1 => return sat. mix. ratio over water (valid -85C < t < 70C)
   i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)
   '''
-  if i   is None: i   = 1
   if Rd  is None: Rd  = Parameters()['Rd']
   if Rv  is None: Rv  = Parameters()['Rv']
   return squeeze(_thermodyn.qsflatau(Rd,Rv,T,p,i))
 
-def wsflatau(T,p,i=None,Rd=None,Rv=None):
+def wsflatau(T,p,i=1, Rd=None, Rv=None):
   '''
   Return saturation mass mixing ratio of water vapor ws [g/kg]
   at temperature T [K] and pressure p [mb]
@@ -76,7 +75,6 @@ def wsflatau(T,p,i=None,Rd=None,Rv=None):
   i = 1 => return sat. mix. ratio over water (valid -85C < t < 70C)
   i = 2 => return sat. mix. ratio over ice (valid -90C < t < 0C)
   '''
-  if i   is None: i   = 1
   if Rd  is None: Rd  = Parameters()['Rd']
   if Rv  is None: Rv  = Parameters()['Rv']
   return squeeze(_thermodyn.wsflatau(T,p,i))
@@ -150,19 +148,19 @@ def thetaes(T, p,  \
 
 def z(p, T, p0=None, R=None, g=None):
     '''
-    Returns height z given temperature T [K] and pressure p.
+    Returns height z given temperature T [K] and pressure p [hPa].
     If gas constant R is not specified, then dry air value is used.
     If grav. accn. g is not specified, then earth value is used.
     If surface pressure p0 is not specified, then p0=p[-1].
     '''
     flip=False
-    if alltrue(p[0]>p[-1]):
+    if p[0]>p[-1]:
         p=p[::-1]
         flip=True
     if R is None: R=Parameters()['Rd']
     if g is None: g=Parameters()['g']
     if p0 is None: p0=p[-1]
-    z=squeeze(_thermodyn.z(R,g,p0,p,T))
+    z=squeeze(_thermodyn.z(R , g, p0*100., p*100., T))
     if flip: z=z[::-1]
     return z
 
@@ -186,7 +184,7 @@ def pseudoadiab(p, p0, T0, thetae=None, \
         T0 = thetae*(p0/1000.)**(Rd/cpd)
 
     flip=False
-    if alltrue(p[0]>p[-1]):
+    if all(p[0]>p[-1]):
         p=p[::-1]
         flip=True
 
@@ -210,7 +208,7 @@ def CAPE(p, T, q, Virtual=True, MixedLayerDepth=100., \
     if cpv is None: cpv=Parameters()['Cpv']
     if cl  is None: cl=Parameters()['Cl']
 
-    if alltrue(p[0]>p[-1]):
+    if all(p[0]>p[-1]):
         p=p[::-1]
         T=T[::-1]
         q=q[::-1]
@@ -294,8 +292,8 @@ def skewT(p=None, T=None, Td=None, virtual=False):
         except: import matplotlib.matlab as pylab
         pylab.ion()
     except:
-        print '\n ++++ CliMT: WARNING: matplotlib.pylab ' \
-              +'could not be loaded, so cannot plot skew T !\n'
+        print('\n ++++ CliMT: WARNING: matplotlib.pylab ' \
+              +'could not be loaded, so cannot plot skew T !\n')
     pylab.figure(figsize=(7,10))
     plotAdiabats()
     plotHumidityIsopleths()
@@ -456,5 +454,5 @@ def wetbulb(T, p, q=None, Td=None, w=None, cpd=None, Rd=None, Rv=None, Lv=None):
   elif not w is None:
       return squeeze(_thermodyn.wetbulb_from_w(cpd, Lv, Rd, Rv, T, p, w))
   else:
-      print "CliMT error: Function thermodyn.wetbulb requires one of q, Td, or \
-        w as an argument."
+      print("CliMT error: Function thermodyn.wetbulb requires one of q, Td, or \
+        w as an argument.")

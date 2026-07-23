@@ -40,7 +40,7 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
                     flut    ,flutc   , &
                     aer_mass,fnl     ,fcnl, &
 !+++CliMT
-                    ful,fdl) 
+                    ful,fdl)
 !---CliMT
 !----------------------------------------------------------------------- 
 ! 
@@ -255,11 +255,6 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
 !
   call aer_pth(aer_mass, aer_mpp, ncol)
 
-!  print*,'hello',pverp
-!  do i=1,pver
-!  print*,i,pmid(1,i),(pint(1,i)+pint(1,i+1))/2.
-!  enddo
-!  print*,i,0000.,pint(1,i)
 
 !
 ! Calculate some temperatures needed to derive absorptivity and
@@ -317,6 +312,7 @@ subroutine radclwmx(lchnk   ,ncol    ,doabsems                  , &
                   abstot  ,absnxt  ,plh2ob  ,wb      , &
                   aer_mpp ,aer_trn_ttl)
    end if
+
 !
 ! Compute sums used in integrals (all longitude points)
 !

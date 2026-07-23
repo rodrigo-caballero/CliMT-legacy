@@ -1,14 +1,95 @@
-subroutine implicit_vertical_diffusion(km, jm,          & 
-     dt, dp, g, Pr, eta, p, theta, U, V, q, srf_q_flx, srf_T_flx, srf_u_flx, srf_v_flx,  &
+subroutine implicit_vertical_diffusion_nonuniform_grid(km, jm,          & 
+     dt, dp, g, Rd, Pr, nuv, p, theta, U, V, T, q, srf_q_flx, srf_T_flx, srf_u_flx, srf_v_flx,  &
      Tinc, Uinc, Vinc, qinc)
 
 implicit none
 
 ! In
 integer, intent(in)                  :: km, jm
-real, intent(in)                     :: dt, dp, g, Pr
-real,             dimension(jm,km-1) :: eta
-real, intent(in), dimension(jm,km)   :: p, theta, U, V, q
+real, intent(in)                     :: dt, g, Rd, Pr
+real, intent(in), dimension(km)      :: p, dp
+real, intent(in), dimension(jm,km)   :: theta, U, V, T, q, nuv
+real, intent(in), dimension(jm)      :: srf_q_flx, srf_T_flx, srf_u_flx, srf_v_flx
+
+! Out
+real, intent(out), dimension(jm,km) :: Tinc, Uinc, Vinc, qinc
+
+! Local
+integer             :: j,k       
+real                :: gamma,dp0     
+real, dimension(km) :: sup,sub,dia,rhs,ans
+real, dimension(km-1) :: h
+real, dimension(jm,km-1) :: eta,eta_heat
+real, dimension(jm,km) :: eta_mid, nuv_heat
+
+! Initialise:
+sup=0.
+sub=0.
+dia=0.
+! Interval between mid-levels
+h = (dp(1:km-1) + dp(2:km))/2.
+! Dynamical viscosity
+do j = 1,jm
+   eta_mid(j,:) = nuv(j,:) * (g*p/Rd/T(j,:))**2   ! viscosity on level midpoints
+enddo
+do j=1,jm
+eta(j,1:km-1) = ( eta_mid(j,1:km-1)*dp(2:km) + eta_mid(j,2:km)*dp(1:km-1) ) / (dp(1:km-1)+dp(2:km)) ! viscosity on level interfaces
+enddo
+! Heat and tracer diffusivity
+eta_heat = eta / Pr
+
+! Compute:
+! Heat and tracer
+do j=1,jm
+   sub(2:km) = -eta_heat(j,1:km-1)/h(1:km-1)/dp(2:km)*2.*dt
+   dia(1)      = 1. + eta_heat(j,1)/h(1)/dp(1)*2.*dt     ! no flux through top
+   dia(2:km-1) = 1. + (eta_heat(j,1:km-2)/h(1:km-2)/dp(2:km-1) + eta_heat(j,2:km-1)/h(2:km-1)/dp(2:km-1))*2.*dt
+   dia(km)     = 1. + eta_heat(j,km-1)/h(km-1)/dp(km)*2.*dt
+   sup(1:km-1)   = -eta_heat(j,:)/h/dp(1:km-1)*2.*dt
+   ! -- theta
+   rhs = theta(j,:)
+   rhs(km) = theta(j,km) + srf_T_flx(j)*g/dp(km)*2.*dt
+   call trid(sub,dia,sup,rhs,ans,km)
+   Tinc(j,:) = ans - theta(j,:)
+   ! -- q
+   rhs = q(j,:) 
+   rhs(km) = q(j,km) + srf_q_flx(j)*g/dp(km)*2.*dt
+   call trid(sub,dia,sup,rhs,ans,km)
+   qinc(j,:) = ans - q(j,:)
+enddo
+
+! Momentum
+do j=1,jm
+   sub(2:km) = -eta(j,1:km-1)/h(1:km-1)/dp(2:km)*2.*dt
+   dia(1)      = 1. + eta(j,1)/h(1)/dp(1)*2.*dt     ! no flux through top
+   dia(2:km-1) = 1. + (eta(j,1:km-2)/h(1:km-2)/dp(2:km-1) + eta(j,2:km-1)/h(2:km-1)/dp(2:km-1))*2.*dt
+   dia(km)     = 1. + eta(j,km-1)/h(km-1)/dp(km)*2.*dt
+   sup(1:km-1)   = -eta(j,:)/h/dp(1:km-1)*2.*dt
+   ! -- U
+   rhs = U(j,:)
+   rhs(km) = U(j,km) + srf_u_flx(j)*g/dp(km)*2.*dt
+   call trid(sub,dia,sup,rhs,ans,km)
+   Uinc(j,:) = ans - U(j,:)
+   ! -- V
+   rhs = V(j,:) 
+   rhs(km) = V(j,km) + srf_v_flx(j)*g/dp(km)*2.*dt
+   call trid(sub,dia,sup,rhs,ans,km)
+   Vinc(j,:) = ans - V(j,:) 
+enddo
+
+end subroutine implicit_vertical_diffusion_nonuniform_grid
+!------------------------------------------------------------------------------
+subroutine implicit_vertical_diffusion(km, jm,          & 
+     dt, dp, g, Rd, Pr, nuv, p, theta, U, V, T, q, srf_q_flx, srf_T_flx, srf_u_flx, srf_v_flx,  &
+     Tinc, Uinc, Vinc, qinc)
+
+implicit none
+
+! In
+integer, intent(in)                  :: km, jm
+real, intent(in)                     :: dt, g, Rd, Pr
+real, intent(in), dimension(km)      :: p, dp
+real, intent(in), dimension(jm,km)   :: theta, U, V, T, q, nuv
 real, intent(in), dimension(jm)      :: srf_q_flx, srf_T_flx, srf_u_flx, srf_v_flx
 
 ! Out
@@ -16,68 +97,70 @@ real, intent(out), dimension(jm,km) :: Tinc, Uinc, Vinc, qinc
 
 ! Local
 integer             :: j         
-real                :: gamma     
+real                :: gamma,dp0     
 real, dimension(km) :: sup,sub,dia,rhs,ans
+real, dimension(jm,km-1) :: eta,eta_heat
+real, dimension(jm,km) :: eta_mid, nuv_heat
 
 integer :: k
 real                :: smooth
 real, dimension(jm) :: ysup,ysub,ydia,yrhs,yans
 
-
 ! Initialise
 sup=0.
 sub=0.
 dia=0.
-gamma = 2.*dt/dp/dp*g
+dp0 = sum(dp)/km ! regular grid, dp is constant
+gamma = 2.*dt/dp0/dp0*g
+
+! Dynamical viscosity
+do j = 1,jm
+   eta_mid(j,:) = nuv(j,:)*g*(p/Rd/T(j,:))**2   ! viscosity on level midpoints
+enddo
+eta = ( eta_mid(:,2:km)+eta_mid(:,1:km-1) )/2. ! viscosity on level interfaces
+
+! Heat and tracer diffusivity
+eta_heat = eta / Pr
 
 ! Momentum
 do j=1,jm
-   sup(2:km)   = -gamma*eta(j,:)
-   sub(1:km-1) = -gamma*eta(j,:)
+   sub(2:km)   = -gamma*eta(j,:)
+   sup(1:km-1) = -gamma*eta(j,:)
    dia(2:km-1) = 1. + gamma*(eta(j,1:km-2)+eta(j,2:km-1))
    dia(1)      = 1. + gamma*eta(j,1)     ! no flux through top
    dia(km)     = 1. + gamma*eta(j,km-1)  
    ! -- U
    rhs = U(j,:)
-   rhs(km) = U(j,km) + srf_u_flx(j)*gamma*dp
-   call trid(sup,dia,sub,rhs,ans,km)
+   rhs(km) = U(j,km) + srf_u_flx(j)*gamma*dp0
+   call trid(sub,dia,sup,rhs,ans,km)
    Uinc(j,:) = ans - U(j,:)
    ! -- V
    rhs = V(j,:) 
-   rhs(km) = V(j,km) + srf_v_flx(j)*gamma*dp
-   call trid(sup,dia,sub,rhs,ans,km)
+   rhs(km) = V(j,km) + srf_v_flx(j)*gamma*dp0
+   call trid(sub,dia,sup,rhs,ans,km)
    Vinc(j,:) = ans - V(j,:) 
 enddo
 
-! Heat 
-eta = eta/Pr
-do j=1,jm
-   sup(2:km)   = -gamma*eta(j,:)
-   sub(1:km-1) = -gamma*eta(j,:)
-   dia(2:km-1) = 1. + gamma*(eta(j,1:km-2)+eta(j,2:km-1))
-   dia(1)      = 1. + gamma*eta(j,1)     ! no flux through top
-   dia(km)     = 1. + gamma*eta(j,km-1)  
-   ! -- theta
-   rhs=theta(j,:)
-   rhs(km) = theta(j,km) + srf_T_flx(j)*gamma*dp
-   call trid(sup,dia,sub,rhs,ans,km)
-   Tinc(j,:) = ans - theta(j,:)
-enddo
 
-! Moisture
-eta = eta/Pr
+! Heat 
 do j=1,jm
-   sup(2:km)   = -gamma*eta(j,:)
-   sub(1:km-1) = -gamma*eta(j,:)
-   dia(2:km-1) = 1. + gamma*(eta(j,1:km-2)+eta(j,2:km-1))
-   dia(1)      = 1. + gamma*eta(j,1)     ! no flux through top
-   dia(km)     = 1. + gamma*eta(j,km-1)  
+   sub(2:km)   = -gamma*eta_heat(j,:)
+   sup(1:km-1) = -gamma*eta_heat(j,:)
+   dia(2:km-1) = 1. + gamma*(eta_heat(j,1:km-2)+eta_heat(j,2:km-1))
+   dia(1)      = 1. + gamma*eta_heat(j,1)     ! no flux through top
+   dia(km)     = 1. + gamma*eta_heat(j,km-1)
+   ! -- theta
+   rhs = theta(j,:)
+   rhs(km) = theta(j,km) + srf_T_flx(j)*gamma*dp0
+   call trid(sub,dia,sup,rhs,ans,km)
+   Tinc(j,:) = ans - theta(j,:)
    ! -- q
-   rhs=q(j,:) 
-   rhs(km) = q(j,km) + srf_q_flx(j)*gamma*dp
-   call trid(sup,dia,sub,rhs,ans,km)
+   rhs = q(j,:) 
+   rhs(km) = q(j,km) + srf_q_flx(j)*gamma*dp0
+   call trid(sub,dia,sup,rhs,ans,km)
    qinc(j,:) = ans - q(j,:)
 enddo
+
 
 ! -- Jonathan's strong horizontal diffusion --
 !+++rca ! Apply second-derivative smoother to damp 2*deltaY mode

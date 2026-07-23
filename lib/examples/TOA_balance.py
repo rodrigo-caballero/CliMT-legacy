@@ -141,11 +141,11 @@ def TOAFlux(SurfTemp):
 # Now compute equil surf temp assuming low albedo
 try:
   Teq = climt.mathutil.ridder_root(TOAFlux, (173.15,353.15), accuracy=0.1)
-except climt.mathutil.BracketingException, err:
+except climt.mathutil.BracketingException as err:
   if str(err) == 'initial interval does not bracket a root: root probably to the right of interval':
-    print '<P><font color="red"><b>Equilibrium surface temperature exceeds 80 <sup>o</sup>C.</font>'
+    print('<P><font color="red"><b>Equilibrium surface temperature exceeds 80 <sup>o</sup>C.</font>')
   if str(err) == 'initial interval does not bracket a root: root probably to the left of interval':
-      print '<P><font color="blue"><b>Equilibrium surface temperature less than -100 <sup>o</sup>C.</font>'
+      print('<P><font color="blue"><b>Equilibrium surface temperature less than -100 <sup>o</sup>C.</font>')
   sys.exit(1)
 
 T,q,z = profiles(Teq)
@@ -155,18 +155,18 @@ input['q'] = q
 r(**input)
 
 # print results
-print
-print 'Equilibrium near-surface air temperature is %4.1f degC (%4.1f K)' % ((Teq-273.15-1.),Teq-1.)
-print
+print()
+print('Equilibrium near-surface air temperature is %4.1f degC (%4.1f K)' % ((Teq-273.15-1.),Teq-1.))
+print()
 
-print r['SwToaCf'],r['LwToaCf'],Teq
+print(r['SwToaCf'],r['LwToaCf'],Teq)
 sys.exit()
 
-print 'Profiles'
+print('Profiles')
 print("lev    p      z      T       q    LW flux LW heating SW flux SW heating cld frac cld water\n")
 for i in range(r.nlev):
-    print("%3i %6.1f %7.2f %6.1f %6.2f %10.2f %6.2f %10.2f %6.2f %6.1f %6.1f" % \
-          (i, Pressure[i], z[i], T[i], q[i], r['lwflx'][i], r['lwhr'][i], r['swflx'][i], r['swhr'][i] , cldf[i], clwp[i])) 
+    print(("%3i %6.1f %7.2f %6.1f %6.2f %10.2f %6.2f %10.2f %6.2f %6.1f %6.1f" % \
+          (i, Pressure[i], z[i], T[i], q[i], r['lwflx'][i], r['lwhr'][i], r['swflx'][i], r['swhr'][i] , cldf[i], clwp[i]))) 
 
 
 # make plot

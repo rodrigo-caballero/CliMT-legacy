@@ -4,7 +4,7 @@ from numpy import *
 import sys
 import climt
 from printout import printout
-
+from matplotlib import pyplot as pl
 
 # This script sets up a radiative-convective column model and
 # integrates it for 2000 days.
@@ -15,7 +15,7 @@ from printout import printout
 # -- Set up a dictionary of input  parameters
 kwargs = {}
 # model time step (secs)
-kwargs['dt']  = 60.*10. 
+kwargs['dt']  = 60.*30. 
 
 # Asselin filter coeffcient, controls the damping of the 2-timestep
 # computational mode resulting from the leapfrog scheme used in CliMT.
@@ -30,8 +30,9 @@ kwargs['solin'] = 320.
 # (up to fields 4 allowed). If the MonitorFields parameter is not given,
 # no real-time plotting is done.
 # Fields are refreshed every MonitorFreq seconds.
-kwargs['MonitorFields']  = ['T','theta','q','TdotRad']
-kwargs['MonitorFreq']    = kwargs['dt']*50 #60*60*6.
+kwargs['MonitorFields']  = ['T','q','TdotRad','TdotConv']
+#kwargs['MonitorFreq']    = kwargs['dt'] 
+kwargs['MonitorFreq']    = 60*60*6.
 
 # The following 2 parameters control output of model fields to file.
 # OutputFile specifies the file to write to; if it already
@@ -56,7 +57,7 @@ kwargs['q'] = zeros(nlev) + 1.e-9
 kwargs['T'] = zeros(nlev) + (kwargs['solin']/2./stebol)**0.25
 
 # -- Instantiate components and federation
-rad = climt.radiation(UpdateFreq=kwargs['dt']*50, scheme='cam3')
+rad = climt.radiation(UpdateFreq=kwargs['dt'], scheme='ccm3')
 con = climt.convection(scheme='emanuel')
 dif = climt.turbulence()
 oce = climt.ocean()
@@ -72,8 +73,10 @@ for i in range(NSteps):
     #fed.State['q']=zeros(rad.nlev)+1.e-9
     # The following code adds a uniform 1 K/day cooling rate to 
     # the internally-computed tendencies
-    dT= array([[-1./86400.*kwargs['dt']*2.*ones(rad.nlev)]]).transpose()
+    dT= array([[-1./86400.*kwargs['dt']*2.*ones(rad.nlev)]]).transpose() * 0.
+    fed.State['o3'] = fed.State['o3']*0.
     fed.step(Inc={'T':dT})
+    pl.pause(.01)
     printout(fed)
 
 # If using graphics

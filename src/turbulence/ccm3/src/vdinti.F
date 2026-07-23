@@ -41,6 +41,7 @@ C Hard-wired numbers.
 C zkmin = minimum k = kneutral*f(ri)
 C
       zkmin = 0.01
+C      zkmin = 0.2
 C
 C Set physical constants for vertical diffusion and pbl:
 C

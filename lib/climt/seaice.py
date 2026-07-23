@@ -3,7 +3,7 @@
 #I tried to save this under a separate name, IceOcean, but
 #then for some reason climt didn't import it. Why? 
 
-from component import Component
+from .component import Component
 from numpy import *
 
 class seaice(Component):
@@ -33,15 +33,15 @@ class seaice(Component):
         if   scheme == 'ice1L':
             self.__ice1L__init__()
         else:
-            raise ValueError,'\n \n ++++ CliMT.seaice: Scheme %s unknown' % scheme
+            raise ValueError('\n \n ++++ CliMT.seaice: Scheme %s unknown' % scheme)
 
         # Initialize parameters, grid, fields etc
         Component.__init__(self, **kwargs)
 
     def __ice1L__init__(self):
         # Load extension
-        try: import ice1L
-        except: raise ImportError, '\n \n ++++ CliMT.seaice: Could not load extension'
+        try: from . import ice1L
+        except: raise ImportError('\n \n ++++ CliMT.seaice: Could not load extension')
         # Define some attributes
         self.Name           = 'ice1L_seaice'
         self.LevType        = None

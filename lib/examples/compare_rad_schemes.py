@@ -27,8 +27,8 @@ r_liq = q*0. + 15.
 for scheme in ['ccm3','cam3','chou']:
     r = climt.radiation(scheme=scheme)
     r(p=p, ps=ps, T=T, Ts=Ts, q=q, cldf=cldf, ciwp=ciwp, r_liq=r_liq)
-    print '\n%s' % scheme
-    print r['SwToa'],r['LwToa'],r['SwSrf'],r['LwSrf']
-    print r['SwToaCf'],r['LwToaCf'],(r['solin']-r['SwToa'])/r['solin'],r['asdir']
+    print('\n%s' % scheme)
+    print(r['SwToa'],r['LwToa'],r['SwSrf'],r['LwSrf'])
+    print(r['SwToaCf'],r['LwToaCf'],(r['solin']-r['SwToa'])/r['solin'],r['asdir'])
 
-    print r['ciwp']
+    print(r['ciwp'])

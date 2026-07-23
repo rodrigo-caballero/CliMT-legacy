@@ -6,7 +6,7 @@ else:
     Lite = False
 
 try:
-    try:    import matplotlib.pylab as pylab
+    try:    import matplotlib.pyplot as pylab
     except: import matplotlib.matlab as pylab
     # catch old versions which use set instead of setp
     if not hasattr(pylab,'setp'): pylab.setp = pylab.set
@@ -18,13 +18,13 @@ try:
     pylab.ion()
     gotMatplotlib = True
 except:
-    if not Lite: print '\n ++++ CliMT: WARNING: matplotlib.pylab ' \
-       +'could not be loaded, so no runtime monitoring !\n'
+    if not Lite: print('\n ++++ CliMT: WARNING: matplotlib.pylab ' \
+       +'could not be loaded, so no runtime monitoring !\n')
     gotMatplotlib = False
 
 from numpy import *
-from utils import squeeze
-from state import KnownFields
+from .utils import squeeze
+from .state import KnownFields
 
 def _figureSetUp(FieldKeys, Component):
     """
@@ -36,13 +36,14 @@ def _figureSetUp(FieldKeys, Component):
     elif len(FieldKeys) == 4: SubplotCodes = ['221','222','223','224']
     else: raise '\n\n CliMT.plot: not more than 4 fields on 1 plot!'
 
-    Subplots = dict(zip(FieldKeys,SubplotCodes))
+    Subplots = dict(list(zip(FieldKeys,SubplotCodes)))
     Figure = {}
     for key in FieldKeys:
         Subplot = Subplots[key]
         exec('pylab.subplot(%s)' % Subplot)
         Figure[key] = Panel(Component, key, Subplot)
 
+    pylab.tight_layout()
     return Figure
 
 class Plot:
@@ -99,8 +100,8 @@ class Monitor:
             assert key in Component.State, \
                    '\n\n ++++ CliMT.monitor: %s not in component' % key
             if ndim(Component[key]) == 0:
-                print '\n\n ++++ CliMT.monitor: WARNING: cannot '\
-                      +'monitor scalar variable %s' % key
+                print('\n\n ++++ CliMT.monitor: WARNING: cannot '\
+                      +'monitor scalar variable %s' % key)
                 self.FieldKeys.pop(self.FieldKeys.index(key))
 
         # Decide if we're doing monitoring
@@ -131,7 +132,7 @@ class Monitor:
         """
         if not gotMatplotlib or not self.Monitoring: return
 
-        for key in self.Figure.keys():
+        for key in list(self.Figure.keys()):
             Field = Component[key]
             Panel = self.Figure[key]
 
@@ -142,15 +143,20 @@ class Monitor:
 
             # Reset data
             if ndim(Field) == 1:
-                if min(Field) == max(Field) == 0.: Field=Field+1.e-7
-                MinVal = min(Field) - 0.01*abs(min(Field))
-                MaxVal = max(Field) + 0.01*abs(max(Field))
+                MinVal = min(Field)
+                MaxVal = max(Field)
+                Range = MaxVal-MinVal
+                if Range == 0:
+
+                    Range = max(abs(MaxVal), 1.e-32)
+                xmin = MinVal - 0.05*Range
+                xmax = MaxVal + 0.05*Range
                 if Panel.orientation == 0:
                     Panel.handle.set_xdata(Field)
-                    Panel.axes.set_xlim([MinVal, MaxVal])
+                    Panel.axes.set_xlim([xmin, xmax])
                 else:
                     Panel.handle.set_ydata(Field)
-                    Panel.axes.set_ylim([MinVal, MaxVal])
+                    Panel.axes.set_ylim([xmin, xmax])
             if ndim(Field) == 2:
                 if Panel.orientation == 0:
                     Panel.handle.set_data(Field[::-1])
@@ -205,23 +211,29 @@ class Panel:
 
         # Get handles to figure and properties
         if len(AxisName) == 1:
-            if min(Field) == max(Field) == 0.: Field=Field+1.e-7
-            MinVal = min(Field) - 0.01*abs(min(Field))
-            MaxVal = max(Field) + 0.01*abs(max(Field))
+            MinVal = min(Field)
+            MaxVal = max(Field)
+            Range = MaxVal-MinVal
+            if Range == 0:
+                Range = max(abs(MaxVal), 1.e-32)
+            xmin = MinVal - 0.05*Range
+            xmax = MaxVal + 0.05*Range
             if AxisKey[0] == 'lev':
-                pylab.ylabel(AxisName[0])
+                if Subplot not in ['222','224']:
+                    pylab.ylabel(AxisName[0])
+                pylab.xlim(xmin, xmax)
+                pylab.gca().invert_yaxis()
                 self.orientation = 0
-                self.handle = pylab.plot(Field, AxisVal[0], 'bo-').pop(0)
+                self.handle = pylab.plot(Field, AxisVal[0], '-', marker='.').pop(0)
                 self.axes = pylab.gca()
-                pylab.xlim(MinVal, MaxVal)
-                pylab.ylim(AxisVal[0][-1], AxisVal[0][0] )
             else:
-                if Subplot in ['111','212','223','224']: pylab.xlabel(AxisName[0])
+                if Subplot in ['111','212','223','224']:
+                    pylab.xlabel(AxisName[0])
                 self.orientation = 1
-                self.handle = pylab.plot(AxisVal[0], Field, 'bo-').pop(0)
+                self.handle = pylab.plot(AxisVal[0], Field, '-', marker='.').pop(0)
                 self.axes = pylab.gca()
                 pylab.ylim([MinVal, MaxVal])
-                pylab.xlim([ AxisVal[0][0], AxisVal[0][-1] ])
+                pylab.xlim([ AxisVal[0][0]*0.95, AxisVal[0][-1]*1.05 ])
 
         elif len(AxisName) == 2:
             xmin = AxisVal[1][0]
@@ -234,14 +246,18 @@ class Panel:
                     Field[::-1],\
                     extent=(xmin, xmax, ymin, ymax),\
                     interpolation='bilinear')
-               pylab.setp(pylab.gca(), 'xlim',[xmin,xmax], 'ylim',[ymax,ymin])
+               #pylab.setp(pylab.gca(), 'xlim',[xmin,xmax], 'ylim',[ymax,ymin])
+               pylab.xlim([xmax,xmin])
+               pylab.ylim([ymax,ymin])
             else:
                self.orientation = 1
                self.handle = pylab.imshow( \
                     Field, \
                     extent=(xmin, xmax, ymin, ymax),\
                     interpolation='bilinear')
-               pylab.setp(pylab.gca(), 'xlim',[xmin,xmax], 'ylim',[ymin,ymax])
+               #pylab.setp(pylab.gca(), 'xlim',[xmin,xmax], 'ylim',[ymin,ymax])
+               pylab.xlim([xmax,xmin])
+               pylab.ylim([ymax,ymin])
             # write x label only if subplot does not have other subplot underneath
             if Subplot in ['111','212','223','224']: pylab.xlabel(AxisName[1])
             pylab.ylabel(AxisName[0])
@@ -268,4 +284,4 @@ if __name__=='__main__':
         r.step()
         m.refresh(r)
 
-    show()
+    #show()

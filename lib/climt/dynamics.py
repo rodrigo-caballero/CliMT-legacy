@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component  import Component
+from .component  import Component
 from numpy import *
 import string
 
@@ -41,16 +41,15 @@ class dynamics(Component):
     def __init__(self, scheme = 'axisymmetric', **kwargs):
         # Initialize scheme-dependent attributes
         if scheme not in ['axisymmetric','two_column']:
-            raise ValueError,'\n \n ++++ CliMT.dynamics: Scheme %s unknown' % scheme
-        exec('self.__%s_dynamics__init__()' % string.lower(scheme))
+            raise ValueError('\n \n ++++ CliMT.dynamics: Scheme %s unknown' % scheme)
+        exec('self.__%s_dynamics__init__()' % scheme.lower())
         # Initialize fields etc. 
         Component.__init__(self, **kwargs)
         
     def __axisymmetric_dynamics__init__(self):
         # Load extension
         try: import _axisymmetric_dynamics
-        except: raise ImportError, \
-          '\n \n ++++ CliMT.dynamics: Could not load axisymmetric scheme'
+        except: raise ImportError('\n \n ++++ CliMT.dynamics: Could not load axisymmetric scheme')
         # Define some attributes
         self.Name           = 'axisymmetric_dynamics'
         self.LevType        = 'p'
@@ -68,8 +67,7 @@ class dynamics(Component):
     def __two_column_dynamics__init__(self):
         # Load extension
         try: import _two_column_dynamics
-        except: raise ImportError, \
-          '\n \n ++++ CliMT.dynamics: Could not load two-column scheme'
+        except: raise ImportError('\n \n ++++ CliMT.dynamics: Could not load two-column scheme')
         # Define some attributes
         self.Name           = 'two_column_dynamics'
         self.LevType       = 'p'

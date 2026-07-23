@@ -2,12 +2,13 @@
 
 from numpy import *
 from climt import *
+from matplotlib import pyplot as pl
 
 # Parameters
 kwargs                   = {}
 rh                       = 0.8    # relative humidity
 kwargs['dt']             = 60.*60. 
-kwargs['MonitorFields']  = ['T','q','TdotRad','TdotTurb']
+#kwargs['MonitorFields']  = ['T','q','TdotRad','TdotTurb']
 kwargs['MonitorFreq']    = 60*60.*6
 kwargs['OutputFile']     = 'radequil.nc'
 kwargs['OutputFreq']     = 86400. * 10.
@@ -23,14 +24,14 @@ def printout():
     time  = fed.State.ElapsedTime
     freq  = 86400.
     if int(time/freq) != int((time-fed['dt'])/freq): 
-        print "\nlev    p     T         q"
+        print("\nlev    p     T         q")
         for i in range(fed.nlev):
-            print "%3i %6.1f %6.1f %6.2f" % \
-                  (i, fed['p'][i], fed['T'][i]-273.15, fed['q'][i])
-        print 'Surface temp: %10.5f' % (fed['Ts']-273.15)
+            print("%3i %6.1f %6.1f %6.2f" % \
+                  (i, fed['p'][i], fed['T'][i]-273.15, fed['q'][i]))
+        print('Surface temp: %10.5f' % (fed['Ts']-273.15))
 
 # Federation
-rad = radiation(UpdateFreq=60.*60*4, scheme='gray')
+rad = radiation(UpdateFreq=60.*60*4, scheme='cam3')
 dif = turbulence()
 oce = ocean()
 # -- Initial fields (temp is set to skin temp)
@@ -44,6 +45,7 @@ NSteps    = int( RunLength*86400./fed['dt'])
 for i in range(NSteps):
       fed.State['q'] = getRelHum() # impose constant relative humidity
       fed.step()
+      pl.pause(.01)
       printout()
 
 # If using graphics

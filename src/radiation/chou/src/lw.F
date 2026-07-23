@@ -5,10 +5,10 @@ c**********************   May, 1999   *****************************
      *                  n2o,ch4,cfc11,cfc12,cfc22,emiss,
      *                  cldwater,cwc,taucl,reff,fcld,ict,icb,
      *                  taual,ssaal,asyal,
-     *                  high,trace,flx,flc,dfdts,st4)
+!     *                  high,trace,flx,flc,dfdts,st4)
 c+++climt
 ! disabled tau -- gives bus error with gfortran
-!     *            high, trace, flx, flc, dfdts, st4, tau)
+     *            high, trace, flx, flc, dfdts, st4, tau)
 
 c***********************************************************************
 c
@@ -214,7 +214,7 @@ c
 c
 c+++climt 
       ! broadband transmissivity and optical depth
-      real t_band(m,np,10), tau_out(np)
+      real t_band(m,np,10), tau(np)
       ! width of spectral bands
       real bandwidth(10)
       data bandwidth/340.,200.,260.,180.,120.,115.,165.,520.,1100.,0./
@@ -1261,14 +1261,14 @@ c-----adjust fluxes due to n2o absorption in band 10
       enddo
 
 c+++climt
-C-------       do i=1,m
-C-------          do k=1,np
-C-------             do ib=1,9
-C-------                tau(k) = tau(k) + t_band(i,k,ib)*bandwidth(ib)
-C-------             enddo
-C-------             tau(k) = -log(tau(k)/3000.)
-C-------          enddo
-C-------       enddo
+      do i=1,m
+         do k=1,np
+            do ib=1,9
+               tau(k) = tau(k) + t_band(i,k,ib)*bandwidth(ib)
+            enddo
+            tau(k) = -log(tau(k)/3000.)
+         enddo
+      enddo
 
       return
       end

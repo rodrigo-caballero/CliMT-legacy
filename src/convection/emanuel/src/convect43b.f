@@ -126,9 +126,11 @@ C
       INTEGER NENT(ND+1)
       REAL T(ND),Q(ND),QS(ND),U(ND),V(ND),TRA(ND,NTRA),P(ND),PH(ND)
       REAL FT(ND),FQ(ND),FU(ND),FV(ND),FTRA(ND,NTRA)
-      REAL UENT(ND+1,ND+1),VENT(ND+1,ND+1),TRAENT(ND+1,ND+1,NTRA),TRATM(ND+1)
+      REAL UENT(ND+1,ND+1),VENT(ND+1,ND+1)
+      REAL TRAENT(ND+1,ND+1,NTRA),TRATM(ND+1)
       REAL UP(ND+1),VP(ND+1),TRAP(ND+1,NTRA)
-      REAL M(ND+1),MP(ND+1),MENT(ND+1,ND+1),QENT(ND+1,ND+1),ELIJ(ND+1,ND+1)
+      REAL M(ND+1),MP(ND+1),MENT(ND+1,ND+1)
+      REAL QENT(ND+1,ND+1),ELIJ(ND+1,ND+1)
       REAL SIJ(ND+1,ND+1),TVP(ND+1),TV(ND+1),WATER(ND+1)
       REAL QP(ND+1),EP(ND+1),TH(ND+1),WT(ND+1),EVAP(ND+1),CLW(ND+1)
       REAL SIGP(ND+1),TP(ND+1),TOLD(ND+1),CPN(ND+1)
@@ -281,7 +283,7 @@ c---climt
           TRATM(K)=0.0
          END DO
          DO 15 J=I,JN
-          AHM= AHM + ( CPD*(1.-Q(J)) + Q(J)*CPV ) * T(J)*( PH(J)-PH(J+1) )
+          AHM= AHM + (CPD*(1.-Q(J)) + Q(J)*CPV ) * T(J)*( PH(J)-PH(J+1))
           RM = RM  + Q(J)*( PH(J)-PH(J+1) )
           UM = UM  + U(J)*( PH(J)-PH(J+1) )
           VM = VM  + V(J)*( PH(J)-PH(J+1) )

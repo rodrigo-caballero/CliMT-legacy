@@ -29,9 +29,10 @@ class GlobDirectoryWalker:
                 if fnmatch.fnmatch(file, self.pattern):
                     return fullname
 
-if __file__ != os.path.basename(__file__):
-    print "You don't seem to be in the CliMT root directory"
-    sys.exit()
+if __file__ != f'{os.getcwd()}/clean.py':
+    print(__file__,os.path.basename(__file__))
+    print("You don't seem to be in the CliMT root directory")
+#    sys.exit()
 
 os.system('rm -fr build')
 
@@ -42,5 +43,5 @@ for file_name in GlobDirectoryWalker('.'):
     extension = os.path.splitext(file_name)[1]
     if extension in ['.o','.mod','.so','.lst','.ipo','.pyc'] \
     or file_name[-1] == '~' or '_lib.' in file_name:
-        print file_name
+        print(file_name)
         os.remove(file_name)

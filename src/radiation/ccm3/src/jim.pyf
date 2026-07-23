@@ -1,0 +1,17 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module jim ! in 
+    interface  ! in :jim
+        subroutine zenith(calday,clat,clon,coszrs) ! in :jim:/Users/rca/CliMT/CliMTpy3/src/radiation/ccm3/src/zenith.F
+            real :: calday
+            real :: clat
+            real dimension(plon) :: clon
+            real dimension(plond) :: coszrs
+        end subroutine zenith
+    end interface 
+end python module jim
+
+! This file was auto-generated with f2py (version:2.2.0).
+! See:
+! https://web.archive.org/web/20140822061353/http://cens.ioc.ee/projects/f2py2e

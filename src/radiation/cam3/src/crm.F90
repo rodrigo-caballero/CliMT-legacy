@@ -321,7 +321,6 @@ subroutine crm(  &
      qrs = qrs/cpair
      ! CGS->MKS for output
      swflx=swflx*1.e-3 
-     qrs = qrs*1.e-3
      sw_cf_srf = (fsns(1) - fsnsc(1))*1.e-3
      sw_cf_toa = (fsnt(1) - fsntc(1))*1.e-3
      sw_toa = fsnt(1)*1.e-3

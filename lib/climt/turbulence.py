@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component  import Component
+from .component  import Component
 from numpy import *
 import string
 
@@ -51,8 +51,8 @@ class turbulence(Component):
     def __init__(self, scheme = 'simple', **kwargs):
 
         # Initialize scheme-dependent attributes
-        try: exec('self.__%s__init__()' % string.lower(scheme))
-        except: raise ValueError,'\n \n ++++ CliMT.turbulence: Scheme %s unknown' % scheme
+        try: exec('self.__%s__init__()' % scheme.lower())
+        except: raise ValueError('\n \n ++++ CliMT.turbulence: Scheme %s unknown' % scheme)
 
         # Initialize parameters, grid, fields etc
         Component.__init__(self, **kwargs)
@@ -61,7 +61,7 @@ class turbulence(Component):
 
         # Load extension
         try: import _simple_turbulence
-        except: raise ImportError, '\n \n ++++ CliMT.turbulence: Could not load simple scheme'
+        except: raise ImportError('\n \n ++++ CliMT.turbulence: Could not load simple scheme')
 
         # Define some attributes
         self.Name           = 'simple_turbulence'
@@ -71,20 +71,20 @@ class turbulence(Component):
         self.SteppingScheme = 'implicit'
         self.ToExtension    = ['do_srf_mom_flx','do_srf_sen_flx','do_srf_lat_flx',\
                                'r','Pr','Rd','Cpd','Lv','epsilon','nuv','Cd','g','u0','dt', \
-                               'lat','lev','ps','Ts','T','U','V','q']
+                               'lat','p','dp','ps','Ts','T','U','V','q']
         self.FromExtension  = ['Tinc','Uinc','Vinc','qinc', \
                                'TdotTurb','UdotTurb','VdotTurb','qdotTurb', \
-                               'SrfLatFlx','SrfSenFlx']
-        self.Required       = ['ps','Ts','T','U','V','q']
+                               'SrfLatFlx','SrfSenFlx','taux','tauy']
+        self.Required       = ['p','dp','ps','Ts','T','U','V','q','nuv']
         self.Prognostic     = ['T','U','V','q']
         self.Diagnostic     = ['TdotTurb','UdotTurb','VdotTurb','qdotTurb', \
-                               'SrfLatFlx','SrfSenFlx']
+                               'SrfLatFlx','SrfSenFlx','taux','tauy']
 
     def __ccm3__init__(self):
 
         # Load extension
         try: import _ccm3_turbulence
-        except: raise ImportError, '\n \n ++++ CliMT.turbulence: Could not load CCM3 scheme'
+        except: raise ImportError('\n \n ++++ CliMT.turbulence: Could not load CCM3 scheme')
 
         # Define some attributes
         self.Name           = 'ccm3_turbulence'

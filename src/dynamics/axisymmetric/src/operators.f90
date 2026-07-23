@@ -75,6 +75,29 @@ enddo
 
 end subroutine v2vcosphii
 !------------------------------------------------------------------------
+subroutine v2vcos2phii(jm, km, cosphi, V, Vcos2phii)
+
+! 
+implicit none
+
+! In
+integer, intent(in)                 :: jm,km
+real, intent(in),  dimension(jm,km) :: cosphi,V
+
+! Out
+real, intent(out), dimension(0:jm,km) :: Vcos2phii
+
+! Local
+integer :: j
+
+! Interpolate Vcosphi onto cell boundaries 
+Vcos2phii=0.
+do j=1,jm-1
+  Vcos2phii(j,:) = ( V(j,:)*cosphi(j,:)*cosphi(j,:) + V(j+1,:)*cosphi(j+1,:)*cosphi(j+1,:) )/2.
+enddo
+
+end subroutine v2vcos2phii
+!------------------------------------------------------------------------
 subroutine vcosphii2wi(jm, km, a, dphi, dp, cosphi, Vcosphii, Wi)
 
 ! 
@@ -152,6 +175,157 @@ Wq_p = ( Wq(:,1:km) - Wq(:,0:km-1) )*rdp
 
 end subroutine upwind
 !------------------------------------------------------------------------
+subroutine upwindu(jm, km, a, dphi, dp, cosphi, Vcos2phii, Wi, q, Vq_y, Wq_p)
+
+! Compute upwind-differenced moisture flux divergence 
+
+implicit none
+
+! In
+integer, intent(in)                      :: jm,km
+real, intent(in)                         :: a,dphi,dp
+real, intent(in),  dimension(0:jm,   km) :: Vcos2phii
+real, intent(in),  dimension(  jm, 0:km) :: Wi
+real, intent(in),  dimension(  jm,   km) :: q, cosphi
+
+! Out
+real, intent(out), dimension(jm,km) :: Vq_y,Wq_p
+
+! Local
+integer :: j,k,iy,iz
+real :: rdp, rdy
+real, dimension(0:jm,  km)  :: Vq
+real, dimension(  jm,0:km)  :: Wq
+
+rdy=1./dphi/a
+rdp=1./dp
+
+! Horizontal flux divergence
+Vq=0.
+do k=1,km
+ do j=1,jm-1
+    iy = ( 1-nint(sign(1.,Vcos2phii(j,k))) )/2 ! V >= 0 => iy=0; V < 0 => iy=1
+    Vq(j,k) = Vcos2phii(j,k)*q(j+iy,k)
+ enddo
+enddo
+Vq_y = ( Vq(1:jm,:) - Vq(0:jm-1,:) )/cosphi/cosphi*rdy
+
+! Vertical flux divergence
+Wq=0.
+do j=1,jm
+ do k=1,km-1
+ iz = ( 1-nint(sign(1.,Wi(j,k))) )/2    ! W >= 0 => iz=0; W < 0 => iz=1
+ Wq(j,k) = Wi(j,k)*q(j,k+iz)
+ enddo
+enddo
+Wq_p = ( Wq(:,1:km) - Wq(:,0:km-1) )*rdp
+
+end subroutine upwindu
+!------------------------------------------------------------------------
+subroutine getup(jm, km, dp, U, Up)
+
+! Compute dU/dp
+
+implicit none
+
+! In
+integer, intent(in)                      :: jm,km
+real, intent(in)                         :: dp
+real, intent(in),  dimension(  jm,   km) :: U
+
+! Out
+real, intent(out), dimension(jm,km) :: Up
+
+! Local
+integer :: j,k
+real :: rdp
+
+rdp=1./dp
+
+do j=1,jm
+ do k=2,km-1
+    Up(j,k) = (U(j,k+1)-U(j,k-1))*rdp/2.
+ enddo
+ Up(j,1) = (U(j,2)-U(j,1))*rdp
+ Up(j,km) = (U(j,km)-U(j,km-1))*rdp
+enddo
+
+end subroutine getup
+!------------------------------------------------------------------------
+subroutine getwup(jm, km, dp, U, Wi, WUp)
+
+! Compute WdU/dp
+
+implicit none
+
+! In
+integer, intent(in)                      :: jm,km
+real, intent(in)                         :: dp
+real, intent(in),  dimension(  jm,   km) :: U
+real, intent(in),  dimension(  jm, 0:km) :: Wi
+
+! Out
+real, intent(out), dimension(jm,km) :: WUp
+
+! Local
+integer :: j,k
+real :: rdp
+real, dimension(  jm,  km)  :: Wp
+real, dimension(  jm,0:km)  :: Ui,WUi
+
+rdp=1./dp
+
+Ui = 0.
+do j=1,jm
+   do k=1,km-1
+      Ui(j,k) = (U(j,k)+U(j,k+1))/2.
+   enddo
+enddo
+
+WUi = Ui*Wi
+
+do j=1,jm
+   do k=1,km
+    Wp = (Wi(j,k)-Wi(j,k-1))*rdp
+    WUp(j,k) = (WUi(j,k)-WUi(j,k-1))*rdp
+ enddo
+enddo
+
+WUp = WUp - U*Wp
+
+end subroutine getwup
+!------------------------------------------------------------------------
+subroutine getdy(jm, km, a, dphi, cosphi, U, Uy)
+
+! Compute relative vort
+
+implicit none
+
+! In
+integer, intent(in)                      :: jm,km
+real, intent(in)                         :: a,dphi
+real, intent(in),  dimension(  jm,   km) :: U, cosphi
+
+! Out
+real, intent(out), dimension(jm,km) :: Uy
+
+! Local
+integer :: j,k
+real :: rdp, rdy
+real, dimension(0:jm,  km)  :: Ucosphii
+
+call v2vcosphii(jm, km, cosphi, U, Ucosphii)
+
+rdy=1./dphi/a
+
+do k=1,km
+ do j=1,jm
+    Uy(j,k) = (Ucosphii(j,k)-Ucosphii(j-1,k))*rdy/cosphi(j,k)
+ enddo
+enddo
+
+end subroutine getdy
+!------------------------------------------------------------------------
 subroutine smolar(jm, km, a, dphi, dp, dt, cosphi, Vcosphii, Wi, q, qdot)
 
 ! Low-diffusivity upwind advection scheme 
@@ -210,3 +384,62 @@ call upwind(jm, km, a, dphi, dp, cosphi, Vtilde, Wtilde, qstar, vq_y, wq_p)
 qdot = (qstar - q1)/tdt - (vq_y + wq_p)
 
 end subroutine smolar
+!------------------------------------------------------------------------
+subroutine smolaru(jm, km, a, dphi, dp, dt, cosphi, Vcos2phii, Wi, q, qdot)
+
+! Low-diffusivity upwind advection scheme 
+! Ref: Smolarkiewicz, Mon Wea Rev (1983) p.479-486
+
+implicit none
+
+! In
+integer, intent(in)                      :: jm,km
+real, intent(in)                         :: a,dphi,dp,dt
+real, intent(in),  dimension(0:jm,   km) :: Vcos2phii
+real, intent(in),  dimension(  jm, 0:km) :: Wi
+real, intent(in),  dimension(  jm,   km) :: q, cosphi
+
+! Out
+real, intent(out), dimension(jm,km) :: qdot
+
+! Local
+integer :: j,k,iy,iz
+real :: rdp, rdy,qmin,Sc,tdt
+real, dimension(0:jm,  km) :: Vtilde
+real, dimension(  jm,0:km) :: Wtilde
+real, dimension(  jm,  km) :: qstar,vq_y,wq_p,q1
+
+rdy = 1./dphi/a
+rdp = 1./dp
+tdt = 2.*dt
+Sc  = 1.08
+
+! Scheme works only for positive definite fields, 
+! so add uniform background field to ensure q >= 0
+q1 = q-minval(q)
+
+! compute conventional upwind tendency
+call upwindu(jm, km, a, dphi, dp, cosphi, Vcos2phii, Wi, q1, vq_y, wq_p)
+
+! initial forecast
+qstar = q1 - (vq_y + wq_p)*tdt
+
+! compute "diffusive" velocities
+Vtilde = 0.
+do j=1,jm-1
+   Vtilde(j,:) = Sc*( abs(Vcos2phii(j,:))*a*dphi - tdt*Vcos2phii(j,:)**2 )* &
+           ( qstar(j+1,:)-qstar(j,:) )/( qstar(j+1,:)+qstar(j,:)+1.e-15 )*rdy
+enddo
+Wtilde = 0.
+do k=1,km-1
+   Wtilde(:,k) = Sc*( abs(Wi(:,k))*dp - tdt*Wi(:,k)**2 )* &
+           ( qstar(:,k+1)-qstar(:,k) )/( qstar(:,k+1)+qstar(:,k)+1.e-15 )*rdp
+enddo
+
+! compute advection by diffusive velocities
+call upwindu(jm, km, a, dphi, dp, cosphi, Vtilde, Wtilde, qstar, vq_y, wq_p)
+
+! add correction to tendency
+qdot = (qstar - q1)/tdt - (vq_y + wq_p)
+
+end subroutine smolaru

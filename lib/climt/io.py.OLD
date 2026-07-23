@@ -123,8 +123,7 @@ class IO:
                 'not found in restart file, using default or supplied value\n')
             
         # Read grid
-        ###if 'lev' not in kwargs: kwargs['lev'] = File.variables['lev'][:][::-1].astype('d')
-        if 'lev' not in kwargs: kwargs['lev'] = File.variables['lev'][:].astype('d')
+        if 'lev' not in kwargs: kwargs['lev'] = File.variables['lev'][:][::-1].astype('d')
         for Name in ['lat','lon']:
             if Name not in kwargs: kwargs[Name] = File.variables[Name][:].astype('d')
                         
@@ -133,8 +132,7 @@ class IO:
             if Name not in kwargs:
                 try:
                     kwargs[Name] = File.variables[Name][-1].astype('d')
-                    ###if KnownFields[Name][2] == '3D': kwargs[Name] = kwargs[Name][::-1]
-                    if KnownFields[Name][2] == '3D': kwargs[Name] = kwargs[Name]
+                    if KnownFields[Name][2] == '3D': kwargs[Name] = kwargs[Name][::-1]
                 except:
                     print('\n ++++ CliMT.readRestart: Field %s ' % Name + \
                           'not found in restart file, using default or supplied value\n')
@@ -190,8 +188,7 @@ class IO:
         var.long_name = 'level'
         var.units     = 'mb'
         var.depth     = 'true'
-        ###var[:] = State.Grid['lev'][::-1]
-        var[:] = State.Grid['lev']
+        var[:] = State.Grid['lev'][::-1]
         for key in ['lat','lon']:
             createDimension(key,len(State.Grid[key]))
             var = createVariable(key,'d',(key,))
@@ -232,7 +229,7 @@ class IO:
                 File.variables[key][self.OutputTimeIndex,:,:] = out[:,:].astype('f')
             if KnownFields[key][2] == '3D':
                 out = State[key].copy()
-                ###out = out[nlev-1::-1,:,:]
+                out = out[nlev-1::-1,:,:]
                 File.variables[key][self.OutputTimeIndex,:,:,:] = out[:,:,:].astype('f')
 
         # Write time

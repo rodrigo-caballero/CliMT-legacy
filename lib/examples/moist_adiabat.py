@@ -21,9 +21,9 @@ Tpseudo = climt.thermodyn.pseudoadiab(p, ps, Ts)
 #--- print out results
 z=climt.thermodyn.z(p, Tpseudo, p0=ps)/1000.
 
-print "lev     z        p      Tpseudo"
+print("lev     z        p      Tpseudo")
 for i in range(len(p)):
-    print ("%3i"+3*" %8.2f") % \
-          (i, z[i], p[i], Tpseudo[i]-273.15)
+    print(("%3i"+3*" %8.2f") % \
+          (i, z[i], p[i], Tpseudo[i]-273.15))
 
 

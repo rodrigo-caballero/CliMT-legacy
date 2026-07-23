@@ -2,7 +2,7 @@
 
 import string,os
 from numpy import *
-from component  import Component
+from .component  import Component
 
 class radiation(Component):
     """
@@ -28,7 +28,8 @@ class radiation(Component):
       cfc22     0  CFC22                ppmv            0.   Chou scheme only
       tauvis    0  Aerosol opt. depth   (float)         0.   CCM3 only
       tau_inf   0  Total opt. depth        -            1.   Greygas scheme only
-      alpha_greygas 0  Tau shape parameter   -          1.   Greygas scheme only  
+      alpha_greygas 0  Pressure broadening   -          1.   1 => no broadening, 2 => strong broadening. Greygas scheme only  
+      beta_greygas 0  Equivalent bandwidth   -          1.   Greygas scheme only  
       calday    0  Calendar day         (float)      80.5    Insolation computed at specified
       lat     0-1  Latitude                 dgr      0.         day and lat/lon if  solin 
       lon     0-1  Longitude                dgr      0.         and zen are NOT specified
@@ -81,8 +82,8 @@ class radiation(Component):
         # Initialize scheme-dependent attributes
         if scheme in ['gray','grey','graygas']: scheme='greygas'
         if scheme not in ['greygas','chou','ccm3','cam3', 'rrtm']:
-            raise ValueError,'\n \n ++++ CliMT.radiation: Scheme %s unknown' % scheme
-        exec('self.__%s__init__()' % string.lower(scheme))
+            raise ValueError('\n \n ++++ CliMT.radiation: Scheme %s unknown' % scheme)
+        exec('self.__%s__init__()' % scheme.lower())
 
         # Initialize fields etc. 
         Component.__init__(self, **kwargs)
@@ -90,7 +91,7 @@ class radiation(Component):
     def __ccm3__init__(self):
         # Load extension
         try: import _ccm3_radiation
-        except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load CCM3 scheme'
+        except: raise ImportError('\n \n ++++ CliMT.radiation: Could not load CCM3 scheme')
         # Define some attributes
         self.Name           = 'ccm3_radiation'
         self.LevType        = 'p'
@@ -112,7 +113,7 @@ class radiation(Component):
     def __cam3__init__(self):
         # Load extension
         try: import _cam3_radiation
-        except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load CAM3 scheme'
+        except: raise ImportError('\n \n ++++ CliMT.radiation: Could not load CAM3 scheme')
         # Initialise abs/ems 
         ClimtDir = os.path.dirname( __file__ )
         AbsEmsDataFile = os.path.join(ClimtDir,'data/cam3rad/abs_ems_factors_fastvx.c030508.nc')
@@ -138,7 +139,7 @@ class radiation(Component):
     def __chou__init__(self):
         # Load extension
         try: import _chou_radiation
-        except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load Chou scheme'
+        except: raise ImportError('\n \n ++++ CliMT.radiation: Could not load Chou scheme')
         # Define some attributes
         self.Name           = 'chou_radiation'
         self.LevType        = 'p'
@@ -159,23 +160,24 @@ class radiation(Component):
     def __greygas__init__(self):
         # Load extension
         try: import _greygas_radiation
-        except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load grey gas scheme'
+        except: raise ImportError('\n \n ++++ CliMT.radiation: Could not load grey gas scheme')
         # Define some attributes
         self.Name           = 'greygas_radiation'
         self.LevType        = 'p'
         self.Extension      = _greygas_radiation
         self.driver         = _greygas_radiation.driver
         self.SteppingScheme = 'explicit'
-        self.ToExtension    = ['beta_greygas','stebol','g','dt','Cpd','tau_inf','alpha_greygas','T','q','p','ps','solin','Ts']
+        self.ToExtension    = ['beta_greygas','stebol','g','dt','Cpd','tau_inf','alpha_greygas','lwtau',
+                               'T','q','p','ps','solin','Ts']
         self.FromExtension  = ['Tinc','TdotRad','SrfRadFlx','swhr','swflx','lwhr','lwflx','lwuflx','lwdflx','lwtau']
-        self.Required       = ['T','q','p','ps','solin','Ts']
+        self.Required       = ['T','q','p','ps','solin','Ts','lwtau']
         self.Prognostic     = ['T']
         self.Diagnostic     = ['TdotRad','SrfRadFlx','lwhr','lwflx','lwuflx','lwdflx','lwtau']
     
     def __rrtm__init__(self):
         # Load extension
-        try: import _rrtm_radiation
-        except: raise ImportError, '\n \n ++++ CliMT.radiation: Could not load rrtm scheme'
+        try: from . import _rrtm_radiation
+        except: raise ImportError('\n \n ++++ CliMT.radiation: Could not load rrtm scheme')
         # Define some attributes
         self.Name = 'rrtm_radiation'
         self.LevType = 'p'

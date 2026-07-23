@@ -2,7 +2,7 @@
 # with corresponding long names, units and nominal rank
 
 KnownFields = {
-    'ps':         ['surface pressure',              'mb', '2D'],
+    'ps':         ['surface pressure',              'hPa', '2D'],
     'Ts':         ['surface temperature',            'K', '2D'],
     'z0':         ['geopotential at lowest p level', 'm', '2D'],
     'hIce':       ['sea ice thickness',              'm', '2D'],
@@ -30,8 +30,8 @@ KnownFields = {
     'cbmf':       ['cloud base mass flux',      'kg s-1', '2D'],
     'precc':      ['convective precip rate',  'mm day-1', '2D'],
     'Tsdot':      ['surface heating rate',       'K s-1', '2D'],
-    'p':          ['atmospheric pressure',            'mb', '3D'],
-    'dp':         ['level thickness',                 'mb', '3D'],
+    'p':          ['atmospheric pressure',            'hPa', '3D'],
+    'dp':         ['level thickness',                 'hPa', '3D'],
     'T':          ['atmospheric temperature',          'K', '3D'],
     'theta':      ['potential temperature',            'K', '3D'],
     'Te':         ['target temp, Newt. cooling',       'K', '3D'],
@@ -64,6 +64,7 @@ KnownFields = {
     'UdotTurb':   ['turbulent zonal drag',       'm s-1 day-', '3D'],
     'VdotDyn':    ['dynamical merid accn',       'm s-1 day-1', '3D'],
     'VdotTurb':   ['turbulent merid drag',       'm s-1 day-1', '3D'],
+    'nuv':        ['kinematic viscosity',       'm^2 s-1', '3D'],
     # SHOULD THESE BE PARAMETERS?
     'cloud_single_scattering_albedo': ['blah', 'blah', '3D'],
     'cloud_asymmetry_parameter': ['blah', 'blah', '3D'],
@@ -76,8 +77,8 @@ KnownFields = {
 
 import os
 from numpy import *
-from grid      import Grid
-from _timestep import leapfrog
+from .grid      import Grid
+from ._timestep import leapfrog
 
 class State:
     '''
@@ -104,6 +105,9 @@ class State:
 
         # Initialize previous time level of prognostic fields
         for key in Component.Prognostic: self.Old[key] = self.Now[key].copy()
+
+        # Make KnownFields part of object
+        self.KnownFields = KnownFields
 
     def advance(self, Component):
         '''
@@ -134,15 +138,14 @@ class State:
         LevType    = Component.LevType
         
         for Field in FieldNames:
-            if Field not in KnownFields: raise KeyError, \
-               '\n\n ++++ CliMT.State.init: Field %s unknown' % Field
+            if Field not in KnownFields: raise KeyError('\n\n ++++ CliMT.State.init: Field %s unknown' % Field)
 
         # Set fields' values to input or default
         Shape3D = self.Grid.Shape3D
         Shape2D = Shape3D[1:]
         
         for Field in FieldNames:
-            exec('Shape = Shape%s' % KnownFields[Field][2])
+            Shape = eval('Shape%s' % KnownFields[Field][2])
             if Field in kwargs:
                 try: self.Now[Field] = reshape( array(kwargs[Field]), Shape )
                 except: raise \
@@ -221,7 +224,7 @@ class State:
             # create ozone instance to provide default ozone values
             # note that values will NOT evolve unless ozone explicitly
             # federated
-            from ozone import ozone
+            from .ozone import ozone
             ozone = ozone(**kwargs) 
             return ozone.State['o3']
 
@@ -242,7 +245,7 @@ class State:
             # values for radiation
             # note that values will NOT evolve unless insolation explicitly
             # federated with radiation 
-            from insolation import insolation
+            from .insolation import insolation
             insolation = insolation(**kwargs)
 
         if 'zen'   == Field: return insolation.State['zen']
@@ -266,10 +269,16 @@ class State:
         # Cloud-base mass flux (required for Emanuel convection scheme)
         if 'cbmf' == Field: return zeros(Shape,'d')
 
+        # Kinematic viscosity in simple turbulence scheme
+        if 'nuv' == Field: return zeros(Shape,'d') + 1.
+
+        # LW optical path -- if initialized here, will be ignored in graygas scheme
+        if 'lwtau' == Field: return zeros(Shape,'d') - 999.
+
     # The following methods allow a State instance to be treated as a dictionary
     def __getitem__(self,key):
         try: return self.Now[key]
-        except: raise IndexError,'\n\n CliMT.State: %s not in State' % str(key)
+        except: raise IndexError('\n\n CliMT.State: %s not in State' % str(key))
 
     def __setitem__(self,key,value):
         self.Now[key] = value
@@ -278,7 +287,7 @@ class State:
         return self.Now.__iter__()
 
     def keys(self):
-        return self.Now.keys()
+        return list(self.Now.keys())
 
     def update(self, dict):
         self.Now.update(dict)

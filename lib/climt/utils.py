@@ -12,7 +12,7 @@ def get_from_first(key,*dicts):
     """
     for dict in dicts:
         if key in dict: return dict.get(key)
-    raise KeyError, 'utils.get_from_multi(): Key %s not found' % str(key)
+    raise KeyError('utils.get_from_multi(): Key %s not found' % str(key))
 
 def demean(a,axis=0):
     """
@@ -28,5 +28,5 @@ def demean(a,axis=0):
     x[axis]='NewAxis'
     s='['+'%s,'*(ndim(a)-1)+'%s]'
     sx = s % tuple(x)
-    exec('a = a - average(a,axis=axis)'+sx)
+    a = eval('a - average(a,axis=axis)'+sx)
     return a

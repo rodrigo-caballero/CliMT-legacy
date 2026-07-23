@@ -14,30 +14,33 @@ except:
 import climt
 from numpy import *
 
-nlat          = 60
+nlat          = 180
 nlev          = 35
 MinLat        = -90.
 MaxLat        = 90.
 MinLev        = 0.
 MaxLev        = 1000.
-Ndays         = 200.  # Total length of run (days)
+Ndays         = 1000.  # Total length of run (days)
 
 kwargs={}
 kwargs['Newt']            = 20.
-kwargs['nuv']             = 0.05
+kwargs['nuv']             = 2. * ones((nlev,nlat),dtype='f')
 kwargs['Pr']              = 1.
 kwargs['dt']              = 60.*5.
+kwargs['afc']              = 0.1
 #kwargs['RestartFile']     = 'held_hou.nc'
 kwargs['OutputFile']      = 'held_hou.nc'
 kwargs['OutputFreq']      = 86400. * 5.
 kwargs['MonitorFields']   = ['psi','U','T','q']
-kwargs['MonitorFreq']     = 60 *60.*4.
+kwargs['MonitorFreq']     = 60.*60.*24.
 kwargs['do_srf_lat_flx']  = 0
 kwargs['do_srf_sen_flx']  = 0
 
 # Grid
-kwargs['lat'] = (arange(nlat)+0.5)*(MaxLat-MinLat)/nlat + MinLat
-kwargs['lev'] = (arange(nlev)+0.5)*(MaxLev-MinLev)/nlev + MinLev
+dy = (MaxLat-MinLat)/nlat
+dp = (MaxLev-MinLev)/nlev
+kwargs['lat'] = linspace(MinLat+dy,MaxLat-dy,nlat) # (arange(nlat)+0.5)*(MaxLat-MinLat)/nlat + MinLat
+kwargs['lev'] = linspace(MinLev+dp,MaxLev,nlev) #(arange(nlev)+0.5)*(MaxLev-MinLev)/nlev + MinLev
 
 kwargs['q'] = zeros((nlev,nlat,1)) + 1.e-9
 kwargs['q'][nlev*4/5,:] =1.

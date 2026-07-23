@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component import Component
+from .component import Component
 
 class ozone(Component):
     """
@@ -28,7 +28,7 @@ class ozone(Component):
     def __init__(self, **kwargs):
         # Load extension
         try: import _ozone
-        except: raise ImportError, '\n \n ++++ CliMT.ozone: Could not load ozone extension'
+        except: raise ImportError('\n \n ++++ CliMT.ozone: Could not load ozone extension')
         # Define some attributes
         self.Name           = 'ozone'
         self.LevType        = 'p'

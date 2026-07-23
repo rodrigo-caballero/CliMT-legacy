@@ -2,11 +2,11 @@
 
 from types      import *
 from numpy import *
-from component  import Component
-from parameters import Parameters
-from state      import State
-from plot       import Monitor, Plot
-from io         import IO
+from .component  import Component
+from .parameters import Parameters
+from .state      import State
+from .plot       import Monitor, Plot
+from .io         import IO
 from _timestep  import asselin
 import _grid
 
@@ -37,10 +37,10 @@ class federation(Component):
         if len(components) < 2:
             raise \
         '\n\n +++ CliMT.federation: you must give me more than 1 component to federate!\n\n'
-        else:
-            for component in components:
-                assert type(component) is InstanceType, \
-                '\n\n +++CliMT.federation: Input item %s is not an instance.\n\n' % str(c) 
+        ## else:
+        ##     for component in components:
+        ##         assert type(component) is InstanceType, \
+        ##         '\n\n +++CliMT.federation: Input item %s is not an instance.\n\n' % str(c) 
                      
         # Re-order components: diagnostic, semi-implicit, explicit, implicit
         components = list(components)
@@ -83,7 +83,7 @@ class federation(Component):
 
         # Get values from restart file, if available
         if 'RestartFile' in kwargs:
-            ParamNames = Parameters().value.keys()
+            ParamNames = list(Parameters().value.keys())
             FieldNames = self.Required
             kwargs = self.Io.readRestart(FieldNames, ParamNames, kwargs)
 
@@ -104,9 +104,11 @@ class federation(Component):
         # Check if components enforce axis dimensions, ensure consistency
         for component in self.components:
             for AxisName in ['lev','lat','lon']:
-                exec('n_fed = self.n%s' % AxisName)
-                try: exec('n_com = component.Extension.get_n%s()' % AxisName)
-                except: n_com = n_fed
+                n_fed = eval('self.n%s' % AxisName)
+                try:
+                    n_com = eval('component.Extension.get_n%s()' % AxisName)
+                except:
+                    n_com = n_fed
                 assert n_com == n_fed, \
                 '\n\n ++++ CliMT.federation.init: recompile with %i %ss to run this federation\n'\
                 % (n_fed,AxisName)
@@ -116,14 +118,18 @@ class federation(Component):
 
         # Adjust components' attributes
         for component in self.components:
+            component.Params     = self.Params
+            # Note that the line below sets up a *pointer* from the component's State to
+            # the federation's, so each component will update the State
+            # for the whole federation
+            component.State      = self.State 
+            component.Grid       = self.State.Grid 
+            component.Inc        = {}
             component.Monitoring = False
             component.Io.OutputFreq = self.Io.OutputFreq
             component.Fixed.extend(self.Fixed)
-            if component.UpdateFreq == component['dt']: component.UpdateFreq = self['dt']
-            component.Params     = self.Params
-            component.Grid       = self.State.Grid 
-            component.State      = self.State 
-            component.Inc        = {}
+            if component.UpdateFreq == component['dt']:
+                component.UpdateFreq = self['dt']
             # insolation component gets special treatment because 
             # of need to set orb params in common block (yes, this is ugly)
             try: component.setOrbParams(**kwargs)
@@ -172,3 +178,18 @@ class federation(Component):
             # accumulate increments
             for key in component.Inc:
                 self.Inc[key] += component.Inc[key]
+
+    def __call__(self,**kwargs):
+        """
+        # Provides a simple interface to extension, useful e.g. for diagnostics.
+        """
+        # Re-initialize parameters, grid and state
+        self.Params  = Parameters(**kwargs)
+        self.State = State(self, **kwargs)
+        self.Grid = self.State.Grid
+        for component in self.components:
+            component.Params     = self.Params
+            component.State      = self.State 
+            component.Grid       = self.Grid 
+        # Bring diagnostics up to date
+        self.compute(ForcedCompute=True)

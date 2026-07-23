@@ -34,7 +34,7 @@ def along(f, x, v):
 Given a multivariate function f, a point x and a vector v,
 return the univariate function t |-> f(x+tv).
 	"""
-	return lambda t,f=f,x=x,v=v: apply(f, add(x, multiply(t, v)))
+	return lambda t,f=f,x=x,v=v: f(*add(x, multiply(t, v)))
 
 #
 # UNIVARIATE ROOT FINDING
@@ -231,7 +231,7 @@ Given a multivariate function f and a starting point p0,
 find a local minimum of f using Powell's direction set method.
 	"""
 	p = p0
-	fp = apply(f, p)
+	fp = f(*p)
 	n = len(p)
 	directions = identity(n).tolist()  # the n coordinate vectors
 
@@ -259,7 +259,7 @@ find a local minimum of f using Powell's direction set method.
 
 		vnew = subtract(p, pold)
 		pex = add(pold, multiply(2, vnew))
-		fpex = apply(f, pex)
+		fpex = f(*pex)
 		if fpex<fp:
 			temp = fpold-fp-maxdrop
 			if 2*(fpold-2*fp+fpex)*temp*temp<totaldrop*totaldrop*maxdrop:
@@ -273,10 +273,10 @@ if __name__=='__main__':
 
 	from math import *
 
-	print root(cos)
-	print minimum(sin)
+	print(root(cos))
+	print(minimum(sin))
 
 	def f(x, y):
 		return x*x + x*y + y*y + 2*x - y
 
-	print powell_min(f, (0., 0.))
+	print(powell_min(f, (0., 0.)))

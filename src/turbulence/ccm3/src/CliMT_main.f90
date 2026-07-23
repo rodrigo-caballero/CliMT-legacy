@@ -103,6 +103,11 @@ vdot = Vinc/twodt
 Tdot = Tinc/twodt
 qdot = qinc/twodt
 
+! change energy flux sign convention to positive down
+shflx = -shflx
+qflx  = -qflx
+lhflx  = -lhflx
+
 !print*,' --- '
 !do k=1,km
 !print'(10f10.5)', Vinc(k)*86400/dt,Tinc(k)*86400/dt,qinc(k)*86400/dt

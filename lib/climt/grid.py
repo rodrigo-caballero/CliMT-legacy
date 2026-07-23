@@ -1,6 +1,6 @@
 
 from numpy import *
-from state   import KnownFields
+from .state   import KnownFields
 
 class Grid:
     '''
@@ -48,34 +48,33 @@ class Grid:
             # ensure axis is an array
             if self.value[AxisName].ndim == 0:
                 self.value[AxisName] = array([kwargs[AxisName],])
-        elif AxisName is 'lev' and LevType == 'p' and 'p' in kwargs:
+        elif AxisName == 'lev' and LevType == 'p' and 'p' in kwargs:
             # this gets first column of p (do it like this because we don't know dims of p)
             self.value['lev'] = transpose(array(kwargs['p'])).copy().flat[:n]                
         else:
-            if AxisName is 'lon':
+            if AxisName == 'lon':
                 self.value[AxisName] = (arange(n)+0.5)*360./n
                 if n == 1: self.value[AxisName] = array([0.])
-            if AxisName is 'lat':
+            if AxisName == 'lat':
                 self.value[AxisName] = (arange(n)+0.5)*180./n -90.
-            if AxisName is 'lev':
+            if AxisName == 'lev':
                 if LevType == 'p' :
                     self.value[AxisName] = (arange(n)+0.5)*1000./n
                 elif LevType is None:
                     self.value[AxisName] = arange(n)
-                else: raise ValueError, \
-                      '\n\n ++++ CliMT.Grid.init: LevType %s not recognized' % LevType
+                else: raise ValueError('\n\n ++++ CliMT.Grid.init: LevType %s not recognized' % LevType)
         assert n == len(self.value[AxisName]), \
                '\n\n ++++ CliMT.Grid.init: Length of input %s does not match Shape3D' % AxisName
 
     def __getitem__(self,key):
         try: return self.value[key]
-        except: raise IndexError,'\n\n ++++ CliMT.Grid: %s not in Grid' % str(key)
+        except: raise IndexError('\n\n ++++ CliMT.Grid: %s not in Grid' % str(key))
 
     def __setitem__(self,key,value):
         self.value[key] = value
 
     def keys(self):
-        return self.value.keys()
+        return list(self.value.keys())
 
     def __iter__(self):
         return self.value.__iter__()

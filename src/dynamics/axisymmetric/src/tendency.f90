@@ -19,11 +19,11 @@ real, dimension(jm,km) :: p,T,U,V,q,sinphi,cosphi,tanphi,theta_e
 real, dimension(jm,km) :: Udot,Tdot,Vdot,qdot,psi,theta,W
 
 ! Local
-integer :: k,j
+integer :: k,j,j0
 real :: sponge_coeff,pi
 real, dimension(0:jm+1,0:km+1) :: theta_bc, U_bc, V_bc, q_bc, psi_bc
-real, dimension(jm,km) :: Jacobian,vq_y,wq_p,zy
-real, dimension(0:jm,  km) :: Vcosphii
+real, dimension(jm,km) :: Jacobian,vq_y,wq_p,zy,Uy,Up,Udot1,Vy,WUp
+real, dimension(0:jm,  km) :: Vcosphii,Vcos2phii
 real, dimension(  jm,0:km) :: Wi
 
 ! Temp -> pot. temp.
@@ -31,6 +31,7 @@ theta = (ps/p)**kappa * T
 
 ! V and W on cell boundaries (needed for upwind advection)
 call v2vcosphii(jm, km, cosphi, V, Vcosphii)
+call v2vcos2phii(jm, km, cosphi, V, Vcos2phii)
 call vcosphii2wi(jm, km, a, dphi, dp, cosphi, Vcosphii, Wi)
 W = ( Wi(:,0:km-1)+Wi(:,1:km) )/2.
 
@@ -39,12 +40,23 @@ call v2psi(jm, km, dp, cosphi, V, psi)
 call bc(jm, km, theta, U, V, q, psi, theta_bc, U_bc, V_bc, q_bc, psi_bc)
 
 ! U tendency
-!call upwind(jm, km, a, dphi, dp, cosphi, Vcosphii, Wi, U, vq_y, wq_p)
-!Udot =   - (vq_y + wq_p) + U*V*tanphi/a  + 2.*omega*sinphi*V
+! -- advection in flux form using Arakawa Jacobian
 !call arakawa_jacobian(jm, km, dphi, dp, psi_bc, U_bc, Jacobian)
 !Udot =   -Jacobian/a/cosphi + U*V*tanphi/a  + 2.*omega*sinphi*V
-call smolar(jm, km, a, dphi, dp, dt, cosphi, Vcosphii, Wi, U, Udot)
-Udot =   Udot + U*V*tanphi/a  + 2.*omega*sinphi*V
+! -- advection in flux form using simple upwind scheme
+call upwind(jm, km, a, dphi, dp, cosphi, Vcosphii, Wi, U, vq_y, wq_p)
+Udot =   - (vq_y + wq_p) + U*V*tanphi/a  + 2.*omega*sinphi*V
+!call upwindu(jm, km, a, dphi, dp, cosphi, Vcos2phii, Wi, U, vq_y, wq_p)
+!Udot =   - (vq_y + wq_p) + 2.*omega*sinphi*V
+! -- advection in flux form using Smolarkievicz upwind scheme -- best choice
+!call smolar(jm, km, a, dphi, dp, dt, cosphi, Vcosphii, Wi, U, Udot)
+!Udot =   Udot + U*V*tanphi/a  + 2.*omega*sinphi*V
+!call smolaru(jm, km, a, dphi, dp, dt, cosphi, Vcos2phii, Wi, U, Udot)
+!Udot =   Udot + 2.*omega*sinphi*V
+! -- advection using absolute vorticity -- works but develops a lot of 2-grid-point noise
+!call getup(jm, km, dp, U, Up)
+!call getdy(jm, km, a, dphi, cosphi, U, Uy)
+!Udot = (2.*omega*sinphi - Uy)*V - W*Up
 
 ! V tendency 
 ! Note -- The smolar routine does not work for V, because the 

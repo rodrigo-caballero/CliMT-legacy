@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component import Component
+from .component import Component
 from numpy import *
 
 class ocean(Component):
@@ -28,7 +28,7 @@ class ocean(Component):
     def __init__(self, scheme='slab', **kwargs):
         # Initialize scheme-dependent attributes
         if   scheme == 'slab': self.__slab__init__()
-        else: raise ValueError,'\n \n ++++ CliMT.ocean: Scheme %s unknown' % scheme
+        else: raise ValueError('\n \n ++++ CliMT.ocean: Scheme %s unknown' % scheme)
 
         # Initialize parameters, grid, fields etc
         Component.__init__(self, **kwargs)
@@ -36,7 +36,7 @@ class ocean(Component):
     def __slab__init__(self):
         # Load extension
         try: import _slab_ocean
-        except: raise ImportError, '\n \n ++++ CliMT.ocean: Could not load extension'
+        except: raise ImportError('\n \n ++++ CliMT.ocean: Could not load extension')
         # Define some attributes
         self.Name           = 'slab_ocean'
         self.LevType        = None
@@ -47,5 +47,5 @@ class ocean(Component):
         self.FromExtension  = ['Tsinc','Tsdot']
         self.Required       = ['Ts', 'SrfRadFlx', 'SrfLatFlx', 'SrfSenFlx', 'Qflx']
         self.Prognostic     = ['Ts']
-        self.Diagnostic     = []
+        self.Diagnostic     = ['Tsdot']
 

@@ -55,7 +55,7 @@ class Parameters:
         self.append('delv', 40.,     'K', 'Surface-trop pot temp increase' )
 
         # Parameters for simple turbulence
-        self.append('nuv',             1., 'm^2/s',  'Kinematic viscosity' )
+        # nuv is now a field -- self.append('nuv',             1., 'm^2/s',  'Kinematic viscosity' )
         self.append('Pr',              1., '-',      'Prandtl number (visc/cond)' )
         self.append('do_srf_mom_flx',   1, '-',      'Momentum flux thru surface: 1=Yes, 0=No' )
         self.append('do_srf_sen_flx',   1, '-',      'Heat flux thru surface: 1=Yes, 0=No' )
@@ -128,13 +128,13 @@ class Parameters:
     # The following methods allow a Parameters instance to be treated as a dictionary
     def __getitem__(self,key):
         try: return self.value[key]
-        except: raise IndexError,'\n\n CliMT.Params: %s not a known parameter name' % str(key)
+        except: raise IndexError('\n\n CliMT.Params: %s not a known parameter name' % str(key))
         
     def __setitem__(self,key,value):
         self.value[key] = value
         
     def keys(self):
-        return self.value.keys()
+        return list(self.value.keys())
 
     def __iter__(self):
         return self.value.__iter__()

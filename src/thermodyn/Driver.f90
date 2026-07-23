@@ -318,7 +318,6 @@ subroutine qsflatau(km,jm,im,Rd,Rv,T,p,i,q)
   eps=Rd/Rv
   call esflatau(km,jm,im,T,i,e)
   q = eps*e/(p+e*(eps-1.)) * 1.e3
-!  q = eps*e/p * 1.e3
 
 end subroutine qsflatau
 !------------------------------------------------------------------------
@@ -1051,7 +1050,8 @@ real(8) function deltawb(params,t)
 
   eps = Rd/Rv
 
-  call ws(1,1,1,Rd,Rv,t,p,w)
+  !call ws(1,1,1,Rd,Rv,t,p,w)
+  call wsflatau(1,1,1,Rd,Rv,t,p,1,w)
   deltawb = cpd/lv*(ti-t)-(w-wi)*1.e-3
 
 end function deltawb

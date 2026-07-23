@@ -126,9 +126,9 @@ do k=1,km
  else
   ice=1
  endif
-! q(k)=qs(t(k),p(k))*1.e-3
- q(k)=qsflatau(t(k),p(k),ice)*1.e-3
- if (q(k) < 0.) q(k)=1.e-10
+ q(k)=qs(t(k),p(k))*1.e-3
+! q(k)=qsflatau(t(k),p(k),ice)*1.e-3
+ if (q(k) < 0.) q(k) = 1.e-32
 enddo
 
 end subroutine get_qs

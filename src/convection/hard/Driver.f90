@@ -7,14 +7,14 @@ subroutine driver(km, jm, im, lapse, g, Rd, Cpd, afc, UpdateFreq, p, ps, T, thet
 implicit none
 
 ! In
-integer                                   :: km,jm,im, i,j
+integer                                  :: km,jm,im, i,j
 !f2py intent(in,hide) km,jm,im
 real(8),                      intent(in)  :: lapse, g, Rd, Cpd, afc, UpdateFreq
 real(8), dimension(jm,im),    intent(in)  :: ps
 real(8), dimension(km,jm,im), intent(in)  :: p
 
 ! In/out
-real(8), dimension(km,jm,im)              :: T
+real(8), dimension(km,jm,im), intent(inout)              :: T
 !f2py intent(in,out) T
 
 ! Out

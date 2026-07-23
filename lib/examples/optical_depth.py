@@ -43,4 +43,4 @@ sigma = climt.Parameters()['stebol']
 SurfLW = sigma*Ts**4
 tau = -log( (ToaLW0-ToaLW1)/SurfLW )
 
-print "Total optical depth: %f"%(tau)
+print("Total optical depth: %f"%(tau))

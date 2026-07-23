@@ -57,15 +57,15 @@ cldfrc = r['SwToaCf']+r['LwToaCf']
 for i in range(ny):
     dum = [cldf[i]]
     dum.extend(cldfrc[:,i].tolist())
-    print '%10.2f'*(nx+1) % tuple( dum )
+    print('%10.2f'*(nx+1) % tuple( dum ))
 dum = [0.]
 dum.extend(clwp.tolist())
-print '%10.2f'*(nx+1) % tuple( dum )
+print('%10.2f'*(nx+1) % tuple( dum ))
 
 #try:
 extent = (0,clwpMax,0,cldfMax)
 imshow(cldfrc,extent=extent)
-print cldfrc
+print(cldfrc)
 colorbar()
 xlim([0,clwpMax])
 ylim([0,cldfMax])

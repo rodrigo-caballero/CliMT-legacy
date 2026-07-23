@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from component import Component
+from .component import Component
 
 class insolation(Component):
     """
@@ -41,14 +41,14 @@ class insolation(Component):
     def __init__(self, avg='annual', **kwargs):
         # Load extension
         try: import _insolation
-        except: raise ImportError, '\n \n ++++ CliMT.insolation: Could not load insolation extension'
+        except: raise ImportError('\n \n ++++ CliMT.insolation: Could not load insolation extension')
         # Define some attributes
         self.Name           = 'insolation'
         self.avg            = avg
         self.LevType        = None
         self.SteppingScheme = None
         self.Extension      = _insolation
-        exec( 'self.driver = _insolation.%s_driver' % avg )
+        self.driver = eval( '_insolation.%s_driver' % avg )
         self.ToExtension   = ['calday','lat','lon','scon','radius','daysperyear']
         self.FromExtension = ['zen','solin']
         self.Required      = []
@@ -73,22 +73,22 @@ class insolation(Component):
 
         # if provided, set each orb param separately, overriding those set by orb_year
         if 'eccen' in kwargs:    
-	    eccen = kwargs['eccen']
-	    errmsg='\n\n +++ CliMT.insolation: eccen must be in range [0,1]'
-	    assert 0. <= eccen <= 1., errmsg
-	    self.eccen = self.Extension.orbpar.eccen = eccen
+            eccen = kwargs['eccen']
+            errmsg='\n\n +++ CliMT.insolation: eccen must be in range [0,1]'
+            assert 0. <= eccen <= 1., errmsg
+            self.eccen = self.Extension.orbpar.eccen = eccen
 
         if 'obliq' in kwargs:    
-	    obliq = kwargs['obliq']
-	    errmsg='\n\n +++ CliMT.insolation: obliq must be in range [-90,90] degrees'
-	    assert -90. <= obliq <= 90., errmsg
-	    self.obliq = self.Extension.orbpar.obliq = obliq
+            obliq = kwargs['obliq']
+            errmsg='\n\n +++ CliMT.insolation: obliq must be in range [-90,90] degrees'
+            assert -90. <= obliq <= 90., errmsg
+            self.obliq = self.Extension.orbpar.obliq = obliq
 
         if 'prece' in kwargs:    
-	    prece = kwargs['prece']
-	    errmsg='\n\n +++ CliMT.insolation: prece must be in range [0,360] degrees'
-	    assert 0. <= prece <= 360., errmsg
-	    self.prece = self.Extension.orbpar.mvelp = prece
+            prece = kwargs['prece']
+            errmsg='\n\n +++ CliMT.insolation: prece must be in range [0,360] degrees'
+            assert 0. <= prece <= 360., errmsg
+            self.prece = self.Extension.orbpar.mvelp = prece
                 
     # Sets orbital parameters to those of orb_year
     def setOrbParamsByYear(self, orb_year=1995):

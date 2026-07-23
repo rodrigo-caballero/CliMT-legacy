@@ -112,10 +112,10 @@
      *            n2oppv, ch4ppv, cfc11ppv, cfc12ppv, cfc22ppv, emiss,
      *            cldwater, cwc, taucld, reff, cldf, ict, icb,
      *            taual, ssaal, asyal,
-     *            high, trace, lwflx, lwflxc, dfdts, st4)
+!     *            high, trace, lwflx, lwflxc, dfdts, st4)
 c+++climt
 ! disabled tau -- gives bus error with gfortran
-!     *            high, trace, lwflx, lwflxc, dfdts, st4, tau)
+     *            high, trace, lwflx, lwflxc, dfdts, st4, tau)
 
 ! Compute cloud forc and heating rate
 

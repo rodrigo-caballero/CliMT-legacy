@@ -41,7 +41,10 @@ call main(km, dt, t(:,j,i), q(:,j,i), p(:,j,i), ps(j,i),    &
 enddo
 enddo
 
-tdot = ( (t-told)*(1.-2.*afc)/2./UpdateFreq + tdot ) * 86400.
-qdot = ( (q-qold)*(1.-2.*afc)/2./UpdateFreq + qdot ) * 86400.
+!tdot = ( (t-told)*(1.-2.*afc)/2./UpdateFreq + tdot ) * 86400.
+!qdot = ( (q-qold)*(1.-2.*afc)/2./UpdateFreq + qdot ) * 86400.
+
+tdot = ( (t-told)*(1.-2.*afc)/2./dt + tdot ) * 86400.
+qdot = ( (q-qold)*(1.-2.*afc)/2./dt + qdot ) * 86400.
 
 end subroutine driver
