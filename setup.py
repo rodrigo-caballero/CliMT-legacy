@@ -1,6 +1,5 @@
 
 # -------- EDIT HERE TO MATCH YOUR ENVIRONMENT:
-climt_home_dir = '/Users/rca/CliMT-legacy/CliMT-legacy/'
 KM = 26
 JM = 1
 IM = 1
@@ -8,13 +7,14 @@ NC_INC = '/Users/rca/miniconda3/envs/py312/include'
 NC_LIB = '/Users/rca/miniconda3/envs/py312/lib'
 # --------------------------------------------------------
 
+from setuptools import setup, Extension 
 import os,glob,sys,string
+from pathlib import Path
 
-# this is for OSX only!!
+# the following 2 lines are for OSX only!!
+# comment out if you are using Linux
 os.environ['C_INCLUDE_PATH'] = '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include'
 os.environ['CC'] = 'clang'
-
-from setuptools import setup, Extension # for python>=3.10 need to use setuptools instead of distutils
 
 if '--lite' in sys.argv:
     sys.argv.pop(sys.argv.index('--lite'))
@@ -22,6 +22,7 @@ if '--lite' in sys.argv:
 else:
     Lite = False
 
+climt_home_dir = str(Path(__file__).parent) + '/'
 Extensions = [
     {'name':'grid',
      'dir':climt_home_dir+'src/grid'},
@@ -74,23 +75,9 @@ for ext in Extensions:
     if ext['name'] in LiteExtensionsNames:
         ExtensionsLite.append(ext)
 
-# set some fortran compiler-dependent flags
-compiler = 'gfortran'
-
-if compiler == 'gfortran':
-    ## f77flags='-ffixed-line-length-132 -fdefault-real-8 -std=legacy'
-    ## f90flags='-fdefault-real-8 -fno-range-check -std=legacy'
-    f77flags='-ffixed-line-length-132 -fdefault-real-8 -std=legacy'
-    ##f77flags='-fdefault-real-8 -std=legacy'
-    f90flags='-fdefault-real-8 -std=legacy'
-elif compiler == 'intel' or compiler == 'intelem':
-    f77flags='-132 -r8'
-    f90flags='-132 -r8'
-elif compiler == 'ibm':
-    f77flags='-qautodbl=dbl4 -qsuffix=f=f:cpp=F -qfixed=132'
-    f90flags='-qautodbl=dbl4 -qsuffix=f=f90:cpp=F90 -qfree=f90'
-else:
-    print('Sorry, compiler %s not supported' % compiler)
+# set some gfortran compiler flags
+f77flags='-ffixed-line-length-132 -fdefault-real-8 -std=legacy'
+f90flags='-fdefault-real-8 -std=legacy'
 
 for ExtList in [Extensions,ExtensionsLite]:
     for i in range(len(ExtList)):
@@ -99,9 +86,6 @@ for ExtList in [Extensions,ExtensionsLite]:
                     'f90flags':f90flags}
         Defaults.update(ExtList[i])
         ExtList[i] = Defaults
-    if compiler == 'ibm':
-        for ext in ExtList:
-            ext['cppflags']='-WF,'+','.join(ext['cppflags'].split())
 
 def getSources(dir):
     #Gets list of source files for extensions

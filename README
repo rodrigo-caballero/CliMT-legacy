@@ -12,13 +12,16 @@ CliMT is a Python-based software component toolkit which provides a
 Requirements:
 Python >= 3.10 
 Numpy >= 2.0 
-GNU gcc/gfortran
+GNU gcc/gfortran (or clang on OSX)
+NetCDF fortran library
 
 Installation:
 
-Edit the marked section in setup.py to match your environment.
+Edit the marked section in CliMT-legacy/setup.py to match your environment.
+
 Then do
 
+cd CliMT-legacy
 python setup.py install
 
 which will build and install the package as climt_legacy.
