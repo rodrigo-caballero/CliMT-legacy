@@ -72,7 +72,7 @@ def wsflatau(T,p,i=1, Rd=None, Rv=None):
   '''
   if Rd  is None: Rd  = Parameters()['Rd']
   if Rv  is None: Rv  = Parameters()['Rv']
-  return squeeze(_thermodyn.wsflatau(T,p,i))
+  return squeeze(_thermodyn.wsflatau(Rd,Rv,T,p,i))
 
 def tdew(p,q):
   '''
